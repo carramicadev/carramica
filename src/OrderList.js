@@ -637,7 +637,7 @@ Thank you :)`
             <Card.Body>
               <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  Total Paid
+                  Total Paid Order
                 </div>
                 <div style={{ backgroundColor: 'rgb(255 243 217)', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <BoxFill color="#FEC53D" />
