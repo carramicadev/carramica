@@ -11,7 +11,7 @@ let firebaseConfig = {
   appId: "1:1071156852912:web:7f6cb6a86cfa3fdb0ee375",
   measurementId: "G-4Q04T30L55"
 };
-
+console.log(process.env.REACT_APP_ENVIRONMENT === 'production')
 if (process.env.REACT_APP_ENVIRONMENT === 'production') {
   firebaseConfig = {
     apiKey: "AIzaSyDmROB55jQKzWR9e6VUntO_E3eJ5PB4xTY",
