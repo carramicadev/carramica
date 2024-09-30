@@ -315,7 +315,7 @@ const AddOrder = () => {
               hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(value ? value : 0)
             }
             // console.log(hargaAmountAfterDiscon)
-            return j === productIndex ? name === 'nama' ? { ...product, [name]: docSnap.data().nama, price: docSnap.data()?.harga, weight: docSnap.data().weight, height: docSnap.data().height, width: docSnap.data().width, length: docSnap.data().length, amount: docSnap.data()?.harga, sku: docSnap.data().sku, id: docSnap.id } : name === 'quantity' ? { ...product, [name]: parseInt(value), amount: hargaProd * parseInt(value) - parseInt(product?.discount ? product.discount : 0) } : { ...product, [name]: parseInt(value), amount: hargaAmountAfterDiscon } : product
+            return j === productIndex ? name === 'nama' ? { ...product, [name]: docSnap.data().nama, price: docSnap.data()?.harga, weight: docSnap.data().weight, height: docSnap.data().height, width: docSnap.data().width, length: docSnap.data().length, amount: docSnap.data()?.harga, sku: docSnap.data().sku, id: docSnap.id, stock: docSnap.data()?.stok } : name === 'quantity' ? { ...product, [name]: parseInt(value), amount: hargaProd * parseInt(value) - parseInt(product?.discount ? product.discount : 0) } : { ...product, [name]: parseInt(value), amount: hargaAmountAfterDiscon } : product
           })
         } : order
       );
@@ -1157,7 +1157,12 @@ const AddOrder = () => {
                     <div className="productInfo">
                       <div className="form-group">
                         <Form.Label className="label">Quantity</Form.Label>
-                        <Form.Control onWheel={(e) => e.target.blur()} isInvalid={ordersErr?.[orderIndex]?.products?.[productIndex]?.quantity ? true : false} className="input" type="number" name="quantity" placeholder="Quantity" value={product.quantity} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        <Form.Control max={product?.stock} style={{}} onWheel={(e) => e.target.blur()} isInvalid={ordersErr?.[orderIndex]?.products?.[productIndex]?.quantity ? true : false} className="input" type="number" name="quantity" placeholder="Quantity" value={product.quantity} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        {
+                          product?.stock &&
+                          <Form.Label>Stock {product?.stock}</Form.Label>
+
+                        }
                         {
                           ordersErr?.[orderIndex]?.products?.[productIndex]?.quantity && <div class="invalid-feedback">
                             {ordersErr?.[orderIndex]?.products?.[productIndex]?.quantity}

@@ -656,7 +656,7 @@ Thank you :)`
             <Card.Body>
               <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  Omset
+                  Revenue
                 </div>
                 <div style={{ backgroundColor: '#d9f7e8', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <GraphUp color="#4AD991" />
@@ -675,7 +675,7 @@ Thank you :)`
             <Card.Body>
               <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  Not Paid
+                  Unpaid
                 </div>
                 <div style={{ backgroundColor: '#ffded1', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <XCircleFill color="#FF9066" />
@@ -702,7 +702,7 @@ Thank you :)`
               onChange={handleSearch}
             />
           </div>
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', marginTop: '10px' }}>
             <OverlayTrigger
               delay={{ hide: 450, show: 300 }}
               overlay={(props) => (
