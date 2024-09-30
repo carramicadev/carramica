@@ -184,15 +184,15 @@ const Product = () => {
                   <input className="form-check-input" type="checkbox" checked={selectedRows?.length === filteredData?.length}
                     onChange={handleSelectAll} id="flexCheckChecked" />
                 </th>
-                <th>Produk Id</th>
+                <th>Product Id</th>
                 <th>SKU</th>
-                <th>Nama Produk</th>
-                <th>Berat/gr</th>
-                <th>Panjang</th>
-                <th>Lebar</th>
-                <th>Tinggi</th>
-                <th>Harga</th>
-                <th>Stok</th>
+                <th>Product Name</th>
+                <th>Weight/gr</th>
+                <th>Length</th>
+                <th>Width</th>
+                <th>Height</th>
+                <th>Price</th>
+                <th>Stock</th>
                 <th>Action</th>
 
               </tr>

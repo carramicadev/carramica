@@ -182,7 +182,7 @@ const Dashboard = ({ profile }) => {
                 <Card.Body>
                   <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                      Total Order
+                      Total Invoice
                     </div>
                     <div style={{ backgroundColor: 'rgb(229 228 255)', borderRadius: '50%', width: '35px', height: '35px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       <PeopleFill color="#8280FF" />
@@ -201,7 +201,7 @@ const Dashboard = ({ profile }) => {
                 <Card.Body>
                   <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                      Total Paid
+                      Total Invoice Paid
                     </div>
                     <div style={{ backgroundColor: 'rgb(255 243 217)', borderRadius: '50%', width: '35px', height: '35px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       <BoxFill color="#FEC53D" />
@@ -220,7 +220,7 @@ const Dashboard = ({ profile }) => {
                 <Card.Body>
                   <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                      Omset
+                      Revenue
                     </div>
                     <div style={{ backgroundColor: '#d9f7e8', borderRadius: '50%', width: '35px', height: '35px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       <GraphUp color="#4AD991" />
@@ -239,7 +239,7 @@ const Dashboard = ({ profile }) => {
                 <Card.Body>
                   <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                      Not Paid
+                      Unpaid
                     </div>
                     <div style={{ backgroundColor: '#ffded1', borderRadius: '50%', width: '35px', height: '35px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       <XCircleFill color="#FF9066" />

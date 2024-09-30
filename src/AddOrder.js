@@ -1143,7 +1143,7 @@ const AddOrder = () => {
                         <option selected hidden >Nama Produk</option>
                         {
                           allProduct?.map?.((prod) => {
-                            return <option value={prod?.id} >{prod?.nama}</option>
+                            return <option value={prod?.id} >{prod?.nama}-stock={prod?.stok}</option>
                           })
                         }
                       </Form.Select>

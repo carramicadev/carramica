@@ -286,7 +286,7 @@ const Logistik = () => {
             <Card.Body>
               <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  Terkirim
+                  Sent Order
                 </div>
                 <div style={{ backgroundColor: 'rgb(255 243 217)', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <BoxFill color="#FEC53D" />
@@ -305,7 +305,7 @@ const Logistik = () => {
             <Card.Body>
               <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  Rasio
+                  Sent Ratio
                 </div>
                 <div style={{ backgroundColor: '#d9f7e8', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <GraphUp color="#4AD991" />
@@ -324,7 +324,7 @@ const Logistik = () => {
             <Card.Body>
               <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  Total Ongkir
+                  Shipping Cost
                 </div>
                 <div style={{ backgroundColor: '#ffded1', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <Truck color="#FF9066" />
@@ -349,23 +349,23 @@ const Logistik = () => {
 
           </tr>
           <tr>
-            <th>Tanggal</th>
+            <th>Date</th>
             <th>Total Order</th>
-            <th>Terkirim</th>
-            <th>Rasio</th>
-            <th>Total Ongkir</th>
+            <th>Sent Order</th>
+            <th>Ratio</th>
+            <th>Shipping Cost</th>
             <th>Total Order</th>
-            <th>Terkirim</th>
-            <th>Rasio</th>
-            <th>Total Ongkir</th>
+            <th>Sent Order</th>
+            <th>Ratio</th>
+            <th>Shipping Cost</th>
             <th>Total Order</th>
-            <th>Terkirim</th>
-            <th>Rasio</th>
-            <th>Total Ongkir</th>
+            <th>Sent Order</th>
+            <th>Ratio</th>
+            <th>Shipping Cost</th>
             <th>Total Order</th>
-            <th>Terkirim</th>
-            <th>Rasio</th>
-            <th>Total Ongkir</th>
+            <th>Sent Order</th>
+            <th>Ratio</th>
+            <th>Shipping Cost</th>
 
           </tr>
         </thead>

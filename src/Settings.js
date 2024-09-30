@@ -253,7 +253,7 @@ const Settings = (props) => {
                         <table className="table table-bordered">
                           <thead>
                             <tr>
-                              <th>NAMA</th>
+                              <th>NAME</th>
                               <th>EMAIL</th>
                               <th>PHONE</th>
                               <th>RULES</th>
