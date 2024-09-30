@@ -1,0 +1,1975 @@
+{
+    "locode": "ID JKT",
+    "name": "Jakarta",
+    "services": [
+        {
+            "key": "CDDBAK",
+            "description": "Ideal for large and bulky goods, and huge materials",
+            "dimensions": {
+                "length": {
+                    "value": "4.5",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "2",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "5000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Extra Helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery 1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "CDDBAK_INTERCITY",
+            "description": "Ideal for large and bulky goods, and huge materials",
+            "dimensions": {
+                "length": {
+                    "value": "4.5",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "2",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "5000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "TOLL_FEE_03",
+                    "description": "Toll fee · Toll to Bandung",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_02",
+                    "description": "Toll fee · Toll to Surabaya",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_05",
+                    "description": "Toll fee · Toll to Malang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_04",
+                    "description": "Toll fee · Toll to Cirebon",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_07",
+                    "description": "Toll fee · Toll to Semarang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_06",
+                    "description": "Toll fee · Toll to Yogyakarta",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Tell your driver how many helpers you need · Extra Helper",
+                    "parent_type": "Tell your driver how many helpers you need",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_2",
+                    "description": "Toll to Surabaya",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll to Bandung",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_5",
+                    "description": "Toll to Yogyakarta",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_1",
+                    "description": "Toll to Cirebon",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_4",
+                    "description": "Toll to Semarang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_3",
+                    "description": "Toll to Malang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "CDDBOX",
+            "description": "Ideal for large and bulky goods, and huge materials",
+            "dimensions": {
+                "length": {
+                    "value": "4.5",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "2",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "5000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery -1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "CDDBOX_INTERCITY",
+            "description": "Ideal for large and bulky goods, and huge materials",
+            "dimensions": {
+                "length": {
+                    "value": "4.5",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "2",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "5000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "TOLL_FEE_03",
+                    "description": "Toll fee · Toll to Bandung",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_02",
+                    "description": "Toll fee · Toll to Surabaya",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_05",
+                    "description": "Toll fee · Toll to Malang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_04",
+                    "description": "Toll fee · Toll to Cirebon",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_07",
+                    "description": "Toll fee · Toll to Semarang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_06",
+                    "description": "Toll fee · Toll to Yogyakarta",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_2",
+                    "description": "Toll to Cirebon",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_3",
+                    "description": "Toll to Malang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_1",
+                    "description": "Toll to Surabaya",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_5",
+                    "description": "Toll to Yogyakarta",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_4",
+                    "description": "Toll to Semarang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "ENGKELBAK",
+            "description": "Ideal for large and bulky goods, such as moving house",
+            "dimensions": {
+                "length": {
+                    "value": "3.1",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.7",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.7",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "2500",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery -1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "ENGKELBAK_INTERCITY",
+            "description": "Ideal for large and bulky goods, such as moving house",
+            "dimensions": {
+                "length": {
+                    "value": "3.1",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.7",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.7",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "2500",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "TOLL_FEE_03",
+                    "description": "Toll fee · Toll to Bandung",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_02",
+                    "description": "Toll fee · Toll to Surabaya",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_05",
+                    "description": "Toll fee · Toll to Malang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_04",
+                    "description": "Toll fee · Toll to Cirebon",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_07",
+                    "description": "Toll fee · Toll to Semarang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_06",
+                    "description": "Toll fee · Toll to Yogyakarta",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Tell your driver how many helpers you need · Extra Helper",
+                    "parent_type": "Tell your driver how many helpers you need",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_4",
+                    "description": "Toll to Semarang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_1",
+                    "description": "Toll to Surabaya",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_3",
+                    "description": "Toll to Malang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_5",
+                    "description": "Toll to Yogyakarta",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_2",
+                    "description": "Toll to Cirebon",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "ENGKELBOX",
+            "description": "Ideal for bulk and big items delivery including house moving",
+            "dimensions": {
+                "length": {
+                    "value": "3.1",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.7",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.7",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "2000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery -1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Extra Helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Waiting Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "REFRIGERATED_UV_1",
+                    "description": "Frozen Truck Engkel Box 2 (Ton) Intracity",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "FROZEN_VEHICLE",
+                    "description": "Frozen truck",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "FUSO_BAK",
+            "description": "Ideal for your bulky and heavy item",
+            "dimensions": {
+                "length": {
+                    "value": "5.7",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "2.5",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "8000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "How much extra time is needed? · Up to 1 hr",
+                    "parent_type": "How much extra time is needed?",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_120MIN",
+                    "description": "How much extra time is needed? · Up to 2 hr",
+                    "parent_type": "How much extra time is needed?",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Loading Time > 120 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Extra Helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "FUSO_BOX",
+            "description": "Ideal for your bulky and heavy item",
+            "dimensions": {
+                "length": {
+                    "value": "5.7",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "2.5",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "2.5",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "8000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "How much extra time is needed? · Up to 1 hr",
+                    "parent_type": "How much extra time is needed?",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_120MIN",
+                    "description": "How much extra time is needed? · Up to 2 hr",
+                    "parent_type": "How much extra time is needed?",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Loading Time > 120 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Extra Helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "LALANOW",
+            "description": "Ideal for large and bulky goods, such as moving house",
+            "dimensions": {
+                "length": {
+                    "value": "3.1",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.7",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.7",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "2000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "HELPER",
+                    "description": "Tell your driver how many helpers you need · Extra Helper",
+                    "parent_type": "Tell your driver how many helpers you need",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_03",
+                    "description": "Toll fee · Toll to Bandung",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_02",
+                    "description": "Toll fee · Toll to Surabaya",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_05",
+                    "description": "Toll fee · Toll to Malang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_04",
+                    "description": "Toll fee · Toll to Cirebon",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_07",
+                    "description": "Toll fee · Toll to Semarang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_06",
+                    "description": "Toll fee · Toll to Yogyakarta",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_4",
+                    "description": "Toll to Semarang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_1",
+                    "description": "Toll to Surabaya",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll to Bandung",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "REFRIGERATED_UV_1",
+                    "description": "Frozen Truck Engkel Box 2 (Ton) Intercity",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "FROZEN_VEHICLE",
+                    "description": "Frozen truck",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_3",
+                    "description": "Toll to Malang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_5",
+                    "description": "Toll to Yogyakarta",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_2",
+                    "description": "Toll to Cirebon",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "MOTORCYCLE",
+            "description": "Express door-to-door delivery on small goods",
+            "dimensions": {
+                "length": {
+                    "value": "0.4",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "0.4",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "0.5",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "20",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Waiting Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "THERMAL_BAG_1",
+                    "description": "Thermal bag",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "MPV",
+            "description": "Ideal for multi-items delivery on delicate goods",
+            "dimensions": {
+                "length": {
+                    "value": "1.7",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "0.8",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "200",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Waiting Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery -1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "PICK_UP_TRUCK",
+            "description": "Ideal for bigger sized goods (bike, building materials, etc)",
+            "dimensions": {
+                "length": {
+                    "value": "2",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.6",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "800",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "HELPER",
+                    "description": "Tell your driver how many helpers you need · Extra Helper",
+                    "parent_type": "Tell your driver how many helpers you need",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_03",
+                    "description": "Toll fee · Toll to Bandung",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_02",
+                    "description": "Toll fee · Toll to Surabaya",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_05",
+                    "description": "Toll fee · Toll to Malang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_04",
+                    "description": "Toll fee · Toll to Cirebon",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_07",
+                    "description": "Toll fee · Toll to Semarang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_06",
+                    "description": "Toll fee · Toll to Yogyakarta",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_5",
+                    "description": "Toll to Yogyakarta",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_3",
+                    "description": "Toll to Malang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_4",
+                    "description": "Toll to Semarang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_2",
+                    "description": "Toll to Cirebon",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_1",
+                    "description": "Toll to Surabaya",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll to Bandung",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "SEDAN",
+            "description": "Ideal for small to medium item size and fragile goods",
+            "dimensions": {
+                "length": {
+                    "value": "1.5",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "0.8",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "0.8",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "100",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery 1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "TRUCK175",
+            "description": "Ideal for special size goods delivery including building mat",
+            "dimensions": {
+                "length": {
+                    "value": "2",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.6",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "800",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery -1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Extra Helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Waiting Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "TRUCK330",
+            "description": "Ideal for big delicate item delivery including home applianc",
+            "dimensions": {
+                "length": {
+                    "value": "2.4",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.6",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "1000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery -1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Waiting Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Extra Helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "FROZEN_VEHICLE",
+                    "description": "Frozen truck",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "REFRIGERATED_UV_1",
+                    "description": "Frozen Truck Pickup Box 1 (Ton) Intracity",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "TRUCK550",
+            "description": "Ideal for large goods with special handling & mover",
+            "dimensions": {
+                "length": {
+                    "value": "2.4",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.6",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "1000",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "HELPER",
+                    "description": "Tell your driver how many helpers you need · Extra Helper",
+                    "parent_type": "Tell your driver how many helpers you need",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_03",
+                    "description": "Toll fee · Toll to Bandung",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_02",
+                    "description": "Toll fee · Toll to Surabaya",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_05",
+                    "description": "Toll fee · Toll to Malang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_04",
+                    "description": "Toll fee · Toll to Cirebon",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_07",
+                    "description": "Toll fee · Toll to Semarang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_06",
+                    "description": "Toll fee · Toll to Yogyakarta",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_1",
+                    "description": "Toll to Surabaya",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "FROZEN_VEHICLE",
+                    "description": "Frozen truck",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "REFRIGERATED_UV_1",
+                    "description": "Frozen Truck Pickup Box 1 (Ton) Intercity",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll to Bandung",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_5",
+                    "description": "Toll to Yogyakarta",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_4",
+                    "description": "Toll to Semarang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_2",
+                    "description": "Toll to Cirebon",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_3",
+                    "description": "Toll to Malang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "VAN",
+            "description": "Ideal for bulk-items delivery on delicate goods including fu",
+            "dimensions": {
+                "length": {
+                    "value": "2.1",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.5",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "600",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_2",
+                    "description": "Waiting Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR_1DRIVER",
+                    "description": "Door-to-door (pickup & drop off by driver)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Extra Helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE",
+                    "description": "Toll fee",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "DOOR_TO_DOOR",
+                    "description": "Door to Door Delivery -1-2 stops",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        },
+        {
+            "key": "VAN1000",
+            "description": "Ideal for medium sized bulk hampers, furnitures, eletronics",
+            "dimensions": {
+                "length": {
+                    "value": "2.1",
+                    "unit": "m"
+                },
+                "width": {
+                    "value": "1.5",
+                    "unit": "m"
+                },
+                "height": {
+                    "value": "1.2",
+                    "unit": "m"
+                }
+            },
+            "load": {
+                "value": "600",
+                "unit": "kg"
+            },
+            "specialRequests": [
+                {
+                    "name": "TOLL_FEE_03",
+                    "description": "Toll fee · Toll to Bandung",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_02",
+                    "description": "Toll fee · Toll to Surabaya",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_04",
+                    "description": "Toll fee · Toll to Cirebon",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_07",
+                    "description": "Toll fee · Toll to Semarang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_06",
+                    "description": "Toll fee · Toll to Yogyakarta",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_05",
+                    "description": "Toll fee · Toll to Malang",
+                    "parent_type": "Toll fee",
+                    "max_selection": 6,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "HELPER",
+                    "description": "Tell your driver how many helpers you need · Extra Helper",
+                    "parent_type": "Tell your driver how many helpers you need",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_3",
+                    "description": "Toll to Malang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_1",
+                    "description": "Toll to Surabaya",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_2",
+                    "description": "Toll to Cirebon",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_060MIN",
+                    "description": "Extra waiting time (up to 1 hr)",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_5",
+                    "description": "Toll to Yogyakarta",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "WAITING_TIME_1",
+                    "description": "Loading Time > 60 Minutes",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "LOADING_1HELPER",
+                    "description": "Loading & unloading by a helper",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "ROUND_TRIP",
+                    "description": "Round trip",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL",
+                    "description": "Toll to Bandung",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                },
+                {
+                    "name": "TOLL_FEE_4",
+                    "description": "Toll to Semarang",
+                    "max_selection": 1,
+                    "effective_time": "",
+                    "offline_time": ""
+                }
+            ],
+            "deliveryItemSpecification": {}
+        }
+    ]
+}

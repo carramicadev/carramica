@@ -1,0 +1,62 @@
+/* src/GiftCardTable.css */
+/* .container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+} */
+
+.gift-card-table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 755px;
+    height: 30px;
+    font-size: 12px;
+    margin-top: 30px;
+    margin-left: 10px;
+    /* margin-right: 5px; */
+}
+
+.gift-card-table td {
+    /* border: 1px solid black; */
+    padding: 20px;
+    vertical-align: top;
+}
+
+.left-section {
+    width: 60%;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+    border-left: 2px solid black;
+}
+
+.right-section {
+    width: 40%;
+    border-left: 5px dashed black;
+    padding-left: 20px;
+    border-right: 2px solid black;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+}
+
+.logos {
+    margin-top: -40px;
+}
+
+.logos img {
+    height: 120px;
+    margin-right: 10px;
+}
+
+.logoKurir img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.page-break {
+    page-break-before: always;
+    /* Forces a page break before this element */
+    height: 0;
+    /* Makes sure the element doesn't take up any space */
+    margin: 0;
+    border: none;
+}

@@ -1,0 +1,70 @@
+{
+  "name": "carramica",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@react-google-maps/api": "^2.19.3",
+    "@react-pdf/renderer": "^3.4.4",
+    "@react-query-firebase/auth": "^1.0.0-dev.2",
+    "@react-query-firebase/database": "^1.0.0-dev.2",
+    "@react-query-firebase/firestore": "^1.0.0-dev.7",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.3",
+    "date-fns": "^3.6.0",
+    "firebase": "^10.12.4",
+    "html2pdf.js": "^0.10.2",
+    "notistack": "^3.0.1",
+    "numeral": "^2.0.6",
+    "react": "^18.3.1",
+    "react-autocomplete": "^1.8.1",
+    "react-bootstrap": "^2.10.4",
+    "react-bootstrap-icons": "^1.11.4",
+    "react-bootstrap-typeahead": "^6.3.2",
+    "react-chartjs-2": "^5.2.0",
+    "react-csv": "^2.2.2",
+    "react-custom-scrollbars-2": "^4.5.0",
+    "react-datepicker": "^7.3.0",
+    "react-dom": "^18.3.1",
+    "react-modal": "^3.16.1",
+    "react-phone-input-2": "^2.15.1",
+    "react-query": "^3.39.3",
+    "react-router-dom": "^6.25.1",
+    "react-scripts": "5.0.1",
+    "react-scrollbars-custom": "^4.1.1",
+    "react-to-pdf": "^1.0.1",
+    "styled-components": "^6.1.12",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build:production": "env-cmd -f .env.production react-scripts build",
+    "start:production": "env-cmd -f .env.production react-scripts start"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "env-cmd": "^10.1.0"
+  }
+}
