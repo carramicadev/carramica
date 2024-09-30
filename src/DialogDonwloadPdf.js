@@ -132,7 +132,7 @@ function MyDoc({ item }) {
                                         <Text style={styles.text}>{data?.receiverName}</Text>
                                         <Text style={styles.text}>{data?.receiverPhone}</Text>
                                         <Text style={styles.text}>
-                                            {data?.address}                                    </Text>
+                                            {data?.original?.address}                                    </Text>
                                     </View>
                                 </View>
                                 <View style={styles.subItem}>
@@ -186,7 +186,7 @@ function MyDoc({ item }) {
                                         <Text style={styles.text}>{data?.receiverName}</Text>
                                         <Text style={styles.text}>{data?.receiverPhone}</Text>
                                         <Text style={styles.text}>
-                                            {data?.address}
+                                            {data?.original?.address}
                                         </Text>
                                     </View>
                                 </View>
@@ -315,7 +315,7 @@ export default function DownloadPdfDialog(props) {
                                             <tbody>
                                                 <tr>
                                                     <td className="left-section">
-                                                        <p><strong>To:</strong><br />{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.address}</p>
+                                                        <p><strong>To:</strong><br />{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
                                                         <p><strong>From:</strong><br />{data?.senderName}<br />{data?.senderPhone}</p>
 
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -339,7 +339,7 @@ export default function DownloadPdfDialog(props) {
                                                     </td>
                                                     <td className="right-section">
                                                         <p><strong>Gift Card:</strong><br />{data?.giftCard}</p>
-                                                        <p><strong>To:</strong>{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.address}</p>
+                                                        <p><strong>To:</strong>{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
                                                         <p><strong>From:</strong><br />{data?.senderName}<br /></p>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '50px' }}>
                                                             <p>Paid at: {data?.paidAt}</p>

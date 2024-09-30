@@ -9,7 +9,6 @@ import { httpsCallable } from "firebase/functions";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-phone-input-2/lib/style.css';
 // import 'react-bootstrap-typeahead/css/Typeahead.css';
-// import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import dataServiceLalamove from './kecamatan.json';
 import Autocomplete from 'react-autocomplete';
 import { firestore, functions } from './FirebaseFrovider';
