@@ -49,7 +49,8 @@ const OrderList = () => {
 
   const [modalDownload, setModalDownload] = useState({
     open: false,
-    data: []
+    data: [],
+    userId: currentUser?.uid,
   });
   const [invoiceDialog, setInvoiceDialog] = useState({
     open: false,
@@ -525,7 +526,7 @@ Thank you :)`
     },
     { label: "Resi Update", key: (item) => item.resiUpdate ? formatDate(item?.resiUpdate?.toDate()) : '', style: {} },
     { label: "Resi Crated By", key: (item) => item.resiCreatedBy, style: {} },
-    { label: "Download ", key: (item, i) => <button style={item.isDownloaded ? { backgroundColor: 'lightgray', padding: '5px' } : item?.paymentStatus === 'settlement' ? { padding: '5px' } : { backgroundColor: 'red', padding: '5px' }} disabled={item?.isDownloaded || item?.paymentStatus !== 'settlement'} onClick={() => setModalDownload({ open: true, data: [item], index: i, userId: currentUser?.uid })} className="button button-primary">{item.isDownloaded ? 'Downloaded' : 'Download'}</button>, style: {} },
+    { label: "Download ", key: (item, i) => <button style={item.isDownloaded ? { backgroundColor: 'lightgray', padding: '5px' } : item?.paymentStatus === 'settlement' ? { padding: '5px' } : { backgroundColor: 'red', padding: '5px' }} disabled={item?.isDownloaded || item?.paymentStatus !== 'settlement'} onClick={() => setModalDownload({ userId: currentUser?.uid, open: true, data: [item], index: i, userId: currentUser?.uid })} className="button button-primary">{item.isDownloaded ? 'Downloaded' : 'Download'}</button>, style: {} },
     { label: "Downloaded By", key: (item) => item.downloadedBy, style: {} },
     { label: "Ceated By", key: (item) => item?.sales, style: {} },
 
@@ -730,7 +731,7 @@ Thank you :)`
           <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={mapData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
             <CloudArrowDown /> Export As CSV
           </CSVLink>
-          <button onClick={() => setModalDownload({ open: true, data: filterForDownloadAll, })} className="button button-primary">Download</button>
+          <button onClick={() => setModalDownload({ userId: currentUser?.uid, open: true, data: filterForDownloadAll, })} className="button button-primary">Download</button>
         </div>
       </div>
       <div >
@@ -861,7 +862,7 @@ Thank you :)`
       <DownloadPdfDialog
         setUpdate={setUpdate}
         show={modalDownload}
-        onHide={() => setModalDownload({ open: false, data: [], index: '' })}
+        onHide={() => setModalDownload({ userId: currentUser?.uid, open: false, data: [], index: '' })}
       // handlePayment={handlePayment}
       // loading={loading}
       />
