@@ -229,7 +229,7 @@ function MyDoc({ item }) {
 export default function DownloadPdfDialog(props) {
     const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
     const item = props?.show?.data;
-
+    // console.log(props?.show?.userId)
 
     const downloadPdf = async () => {
         try {

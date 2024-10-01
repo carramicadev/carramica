@@ -92,7 +92,7 @@ export default function DownloadInvoiceDialog(props) {
     // Combine into the desired format
     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-    console.log(formattedDate);
+    // console.log(formattedDate);
 
     return (
         <div
