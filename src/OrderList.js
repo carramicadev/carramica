@@ -288,7 +288,8 @@ const OrderList = () => {
         ordId: ord?.ordId,
         sales: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
         resiCreatedBy: `${resiCreatedBy?.firstName || ''} ${resiCreatedBy?.lastName || ''}`,
-        downloadedBy: `${downloadedBy?.firstName || ''} ${downloadedBy?.lastName || ''}`
+        downloadedBy: `${downloadedBy?.firstName || ''} ${downloadedBy?.lastName || ''}`,
+        hargaAfterDiscProd: allGross
 
       })
 
@@ -304,7 +305,8 @@ const OrderList = () => {
 
   );
 
-  const arrayHarga = allOrders.map((data) => data.totalHargaProduk)
+  const paidOrd = allOrders?.filter(ord => ord?.paymentStatus === 'settlement')
+  const arrayHarga = paidOrd.map((data) => data.totalHargaProduk)
   const totalOmset = arrayHarga?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang
   }, 0);
@@ -728,7 +730,7 @@ Thank you :)`
           </div>
         </div>
         <div style={{}}>
-          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={mapData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
+          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedData : mapData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
             <CloudArrowDown /> Export As CSV
           </CSVLink>
           <button onClick={() => setModalDownload({ userId: currentUser?.uid, open: true, data: filterForDownloadAll, })} className="button button-primary">Download</button>

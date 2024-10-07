@@ -155,7 +155,7 @@ export default function DialogAddUsers({ show, handleClose, setUpdate }) {
             keyboard={false}
         >
                 <Modal.Header closeButton>
-                    <Modal.Title>Tambah Sales/Users</Modal.Title>
+                    <Modal.Title>Add Sales/Users</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{
                     overFlowY: 'auto',
@@ -274,7 +274,7 @@ export default function DialogAddUsers({ show, handleClose, setUpdate }) {
                     {/* <Button variant="secondary" >
                         Close
                     </Button> */}
-                    <button disabled={loading} onClick={handleAdd} className="button button-primary" >Tambahkan</button>
+                    <button disabled={loading} onClick={handleAdd} className="button button-primary" >Add</button>
 
                     {/* <button className="button button-primary" >Understood</button> */}
                 </Modal.Footer>

@@ -247,7 +247,7 @@ const Settings = (props) => {
                       <div className="table-responsive">
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                           <div style={{ display: 'flex' }}>
-                            <button style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none', marginLeft: '10px' }} className="btn btn-primary" onClick={() => setOpenAddDialog(true)}>+Tambah Sales</button>
+                            <button style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none', marginLeft: '10px' }} className="btn btn-primary" onClick={() => setOpenAddDialog(true)}>+Add Sales</button>
                           </div>
                         </div>
                         <table className="table table-bordered">

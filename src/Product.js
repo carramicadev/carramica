@@ -144,7 +144,7 @@ const Product = () => {
     <div className="container">
 
       <Header />
-      <h1 className="page-title">Produk</h1>
+      <h1 className="page-title">Product</h1>
       <div className="form-container">
         <div className="form-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
@@ -168,7 +168,7 @@ const Product = () => {
                   <TrashFill /> Delete
                 </button>
               }
-              <button onClick={() => setDialogAdd({ open: true, data: selectedData, mode: 'add' })} style={{ backgroundColor: '#998970' }} className="button button-primary">+Tambah Produk</button>
+              <button onClick={() => setDialogAdd({ open: true, data: selectedData, mode: 'add' })} style={{ backgroundColor: '#998970' }} className="button button-primary">+Add Product</button>
             </div>
           </div>
           {
