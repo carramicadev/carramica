@@ -41,7 +41,7 @@ export default function DialogAddContact(props) {
     const handleAdd = async () => {
         try {
             if (props?.show?.mode === 'edit') {
-                await setDoc(doc(firestore, "contact", props?.show?.item?.phone), { ...formData, createdAt: serverTimestamp() });
+                await setDoc(doc(firestore, "contact", props?.show?.item?.phone), { ...formData, updatedAt: serverTimestamp() });
                 // console.log("Document written with ID: ",);
                 enqueueSnackbar(`sukses mengedit contact ${formData?.nama}`, { variant: 'success' })
 
