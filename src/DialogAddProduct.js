@@ -46,7 +46,7 @@ export default function DialogAddProduct(props) {
     const handleAdd = async () => {
         try {
             if (props?.show?.mode === 'edit') {
-                await setDoc(doc(firestore, "product", props?.show?.item?.id), { ...formData, createdAt: serverTimestamp() });
+                await setDoc(doc(firestore, "product", props?.show?.item?.id), { ...formData, updatedAt: serverTimestamp() });
                 // console.log("Document written with ID: ",);
                 enqueueSnackbar(`sukses mengedit product ${formData?.nama}`, { variant: 'success' })
 

@@ -1,5 +1,5 @@
 import { useFirestoreQueryData } from '@react-query-firebase/firestore';
-import { collection, deleteDoc, doc, endBefore, getDocs, limit, limitToLast, orderBy, query, startAfter } from 'firebase/firestore';
+import { collection, deleteDoc, doc, endBefore, getDocs, limit, limitToLast, onSnapshot, orderBy, query, startAfter } from 'firebase/firestore';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Table } from 'react-bootstrap';
@@ -24,56 +24,56 @@ const Product = () => {
   // query coll product
   useEffect(() => {
     if (page === 1) {
-      const fetchData = async () => {
-        const getDoc = query(collection(firestore, "product"), orderBy("createdAt", "desc"), limit(20));
-        const documentSnapshots = await getDocs(getDoc);
-        var items = [];
-
-        documentSnapshots.forEach((doc) => {
-          items.push({ id: doc.id, ...doc.data() });
-          // doc.data() is never undefined for query doc snapshots
-        });
-        // console.log('first item ', items[0])
-        setAllProduct(items);
-      };
-      fetchData();
+      // const fetchData = async () => {
+      const getDoc = query(collection(firestore, "product"), orderBy("createdAt", "desc"), limit(20));
+      // const documentSnapshots = await getDocs(getDoc);
+      const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+        const updatedData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAllProduct(updatedData); // Update the state with the new data
+      });
+      return () => unsubscribe();
+      // };
+      // fetchData();
     }
   }, [update]);
   const showNext = ({ item }) => {
     if (allProduct.length === 0) {
       alert("Thats all we have for now !")
     } else {
-      const fetchNextData = async () => {
-        const getDoc = query(collection(firestore, "product"), orderBy("createdAt", "desc"), startAfter(item.createdAt), limit(20));
-        const documentSnapshots = await getDocs(getDoc);
-        var items = [];
-
-        documentSnapshots.forEach((doc) => {
-          items.push({ id: doc.id, ...doc.data() });
-          // doc.data() is never undefined for query doc snapshots
-        });
-        setAllProduct(items);
-        setPage(page + 1)
-      };
-      fetchNextData();
+      // const fetchNextData = async () => {
+      const getDoc = query(collection(firestore, "product"), orderBy("createdAt", "desc"), startAfter(item.createdAt), limit(20));
+      const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+        const updatedData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAllProduct(updatedData); // Update the state with the new data
+      });
+      setPage(page + 1)
+      return () => unsubscribe();
+      // };
+      // fetchNextData();
     }
   };
 
   const showPrevious = ({ item }) => {
-    const fetchPreviousData = async () => {
-      const getDoc = query(collection(firestore, "product"), orderBy("createdAt", "desc"), endBefore(item.createdAt), limitToLast(20));
-      const documentSnapshots = await getDocs(getDoc);
-      var items = [];
-
-      documentSnapshots.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() });
-        // doc.data() is never undefined for query doc snapshots
-      });
-      setAllProduct(items);
-      setPage(page - 1)
-    };
-    fetchPreviousData();
+    // const fetchPreviousData = async () => {
+    const getDoc = query(collection(firestore, "product"), orderBy("createdAt", "desc"), endBefore(item.createdAt), limitToLast(20));
+    const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+      const updatedData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAllProduct(updatedData); // Update the state with the new data
+    });
+    setPage(page - 1)
+    return () => unsubscribe();
   };
+  //   fetchPreviousData();
+  // };
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setPage(1)
