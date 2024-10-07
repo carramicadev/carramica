@@ -89,7 +89,7 @@ export default function DialogAddContact(props) {
             keyboard={false}
         >
                 <Modal.Header closeButton>
-                    <Modal.Title>Tambah Produk</Modal.Title>
+                    <Modal.Title>{props?.show?.mode === 'edit' ? 'Update Contact' : 'Add Contact'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{
                     overFlowY: 'auto',
@@ -98,7 +98,7 @@ export default function DialogAddContact(props) {
                 }}><div>
 
                         <div className="form-group">
-                            <label className="label">Nama </label>
+                            <label className="label">Name </label>
                             <input className="input" type="text" name="nama" placeholder="Serah" value={formData.nama} onChange={handleFormChange} />
                         </div>
 
@@ -119,7 +119,7 @@ export default function DialogAddContact(props) {
                     {/* <Button variant="secondary" >
                         Close
                     </Button> */}
-                    <button onClick={handleAdd} className="button button-primary" >Tambahkan</button>
+                    <button onClick={handleAdd} className="button button-primary" >{props?.show?.mode === 'edit' ? 'Update' : 'Add'}</button>
 
                     {/* <button className="button button-primary" >Understood</button> */}
                 </Modal.Footer>

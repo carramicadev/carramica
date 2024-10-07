@@ -92,7 +92,7 @@ export default function DownloadInvoiceDialog(props) {
     // Combine into the desired format
     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-    // console.log(formattedDate);
+    // console.log(item);
 
     return (
         <div
@@ -219,7 +219,7 @@ export default function DownloadInvoiceDialog(props) {
                                             </div>
                                             <div>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(findOrder?.totalHargaProduk)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd)}
                                                 </p>
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(findOrder?.totalOngkir)}
@@ -228,13 +228,13 @@ export default function DownloadInvoiceDialog(props) {
                                                     <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(total)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - findOrder?.additionalDiscount)}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(total)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - findOrder?.additionalDiscount)}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(total)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - findOrder?.additionalDiscount)}
                                                 </p>
                                             </div>
                                         </div>

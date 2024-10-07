@@ -94,7 +94,7 @@ export default function DialogAddProduct(props) {
             keyboard={false}
         >
                 <Modal.Header closeButton>
-                    <Modal.Title>Tambah Produk</Modal.Title>
+                    <Modal.Title>{props?.show?.mode === 'edit' ? 'Edit Product' : 'Add Produk'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{
                     overFlowY: 'auto',
@@ -106,43 +106,43 @@ export default function DialogAddProduct(props) {
                             <input className="input" type="text" name="sku" placeholder="P46YUJH" value={formData.sku} onChange={handleFormChange} />
                         </div>
                         <div className="form-group">
-                            <label className="label">Nama Produk</label>
+                            <label className="label">Product Name</label>
                             <input className="input" type="text" name="nama" placeholder="Gelas" value={formData.nama} onChange={handleFormChange} />
                         </div>
 
                         <Row>
                             <Col sm={3}>
                                 <div className="form-group">
-                                    <label className="label">Berat(gr)</label>
+                                    <label className="label">Weight(gr)</label>
                                     <input className="input" type="number" name="weight" placeholder="200" value={formData.weight} onChange={handleFormChange} />
                                 </div>
                             </Col>
                             <Col sm={3}>
                                 <div className="form-group">
-                                    <label className="label">Panjang(cm)</label>
+                                    <label className="label">Length(cm)</label>
                                     <input className="input" type="number" name="length" placeholder="30" value={formData.length} onChange={handleFormChange} />
                                 </div>
                             </Col>
                             <Col sm={3}>
                                 <div className="form-group">
-                                    <label className="label">Lebar(cm)</label>
+                                    <label className="label">Width(cm)</label>
                                     <input className="input" type="number" name="width" placeholder="10" value={formData.width} onChange={handleFormChange} />
                                 </div>
                             </Col>
                             <Col sm={3}>
                                 <div className="form-group">
-                                    <label className="label">Tinggi(cm)</label>
+                                    <label className="label">Height(cm)</label>
                                     <input className="input" type="number" name="height" placeholder="20" value={formData.height} onChange={handleFormChange} />
                                 </div>
                             </Col>
 
                         </Row>
                         <div className="form-group">
-                            <label className="label">Harga</label>
+                            <label className="label">Price</label>
                             <input className="input" type="number" name="harga" placeholder="10000" value={formData.harga} onChange={handleFormChange} />
                         </div>
                         <div className="form-group">
-                            <label className="label">Stok</label>
+                            <label className="label">Stock</label>
                             <input className="input" type="number" name="stok" placeholder="100" value={formData.stok} onChange={handleFormChange} />
                         </div>
                     </div>
@@ -153,7 +153,7 @@ export default function DialogAddProduct(props) {
                     {/* <Button variant="secondary" >
                         Close
                     </Button> */}
-                    <button onClick={handleAdd} className="button button-primary" >Tambahkan</button>
+                    <button onClick={handleAdd} className="button button-primary" >{props?.show?.mode === 'edit' ? 'Update' : 'Add'}</button>
 
                     {/* <button className="button button-primary" >Understood</button> */}
                 </Modal.Footer>

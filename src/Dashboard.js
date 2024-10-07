@@ -109,9 +109,12 @@ const Dashboard = ({ profile }) => {
 
 
   const ordersFilterd = allOrders.filter((all) => {
-    return all?.totalHargaProduk && all?.totalHargaProduk
-  })
-  const arrayTotal = ordersFilterd.map((all) => all?.totalHargaProduk)
+    return all?.totalHargaProduk && all?.totalHargaProduk && all?.paymentStatus === 'settlement'
+  });
+  const orderSettlement = ordersFilterd?.filter?.((ord) => ord.paymentStatus === 'settlement');
+  const orderPending = ordersFilterd?.filter?.((ord) => ord.paymentStatus === 'pending');
+
+  const arrayTotal = orderSettlement.map((all) => all?.totalHargaProduk)
   // console.log(arrayTotal?.reduce((val, nilaiSekarang) => {
   //   return val + nilaiSekarang
   // }, 0));
@@ -119,7 +122,7 @@ const Dashboard = ({ profile }) => {
     return val + nilaiSekarang
   }, 0)
 
-  const groupedData = Object?.values?.(allOrders?.reduce?.((acc, item) => {
+  const groupedData = Object?.values?.(orderSettlement?.reduce?.((acc, item) => {
     if (!acc[item.userId]) {
       acc[item.userId] = { userId: item.userId, items: [] };
     }
@@ -143,8 +146,6 @@ const Dashboard = ({ profile }) => {
     }
   })
 
-  const orderSettlement = ordersFilterd?.filter?.((ord) => ord.paymentStatus === 'settlement');
-  const orderPending = ordersFilterd?.filter?.((ord) => ord.paymentStatus === 'pending');
 
   // let grouped = []
   // const grupingOrders = Object.values(groupedData)?.map?.((all) => {
@@ -268,7 +269,7 @@ const Dashboard = ({ profile }) => {
             </Row></>
         }
         <div>
-          <h1 className="page-title">List Seler</h1>
+          <h1 className="page-title">Seles</h1>
         </div>
         <Row>
           {

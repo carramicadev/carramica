@@ -319,7 +319,7 @@ const Contact = () => {
           <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={allContacts} separator={";"} filename={"contact.csv"} className="btn btn-outline-secondary">
             <CloudArrowDown /> Export As CSV
           </CSVLink>
-          <button onClick={() => setDialogAdd({ open: true, data: {}, mode: 'add' })} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none', marginLeft: '10px' }} className="btn btn-primary">+Tambah Kontak</button>
+          <button onClick={() => setDialogAdd({ open: true, data: {}, mode: 'add' })} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none', marginLeft: '10px' }} className="btn btn-primary">+Add Contact</button>
         </div>
       </div>
       <div className="table-responsive">
