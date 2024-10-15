@@ -110,7 +110,7 @@ const AddOrder = () => {
     ongkir: 0,
     giftCard: '',
     kurirProduk: '',
-    products: [{ nama: '', quantity: 1, price: '', discount: '', amount: '' }]
+    products: [{ nama: '', quantity: 1, price: '', discount: '', amount: '', discount_type: 'Rp' }]
   };
 
   useEffect(() => {
@@ -1198,14 +1198,9 @@ const AddOrder = () => {
                         <Form.Label className="label">Price</Form.Label>
                         <Form.Control className="input" type="text" name="price" placeholder="Price" disabled value={currency(product.price)} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
                       </div>
-
                       <div className="form-group" style={{ marginRight: '-5px' }}>
-                        <Form.Label className="label">Discount</Form.Label>
-                        <Form.Control style={{ borderTopRightRadius: '0px', borderBottomRightRadius: '0px' }} onWheel={(e) => e.target.blur()} className="input" type="number" name="discount" placeholder="Discount" value={product.discount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
-                      </div>
-                      <div className="form-group" style={{ marginLeft: '-5px' }}>
                         <Form.Label className="label" style={{ whiteSpace: 'nowrap', width: '90px', }}>Type </Form.Label>
-                        <Form.Select style={{ borderTopLeftRadius: '0px', borderBottomLeftRadius: '0px' }} className="select" name="discount_type" value={product?.discount_type} onChange={(e) => {
+                        <Form.Select style={{ borderTopRightRadius: '0px', borderBottomRightRadius: '0px' }} className="select" name="discount_type" value={product?.discount_type} onChange={(e) => {
                           handleChange(e, orderIndex, productIndex)
                         }}>
                           <option selected hidden >Type</option>
@@ -1216,6 +1211,11 @@ const AddOrder = () => {
                           }
                         </Form.Select>
                       </div>
+                      <div className="form-group" style={{ marginLeft: '-5px' }}>
+                        <Form.Label className="label">Discount</Form.Label>
+                        <Form.Control style={{ borderTopLeftRadius: '0px', borderBottomLeftRadius: '0px' }} onWheel={(e) => e.target.blur()} className="input" type="number" name="discount" placeholder="Discount" value={product.discount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                      </div>
+
                       <div className="form-group">
                         <Form.Label className="label">Amount</Form.Label>
                         <Form.Control className="input" type="text" name="amount" placeholder="Amount" disabled value={currency(product.amount)} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
