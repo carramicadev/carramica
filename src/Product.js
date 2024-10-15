@@ -3,7 +3,8 @@ import { collection, deleteDoc, doc, endBefore, getDocs, limit, limitToLast, onS
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Table } from 'react-bootstrap';
-import { PencilSquare, TrashFill } from 'react-bootstrap-icons';
+import { PencilSquare, Search, TrashFill } from 'react-bootstrap-icons';
+import { Typeahead } from 'react-bootstrap-typeahead';
 import DialogAddProduct from './DialogAddProduct';
 import { firestore } from './FirebaseFrovider';
 import Header from './Header';
@@ -11,7 +12,7 @@ import Header from './Header';
 const Product = () => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [dialogAdd, setDialogAdd] = useState({
     open: false,
@@ -93,19 +94,11 @@ const Product = () => {
   };
   //   fetchPreviousData();
   // };
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setPage(1)
-  };
-  const filteredData = searchTerm !== '' ? allOfProduct?.filter?.(
-    item =>
-      item.nama?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
-      item.sku?.toLowerCase?.().includes?.(searchTerm.toLowerCase())
-  ) : allProduct?.filter?.(
-    item =>
-      item.nama?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
-      item.sku?.toLowerCase?.().includes?.(searchTerm.toLowerCase())
-  );
+  // const handleSearch = (e) => {
+  //   setSearchTerm(e.target.value);
+  //   setPage(1)
+  // };
+  const filteredData = search.length > 0 ? search : allProduct;
   // console.log(filteredData)
   // checkbox
   const handleSelectAll = (e) => {
@@ -171,15 +164,18 @@ const Product = () => {
       <div className="form-container">
         <div className="form-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <div>
-              <input
-                className="input"
-                style={{ width: '300px', borderRadius: '5px', padding: '8px ' }}
-                type="text"
-                placeholder="Search by name or sku"
-                value={searchTerm}
-                onChange={handleSearch}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', }}>
+              <Typeahead
+                id="basic-typeahead"
+                labelKey="nama"
+                onChange={setSearch}
+                options={allProduct}
+                placeholder="Search Products..."
+                selected={search}
+                // className="w-50"
+                style={{ marginRight: '10px' }}
               />
+              <Search size={25} />
             </div>
             <div>
               {/* <CSVLink style={{ width: '120px', marginRight: '10px' }} data={mapData} separator={";"} filename={"table_data.csv"} className="btn btn-primary">
