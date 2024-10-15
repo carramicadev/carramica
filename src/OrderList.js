@@ -20,6 +20,7 @@ import {
   setDoc,
   Timestamp,
   where,
+  deleteDoc,
   // limit,
   // QuerySnapshot,
   // DocumentData,
@@ -27,7 +28,7 @@ import {
 import { firestore, functions } from './FirebaseFrovider';
 import DownloadPdfDialog from './DialogDonwloadPdf';
 import formatDate, { currency } from './formatter';
-import { BoxFill, CloudArrowDown, Filter, FilterSquare, GraphUp, PencilSquare, PeopleFill, Whatsapp, XCircleFill } from 'react-bootstrap-icons';
+import { BoxFill, CloudArrowDown, Filter, FilterSquare, GraphUp, PencilSquare, PeopleFill, TrashFill, Whatsapp, XCircleFill } from 'react-bootstrap-icons';
 import DatePicker from 'react-datepicker';
 import { set } from 'date-fns';
 import { FilterDialog } from './FilterOrdersDialog';
@@ -497,9 +498,29 @@ Thank you :)`
 
     }
   }
+
+  // delete
+  const handleDeleteClick = async (id) => {
+    if (window.confirm(' apakah anda yakin ingin menghapus product ini?')) {
+      try {
+        const docRef = doc(firestore, 'orders', id);
+        await deleteDoc(docRef);
+        setUpdate((prevValue) => !prevValue)
+        enqueueSnackbar(`Order berhasil dihapus!.`, { variant: 'success' })
+      } catch (e) {
+        enqueueSnackbar(`Order gagal dihapus!.`, { variant: 'error' })
+
+        console.log(e.message)
+      }
+    } else {
+
+    }
+
+    // setData(data.filter((row) => row.id !== id));
+  };
   // header 
   // console.log(edit)
-  const column = [
+  const [column, setColumn] = useState([
     {
       label: 'Invoice Id', key: (item, i, idOrder) => idOrder === 0 && <a href='#'
         // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }} 
@@ -558,9 +579,14 @@ Thank you :)`
     { label: "Download ", key: (item, i) => <button style={item.isDownloaded ? { backgroundColor: 'lightgray', padding: '5px' } : item?.paymentStatus === 'settlement' ? { padding: '5px' } : { backgroundColor: 'red', padding: '5px' }} disabled={item?.isDownloaded || item?.paymentStatus !== 'settlement'} onClick={() => setModalDownload({ userId: currentUser?.uid, open: true, data: [item], index: i, userId: currentUser?.uid })} className="button button-primary">{item.isDownloaded ? 'Downloaded' : 'Download'}</button>, style: {} },
     { label: "Downloaded By", key: (item) => item.downloadedBy, style: {} },
     { label: "Ceated By", key: (item) => item?.sales, style: {} },
-    { label: "Action", key: (item) => <button style={{ backgroundColor: '#998970' }} onClick={() => setEditDialog({ open: true, data: item })} className="button button-primary"><PencilSquare /></button>, style: {} },
 
-  ];
+
+  ]);
+  const newColumn = {
+    label: "Action", key: (item) => <><button style={{ backgroundColor: '#998970' }} onClick={() => setEditDialog({ open: true, data: item })} className="button button-primary"><PencilSquare /></button><button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(item?.id)}>
+      <TrashFill />
+    </button></>, style: {}
+  }
   const [selectColumn, setSelectColumn] = useState(column)
 
   const columnRef = doc(firestore, "settings", "rules", "column", currentUser?.uid);
@@ -927,6 +953,9 @@ Thank you :)`
         setAllOrders={setAllOrders}
         column={column}
         selectColumn={selectColumn}
+        user={user}
+        setColumn={setColumn}
+        newColumn={newColumn}
       />
       <EditOrders
         show={editDialog}

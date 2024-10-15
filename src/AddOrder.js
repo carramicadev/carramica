@@ -388,7 +388,7 @@ const AddOrder = () => {
     const updatedOrders = orders.map((order, i) =>
       i === orderIndex ? {
         ...order,
-        products: [...order.products, { nama: '', quantity: '', price: '', discount: '', amount: '' }]
+        products: [...order.products, { nama: '', quantity: '', price: '', discount: '', amount: '', discount_type: 'Rp' }]
       } : order
     );
     setOrders(updatedOrders);

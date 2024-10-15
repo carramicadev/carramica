@@ -16,7 +16,8 @@ export default function RedirectToWa(props) {
             name: props?.data?.senderName,
             no: props?.data?.senderPhone,
             price: props?.data?.harga.toString(),
-            link: props?.data?.link
+            link: props?.data?.link,
+            type: 'pembayaran'
         });
         await setDoc(doc(firestore, 'orders', props?.show.id), {
             isInvWASent: true
