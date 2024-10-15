@@ -20,8 +20,27 @@ const Product = () => {
   });
   const [page, setPage] = useState(1);
   const [update, setUpdate] = useState(false);
-  const [allProduct, setAllProduct] = useState([])
+  const [allProduct, setAllProduct] = useState([]);
+  const [allOfProduct, setAllOfProduct] = useState([])
+
   // query coll product
+  useEffect(() => {
+    if (page === 1) {
+      // const fetchData = async () => {
+      const getDoc = query(collection(firestore, "product"), orderBy("createdAt", "desc"),);
+      // const documentSnapshots = await getDocs(getDoc);
+      const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+        const updatedData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAllOfProduct(updatedData); // Update the state with the new data
+      });
+      return () => unsubscribe();
+      // };
+      // fetchData();
+    }
+  }, []);
   useEffect(() => {
     if (page === 1) {
       // const fetchData = async () => {
@@ -78,7 +97,11 @@ const Product = () => {
     setSearchTerm(e.target.value);
     setPage(1)
   };
-  const filteredData = allProduct?.filter?.(
+  const filteredData = searchTerm !== '' ? allOfProduct?.filter?.(
+    item =>
+      item.nama?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
+      item.sku?.toLowerCase?.().includes?.(searchTerm.toLowerCase())
+  ) : allProduct?.filter?.(
     item =>
       item.nama?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
       item.sku?.toLowerCase?.().includes?.(searchTerm.toLowerCase())

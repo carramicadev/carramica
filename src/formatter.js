@@ -35,6 +35,7 @@ numeral.register('locale', 'id', {
 numeral.locale('id');
 
 export const currency = (number) => {
+    console.log(number)
     return numeral(number).format('$0,0');
 }
 

@@ -8,6 +8,7 @@ import { httpsCallable } from "firebase/functions";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-phone-input-2/lib/style.css';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
 // import 'react-bootstrap-typeahead/css/Typeahead.css';
 import dataServiceLalamove from './kecamatan.json';
 import Autocomplete from 'react-autocomplete';
@@ -269,15 +270,16 @@ const AddOrder = () => {
 
   const handleChange = async (e, orderIndex, productIndex, prod) => {
     setIndexOrder(orderIndex)
+    console.log(typeof e === 'object', !Array.isArray(e))
 
-    const { name, value } = typeof e === 'object' && e.target;
+    const { name, value } = !Array.isArray(e) && typeof e === 'object' && e.target;
+
     // let selectedObj = {}
     if (name === 'kurirProduk') {
       setKurirService(value)
     }
     // else if (name === 'kurirService') {
     //   selectedObj = listService?.find?.(option => option?.courier_service_code === value);
-
 
     // } 
     else if (name === 'kurir' && value === 'LALAMOVE') {
@@ -293,29 +295,28 @@ const AddOrder = () => {
       setKurirAktif(value)
     }
     if (productIndex !== undefined) {
-      const docRef = name === 'nama' ? doc(firestore, "product", value) : doc(firestore, "product", 'value');
-      const docSnap = await getDoc(docRef);
-      // console.log("Document data:", docSnap?.data());
 
-      if (docSnap.exists()) {
-        // console.log("Document data:", docSnap.data());
-      } else {
-        // docSnap.data() will be undefined in this case
-        console.log("No such document!");
-      }
       const updatedOrders = orders.map((order, i) =>
         i === orderIndex ? {
           ...order,
           products: order.products.map((product, j) => {
             const hargaProd = product?.price;
             let hargaAmountAfterDiscon = parseInt(product?.price) * parseInt(product?.quantity);
-            if (name === 'discount') {
-              // console.log(value)
+            if (typeof e === 'object' && name === 'discount_type' && value === '%' && product?.discount) {
+              console.log('%')
+              hargaAmountAfterDiscon = (1 - (parseInt(product?.discount ? product?.discount : 0) / 100)) * hargaAmountAfterDiscon
 
+            } else if (typeof e === 'object' && name === 'discount_type' && value === 'Rp' && product?.discount) {
+              console.log('Rp')
+              hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(product?.discount ? product?.discount : 0)
+            } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === '%') {
+              hargaAmountAfterDiscon = (1 - (parseInt(value ? value : 0) / 100)) * hargaAmountAfterDiscon
+            } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === 'Rp') {
+              console.log('Rp')
               hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(value ? value : 0)
             }
             // console.log(hargaAmountAfterDiscon)
-            return j === productIndex ? name === 'nama' ? { ...product, [name]: docSnap.data().nama, price: docSnap.data()?.harga, weight: docSnap.data().weight, height: docSnap.data().height, width: docSnap.data().width, length: docSnap.data().length, amount: docSnap.data()?.harga, sku: docSnap.data().sku, id: docSnap.id, stock: docSnap.data()?.stok } : name === 'quantity' ? { ...product, [name]: parseInt(value), amount: hargaProd * parseInt(value) - parseInt(product?.discount ? product.discount : 0) } : { ...product, [name]: parseInt(value), amount: hargaAmountAfterDiscon } : product
+            return j === productIndex ? Array.isArray(e) ? { ...product, prod: e, nama: e?.[0]?.nama, price: e?.[0]?.harga, weight: e?.[0]?.weight, height: e?.[0]?.height, width: e?.[0]?.width, length: e?.[0]?.length, amount: e?.[0]?.harga, sku: e?.[0]?.sku, id: e?.[0]?.id, stock: e?.[0]?.stok } : name === 'quantity' ? { ...product, [name]: parseInt(value), amount: product?.discount_type === '%' ? ((1 - (product?.discount / 100)) * (hargaProd * parseInt(value))) : hargaProd * parseInt(value) - parseInt(product?.discount ? product.discount : 0) } : name === 'discount_type' ? { ...product, [name]: value, amount: hargaAmountAfterDiscon } : { ...product, [name]: parseInt(value), amount: hargaAmountAfterDiscon } : product
           })
         } : order
       );
@@ -540,18 +541,30 @@ const AddOrder = () => {
       }
     })
   })
-
   const hargaTotal = totalHarga?.map((tot) => {
     return tot.reduce((val, nilaiSekarang) => {
       return val + nilaiSekarang
     }, 0)
   })
-  // console.log(hargaTotal.reduce((val, nilaiSekarang) => {
-  //   return val + nilaiSekarang
-  // }, 0))
   const totalAfterReduce = hargaTotal.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang
   }, 0)
+  const totalAmount = orders?.map((ord) => {
+    return ord?.products?.map((prod) => {
+      return prod?.amount
+    })
+  })
+
+  const hargaTotalAmount = totalAmount?.map((tot) => {
+    return tot.reduce((val, nilaiSekarang) => {
+      return val + nilaiSekarang
+    }, 0)
+  })
+  const totalAmountAfterReduce = hargaTotalAmount.reduce((val, nilaiSekarang) => {
+    return val + nilaiSekarang
+  }, 0)
+  console.log(totalAmountAfterReduce)
+
 
   // diskon
   const diskon = orders?.map((ord) => {
@@ -983,6 +996,7 @@ const AddOrder = () => {
   //   }
 
   // }, [selectedService, kurirAktif, addressAktif, koordinateReceiver]);
+  const [typeahead, setTypehed] = useState([]);
 
   // check no hp
   const handleCheckPhone = async (phone) => {
@@ -1022,7 +1036,7 @@ const AddOrder = () => {
       console.log(e.message)
     }
   }
-  // console.log(orders)
+  console.log(orders)
   // console.log(ordersErr)
   // if (loadingProd) {
   //   return 'loading...'
@@ -1135,7 +1149,17 @@ const AddOrder = () => {
                 {order.products.map((product, productIndex) => {
 
                   return <div key={productIndex} className="productField">
-                    <div className="form-group">
+                    <Typeahead
+                      id="basic-typeahead"
+                      labelKey="nama"
+                      onChange={(e) => {
+                        handleChange(e, orderIndex, productIndex)
+                      }} options={allProduct}
+                      placeholder="Products..."
+                      selected={product?.prod}
+                      className="w-50"
+                    />
+                    {/* <div className="form-group">
                       <Form.Label className="label">Nama Produk</Form.Label>
                       <Form.Select isInvalid={ordersErr?.[orderIndex]?.products?.[productIndex]?.nama ? true : false} className="select" name="nama" value={product?.id} onChange={(e) => {
                         handleChange(e, orderIndex, productIndex)
@@ -1152,7 +1176,7 @@ const AddOrder = () => {
                           {ordersErr?.[orderIndex]?.products?.[productIndex]?.nama}
                         </div>
                       }
-                    </div>
+                    </div> */}
 
                     <div className="productInfo">
                       <div className="form-group">
@@ -1172,17 +1196,29 @@ const AddOrder = () => {
 
                       <div className="form-group">
                         <Form.Label className="label">Price</Form.Label>
-                        <Form.Control className="input" type="text" name="price" placeholder="Price" disabled value={product.price} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        <Form.Control className="input" type="text" name="price" placeholder="Price" disabled value={currency(product.price)} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
                       </div>
 
-                      <div className="form-group">
+                      <div className="form-group" style={{ marginRight: '-5px' }}>
                         <Form.Label className="label">Discount</Form.Label>
-                        <Form.Control onWheel={(e) => e.target.blur()} className="input" type="number" name="discount" placeholder="Discount" value={product.discount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        <Form.Control style={{ borderTopRightRadius: '0px', borderBottomRightRadius: '0px' }} onWheel={(e) => e.target.blur()} className="input" type="number" name="discount" placeholder="Discount" value={product.discount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
                       </div>
-
+                      <div className="form-group" style={{ marginLeft: '-5px' }}>
+                        <Form.Label className="label" style={{ whiteSpace: 'nowrap', width: '90px', }}>Type </Form.Label>
+                        <Form.Select style={{ borderTopLeftRadius: '0px', borderBottomLeftRadius: '0px' }} className="select" name="discount_type" value={product?.discount_type} onChange={(e) => {
+                          handleChange(e, orderIndex, productIndex)
+                        }}>
+                          <option selected hidden >Type</option>
+                          {
+                            ['%', 'Rp']?.map?.((prod) => {
+                              return <option value={prod} >{prod}</option>
+                            })
+                          }
+                        </Form.Select>
+                      </div>
                       <div className="form-group">
                         <Form.Label className="label">Amount</Form.Label>
-                        <Form.Control className="input" type="number" name="amount" placeholder="Amount" disabled value={product.amount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        <Form.Control className="input" type="text" name="amount" placeholder="Amount" disabled value={currency(product.amount)} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
                       </div>
                     </div>
                   </div>

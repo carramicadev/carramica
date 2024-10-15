@@ -92,7 +92,7 @@ export default function DownloadInvoiceDialog(props) {
     // Combine into the desired format
     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-    // console.log(item);
+    // console.log(allProduct);
 
     return (
         <div
@@ -141,14 +141,14 @@ export default function DownloadInvoiceDialog(props) {
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'row' }}>
                                                 <div>
-                                                    <p>Reference </p>
-                                                    <p>Date </p>
-                                                    <p>Due Date</p>
+                                                    <p style={{ marginBottom: '0px' }}>Reference </p>
+                                                    <p style={{ marginBottom: '0px' }}>Date </p>
+                                                    <p style={{ marginBottom: '0px' }}>Due Date</p>
                                                 </div>
                                                 <div style={{ marginLeft: '50px' }}>
-                                                    <p>{itm?.invoice_id}</p>
-                                                    <p>{formatDate(itm?.createdAt?.toDate())}</p>
-                                                    <p> <ReformatDate date={itm?.dueDate || formattedDate} /></p>
+                                                    <p style={{ marginBottom: '0px' }}>{itm?.invoice_id}</p>
+                                                    <p style={{ marginBottom: '0px' }}>{formatDate(itm?.createdAt?.toDate())}</p>
+                                                    <p style={{ marginBottom: '0px' }}> <ReformatDate date={itm?.dueDate || formattedDate} /></p>
                                                 </div>
                                             </div>
                                         </div>
@@ -186,7 +186,7 @@ export default function DownloadInvoiceDialog(props) {
                                                         <td style={styles.td}>{prod?.nama}</td>
                                                         <td style={styles.td}>{prod?.quantity}</td>
                                                         <td style={styles.td}>{currency(prod?.price)}</td>
-                                                        <td style={styles.td}>{currency(prod?.discount || 0)}</td>
+                                                        <td style={styles.td}>{prod?.discount_type === '%' ? prod?.discount + "%" : currency(prod?.discount || 0)}</td>
                                                         <td style={styles.td}>{currency(prod?.amount)}</td>
                                                     </tr>
                                                 ))
@@ -197,7 +197,7 @@ export default function DownloadInvoiceDialog(props) {
 
                                     <div style={styles.summaryBlock}>
                                         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                            <div style={{ marginRight: '100px' }}>
+                                            <div style={{ marginRight: '100px', lineHeight: '5px' }}>
                                                 <p>
                                                     <span style={styles.bold}>Sub Total</span>
                                                 </p>
@@ -217,7 +217,7 @@ export default function DownloadInvoiceDialog(props) {
                                                     <span style={styles.bold}>Amount Due</span>
                                                 </p>
                                             </div>
-                                            <div>
+                                            <div style={{ lineHeight: '5px' }}>
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd)}
                                                 </p>
@@ -228,13 +228,13 @@ export default function DownloadInvoiceDialog(props) {
                                                     <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - findOrder?.additionalDiscount)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - findOrder?.additionalDiscount)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - findOrder?.additionalDiscount)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
                                             </div>
                                         </div>
@@ -243,7 +243,7 @@ export default function DownloadInvoiceDialog(props) {
 
 
                                     </div>
-                                    <hr className="my-4 bg-dark" style={{ height: '2px' }} />
+                                    <hr className=" bg-dark" style={{ height: '2px', marginTop: '5px' }} />
                                     <div style={styles.summaryBlock}>
                                         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <div style={{ marginRight: '100px' }}>
@@ -270,7 +270,7 @@ export default function DownloadInvoiceDialog(props) {
                                         </div>
                                         <div style={styles.footer}>
                                             <p><FormatFirestoreTimestamp timestamp={itm?.createdAt} /></p>
-                                            <p style={{ marginTop: '100px', fontWeight: 'bold' }}>Finance</p>
+                                            <p style={{ marginTop: '50px', fontWeight: 'bold' }}>Finance</p>
                                         </div>
                                     </div>
                                 </div>
@@ -355,7 +355,7 @@ const styles = {
     },
     summaryBlock: {
         textAlign: 'right',
-        marginTop: '20px',
+        // marginTop: '20px',
         fontSize: '14px',
         display: 'flex',
         justifyContent: 'flex-end'
@@ -363,6 +363,7 @@ const styles = {
     },
     bold: {
         fontWeight: 'bold',
+        marginBottom: '0px'
     },
     footer: {
         textAlign: 'center',

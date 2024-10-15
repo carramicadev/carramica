@@ -6,7 +6,7 @@ import {
     Autocomplete,
 } from "@react-google-maps/api";
 import { Form } from "react-bootstrap";
-
+import './MapComponent.css'
 const containerStyle = {
     width: "100%",
     height: "400px",
@@ -45,6 +45,7 @@ function MyComponent({ setKoordinateReceiver, koordinateReceiver }) {
 
     const handlePlaceChanged = () => {
         const place = autocompleteRef.current.getPlace();
+        console.log(place)
         if (place.geometry) {
             const lat = place.geometry.location.lat();
             const lng = place.geometry.location.lng();
@@ -53,13 +54,16 @@ function MyComponent({ setKoordinateReceiver, koordinateReceiver }) {
             map?.panTo?.({ lat, lng });
         }
     };
-    // console.log('env', process.env.REACT_APP_GOOGLE_MAPS_API_KEY)
+    console.log(autocompleteRef)
     return isLoaded ? (
         <>
             {/* <div></div> */}
             <Form.Label>Silahkan cari titik koordinat alamat anda!</Form.Label>
             <Autocomplete
-                onLoad={(ref) => (autocompleteRef.current = ref)}
+                onLoad={(ref) => {
+                    console.log(ref)
+                    autocompleteRef.current = ref
+                }}
                 onPlaceChanged={handlePlaceChanged}
             >
                 <Form.Control

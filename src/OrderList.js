@@ -39,6 +39,8 @@ import DownloadInvoiceDialog from './DialogInvoice';
 import Scrollbars from 'react-custom-scrollbars-2';
 // import RSC, { Scrollbar } from "react-scrollbars-custom";
 import './orders.css';
+import DialogSendWA from './DialogSendWA';
+import EditOrders from './DialogEditOrder';
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -55,6 +57,17 @@ const OrderList = () => {
   const [invoiceDialog, setInvoiceDialog] = useState({
     open: false,
     data: []
+  });
+  const [sendWADialog, setSendWADialog] = useState({
+    open: false,
+    data: [],
+    type: '',
+    message: ''
+  });
+  const [editDialog, setEditDialog] = useState({
+    open: false,
+    data: {},
+    userId: currentUser?.uid,
   });
   const [user, setUser] = useState([])
 
@@ -88,19 +101,18 @@ const OrderList = () => {
 
   const paidLength = allOrders.filter(ord => ord?.paymentStatus === 'settlement').length
   useEffect(() => {
-    const fetchData = async () => {
-      const getDoc = query(collection(firestore, "orders"), where('totalHargaProduk', '!=', ''));
-      const documentSnapshots = await getDocs(getDoc);
-      var items = [];
-
-      documentSnapshots.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() });
-        // doc.data() is never undefined for query doc snapshots
-      });
-      // console.log('first item ', items[0])
-      setAllOrders(items)
-    };
-    fetchData();
+    // const fetchData = async () => {
+    const getDoc = query(collection(firestore, "orders"), where('totalHargaProduk', '!=', ''));
+    const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+      const updatedData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAllOrders(updatedData); // Update the state with the new data
+    });
+    return () => unsubscribe();
+    // };
+    // fetchData();
   }, []);
   // console.log(lengthAll)
   // getUserColl
@@ -289,7 +301,8 @@ const OrderList = () => {
         sales: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
         resiCreatedBy: `${resiCreatedBy?.firstName || ''} ${resiCreatedBy?.lastName || ''}`,
         downloadedBy: `${downloadedBy?.firstName || ''} ${downloadedBy?.lastName || ''}`,
-        hargaAfterDiscProd: allGross
+        hargaAfterDiscProd: allGross,
+        shippingCost: ord?.ongkir
 
       })
 
@@ -472,6 +485,18 @@ Thank you :)`
     }
   }
 
+  // qontak
+  const sendWAToSender = async ({ data }) => {
+    try {
+      const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+      const result = await getToken({
+        no: data?.receiverName
+      });
+      console.log(result)
+    } catch (e) {
+
+    }
+  }
   // header 
   // console.log(edit)
   const column = [
@@ -485,9 +510,9 @@ Thank you :)`
     },
     { label: "Order Id", key: (item) => item?.ordId, style: {} },
     { label: "Nama pengirim", key: (item) => item?.senderName, style: {} },
-    { label: "No Pengirim", key: (item) => item?.isInvWASent ? <p style={{ color: 'gray' }}>{item?.senderPhone}</p> : <a style={{ textDecoration: 'underline' }} href='#' onClick={() => sendMessage({ ...item })}>{item?.senderPhone}</a>, style: {} },
+    { label: "No Pengirim", key: (item) => item?.isInvWASent ? <p style={{ color: 'gray' }}>{item?.senderPhone}</p> : <a style={{ textDecoration: 'underline' }} href='#' onClick={() => setSendWADialog({ open: true, data: item, type: 'pembayaran', message: 'Kirim link pembayaran ke pengirim?' })}>{item?.senderPhone}</a>, style: {} },
     { label: "Nama Penerima", key: (item) => item?.receiverName, style: {} },
-    { label: "No Penerima", key: (item) => item?.isResiWASent ? <p style={{ color: 'gray' }}>{item?.receiverPhone}</p> : item?.resi ? <a style={{ textDecoration: 'underline' }} href='#' onClick={() => sendMessageResi({ ...item })}>{item?.receiverPhone}</a> : item?.receiverPhone, style: {} },
+    { label: "No Penerima", key: (item) => item?.isResiWASent ? <p style={{ color: 'gray' }}>{item?.receiverPhone}</p> : item?.resi ? <a style={{ textDecoration: 'underline' }} href='#' onClick={() => setSendWADialog({ open: true, data: item, type: 'resi_to_receiver', message: 'Kirim resi ke pemerima?' })}>{item?.receiverPhone}</a> : item?.receiverPhone, style: {} },
     { label: "Alamat", key: (item) => item?.address, style: {} },
 
     {
@@ -500,10 +525,12 @@ Thank you :)`
     { label: "Paid At", key: (item) => item?.paidAt, style: {} },
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },
     { label: "Discount", key: (item) => item?.discount, style: {} },
-    { label: "Gross Revenue", key: (item) => item?.grossRevenue, style: {} },
+    { label: "Gross Revenue", key: (item) => currency(item?.grossRevenue), style: {} },
     { label: "Shipping Info", key: (item) => item?.kurir, style: {} },
+    { label: "Shipping Cost", key: (item) => currency(item?.shippingCost), style: {} },
     {
-      label: "Resi", key: (item, i, idOrder, style, edit) => item.resi && edit !== i ? <div style={{ display: 'flex', justifyContent: 'space-between' }}><button disabled={item?.isResiSentToWASender} className='btn btn-outline-secondary' onClick={() => sendResiToSender({ ...item })} style={item?.isResiSentToWASender ? { padding: '0px', width: '20px', margin: '0px 2px 0px 0px', backgroundColor: 'lightgray' } : { padding: '0px', width: '20px', margin: '0px 2px 0px 0px' }} size='sm'><Whatsapp size={12} color={item?.isResiSentToWASender ? 'gray' : 'green'} /></button>{item.resi} <Button onClick={() => setEdit(i)} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button> </div> : edit === i ? <input style={{ whiteSpace: 'nowrap', width: '60px', fontSize: '8px', padding: '3px' }} className='input'
+      label: "Resi", key: (item, i, idOrder, style, edit) => item.resi && edit !== i ? <div style={{ display: 'flex', justifyContent: 'space-between' }}><button disabled={item?.isResiSentToWASender} className='btn btn-outline-secondary' onClick={() => setSendWADialog({ open: true, data: item, type: 'resi_to_sender', message: 'Kirim resi ke pengirim?' })
+      } style={item?.isResiSentToWASender ? { padding: '0px', width: '20px', margin: '0px 2px 0px 0px', backgroundColor: 'lightgray' } : { padding: '0px', width: '20px', margin: '0px 2px 0px 0px' }} size='sm'><Whatsapp size={12} color={item?.isResiSentToWASender ? 'gray' : 'green'} /></button>{item.resi} <Button onClick={() => setEdit(i)} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button> </div> : edit === i ? <input style={{ whiteSpace: 'nowrap', width: '60px', fontSize: '8px', padding: '3px' }} className='input'
         // value={item?.resi || ''}
         placeholder="Input Resi"
         defaultValue={item?.resi}
@@ -531,6 +558,7 @@ Thank you :)`
     { label: "Download ", key: (item, i) => <button style={item.isDownloaded ? { backgroundColor: 'lightgray', padding: '5px' } : item?.paymentStatus === 'settlement' ? { padding: '5px' } : { backgroundColor: 'red', padding: '5px' }} disabled={item?.isDownloaded || item?.paymentStatus !== 'settlement'} onClick={() => setModalDownload({ userId: currentUser?.uid, open: true, data: [item], index: i, userId: currentUser?.uid })} className="button button-primary">{item.isDownloaded ? 'Downloaded' : 'Download'}</button>, style: {} },
     { label: "Downloaded By", key: (item) => item.downloadedBy, style: {} },
     { label: "Ceated By", key: (item) => item?.sales, style: {} },
+    { label: "Action", key: (item) => <button style={{ backgroundColor: '#998970' }} onClick={() => setEditDialog({ open: true, data: item })} className="button button-primary"><PencilSquare /></button>, style: {} },
 
   ];
   const [selectColumn, setSelectColumn] = useState(column)
@@ -876,6 +904,14 @@ Thank you :)`
       // handlePayment={handlePayment}
       // loading={loading}
       />
+      <DialogSendWA
+        // setUpdate={setUpdate}
+        show={sendWADialog}
+        // allOrders={allOrders}
+        onHide={() => setSendWADialog({ open: false, data: [], index: '' })}
+      // handlePayment={handlePayment}
+      // loading={loading}
+      />
       <FilterDialog
         show={filterDialog}
         handleClose={() => setFilterDialog(false)}
@@ -891,6 +927,11 @@ Thank you :)`
         setAllOrders={setAllOrders}
         column={column}
         selectColumn={selectColumn}
+      />
+      <EditOrders
+        show={editDialog}
+        handleClose={() => setEditDialog({ open: false, data: {} })}
+
       />
       {/* </div> */}
       {/* </div> */}
