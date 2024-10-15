@@ -210,12 +210,8 @@ export default function DownloadInvoiceDialog(props) {
                                                 <p>
                                                     <span style={styles.bold}>Total</span>
                                                 </p>
-                                                <p>
-                                                    <span style={styles.bold}>Paid</span>
-                                                </p>
-                                                <p>
-                                                    <span style={styles.bold}>Amount Due</span>
-                                                </p>
+
+
                                             </div>
                                             <div style={{ lineHeight: '5px' }}>
                                                 <p>
@@ -230,12 +226,8 @@ export default function DownloadInvoiceDialog(props) {
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
-                                                <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
-                                                </p>
-                                                <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
-                                                </p>
+
+
                                             </div>
                                         </div>
 
@@ -255,7 +247,7 @@ export default function DownloadInvoiceDialog(props) {
                                             <div>
 
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(total)}
+                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
                                             </div>
                                         </div>
