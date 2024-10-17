@@ -1,9 +1,10 @@
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { usePDF } from 'react-to-pdf';
 import './dialogDownload.css';
-import { functions } from './FirebaseFrovider';
+import { firestore, functions } from './FirebaseFrovider';
 
 
 export default function DialogSendWA(props) {
@@ -15,15 +16,22 @@ export default function DialogSendWA(props) {
                 item?.senderPhone,
                 item?.harga.toString(),
                 item?.link.toString());
-            let params = {
-                name: item?.senderName,
-                no: item?.senderPhone,
-                price: item?.harga.toString(),
-                link: item?.link,
-                type: props?.show?.type
-            }
-            if (props?.show?.type === 'resi_to_receiver') {
-                params = {
+
+            if (props?.show?.type === 'pembayaran') {
+                const params = {
+                    name: item?.senderName,
+                    no: item?.senderPhone,
+                    price: item?.harga.toString(),
+                    link: item?.link,
+                    type: props?.show?.type
+                }
+                const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+                const result = await getToken(params);
+                await setDoc(doc(firestore, 'orders', item.id), {
+                    isInvWASent: true
+                }, { merge: true });
+            } else if (props?.show?.type === 'resi_to_receiver') {
+                const params = {
                     no: item?.receiverPhone,
                     name: item?.receiverName,
                     sender: item?.senderName,
@@ -32,8 +40,22 @@ export default function DialogSendWA(props) {
                     kurir: item?.kurir,
                     type: props?.show?.type
                 }
+                const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+                const result = await getToken(params);
+                const indexOrder = parseInt(item?.unixId?.split('_')?.[1])
+                const getDocOrd = doc(firestore, 'orders', item?.id);
+                const getDataOrd = await getDoc(getDocOrd)
+                const arrayField = getDataOrd.data().orders
+
+
+                // if (itemIndex !== -1) {
+                // Update the specific item
+                arrayField[indexOrder] = { ...arrayField[indexOrder], isResiWASent: true };
+
+                // Update the document with the modified array
+                await updateDoc(getDocOrd, { orders: arrayField });
             } else if (props?.show?.type === 'resi_to_sender') {
-                params = {
+                const params = {
                     no: item?.senderPhone,
                     name: item?.senderName,
                     receiver: item?.receiverName,
@@ -41,10 +63,24 @@ export default function DialogSendWA(props) {
                     kurir: item?.kurir,
                     type: props?.show?.type
                 }
+
+                const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+                const result = await getToken(params);
+                const indexOrder = parseInt(item?.unixId?.split('_')?.[1])
+                const getDocOrd = doc(firestore, 'orders', item?.id);
+                const getDataOrd = await getDoc(getDocOrd)
+                const arrayField = getDataOrd.data().orders
+
+
+                // if (itemIndex !== -1) {
+                // Update the specific item
+                arrayField[indexOrder] = { ...arrayField[indexOrder], isResiSentToWASender: true };
+
+                // Update the document with the modified array
+                await updateDoc(getDocOrd, { orders: arrayField });
             }
-            const getToken = httpsCallable(functions, 'qontakSendWAToSender');
-            const result = await getToken(params);
-            console.log(result)
+
+            // console.log(result)
             props?.onHide()
         } catch (e) {
             console.log(e.message)

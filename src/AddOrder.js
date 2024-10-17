@@ -1118,7 +1118,7 @@ const AddOrder = () => {
                     country={'id'} // Set a default country
                     value={order.receiverPhone}
                     onChange={(e) => handleChange(e, orderIndex)}
-                    onBlur={(e) => handleCheckPhone(order.receiverPhone)}
+                    // onBlur={(e) => handleCheckPhone(order.receiverPhone)}
                     enableSearch={true} // Enable search in the country dropdown
                     placeholder="Enter phone number"
                   />
