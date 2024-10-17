@@ -52,7 +52,7 @@ export default function DownloadInvoiceDialog(props) {
         })
     ))
 
-    const total = findOrder?.totalHargaProduk + findOrder?.totalOngkir - findOrder?.additionalDiscount
+    // const total = findOrder?.totalHargaProduk + allOngkir - findOrder?.additionalDiscount
     // console.log(allProduct)
     const ReformatDate = ({ date }) => {
         // console.log(date)
@@ -91,7 +91,16 @@ export default function DownloadInvoiceDialog(props) {
 
     // Combine into the desired format
     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    const gross = allProduct?.map(prod => prod?.amount);
+    const allGross = gross?.reduce((val, nilaiSekarang) => {
+        return val + nilaiSekarang
+    }, 0);
 
+    // all ongkir
+    const ongkir = findOrder?.orders?.map(ord => ord?.ongkir);
+    const allOngkir = ongkir?.reduce((val, nilaiSekarang) => {
+        return val + nilaiSekarang
+    }, 0);
     // console.log(allProduct);
 
     return (
@@ -215,16 +224,16 @@ export default function DownloadInvoiceDialog(props) {
                                             </div>
                                             <div style={{ lineHeight: '5px' }}>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd)}
+                                                    <span style={styles.bold}></span> {currency(allGross)}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(findOrder?.totalOngkir)}
+                                                    <span style={styles.bold}></span> {currency(allOngkir)}
                                                 </p>
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
+                                                    <span style={styles.bold}></span> {currency(allGross + allOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
 
 
@@ -247,7 +256,7 @@ export default function DownloadInvoiceDialog(props) {
                                             <div>
 
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(itm?.hargaAfterDiscProd + findOrder?.totalOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
+                                                    <span style={styles.bold}></span> {currency(allGross + allOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
                                             </div>
                                         </div>

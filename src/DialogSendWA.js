@@ -12,10 +12,10 @@ export default function DialogSendWA(props) {
     // qontak
     const sendWAToSender = async () => {
         try {
-            console.log(item?.senderName,
-                item?.senderPhone,
-                item?.harga.toString(),
-                item?.link.toString());
+            // console.log(item?.senderName,
+            //     item?.senderPhone,
+            //     item?.harga.toString(),
+            //     item?.link.toString());
 
             if (props?.show?.type === 'pembayaran') {
                 const params = {
@@ -86,7 +86,7 @@ export default function DialogSendWA(props) {
             console.log(e.message)
         }
     }
-    console.log(item);
+    // console.log(item);
 
     return (
         <div
