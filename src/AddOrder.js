@@ -743,6 +743,25 @@ const AddOrder = () => {
         // Return the new order ID
         return `INV-2024-${newInvId}`;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
       });
+
+      const newOrderCount = await runTransaction(firestore, async (transaction) => {
+        const counterDoc = await transaction.get(docRef);
+
+        if (!counterDoc.exists()) {
+          throw new Error('Counter document does not exist!');
+        }
+
+        // Get the current order count and increment by 1
+        const currentCount = counterDoc.data().orderId || 0;
+        const newCount = currentCount + updateOrder.length;
+        // const newInvId = String(newCount).padStart(4, '0');
+
+        // Update the counter in Firestore
+        transaction.update(docRef, { invoiceId: newCount });
+
+        // Return the new order ID
+        return newCount;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
+      });
       const orderRef = doc(firestore, "orders", newOrderId)
 
       // const orderDoc = await getDoc(orderRef);
@@ -752,7 +771,7 @@ const AddOrder = () => {
         totalHargaProduk: totalAfterReduce,
         userId: currentUser?.uid,
         invoice_id: newOrderId,
-        firstOrdId: settings?.orderId
+        firstOrdId: newOrderCount
       }, { merge: true });
 
       const payment = httpsCallable(functions, 'createOrder');
