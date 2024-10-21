@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot, runTransaction } from "firebase/firestore";
 import Header from './Header';
 import AddSalesModal from './AddSalesModal';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -723,85 +723,127 @@ const AddOrder = () => {
       }
 
       // checking order id
-      const orderRef = doc(firestore, "orders", `INV-2024-${invId}`)
+      const docRef = doc(firestore, "settings", 'counter');
 
-      const orderDoc = await getDoc(orderRef);
-      if (orderDoc.exists()) {
-        // console.log('exist')
-        setUpdate((prevValue) => !prevValue);
-        const docRef = doc(firestore, "settings", 'counter');
-        const docSnap = await getDoc(docRef);
-        const newInvId = String(docSnap.data()?.invoiceId + 1).padStart(4, '0');
-        const orderUpdate = orders.map((ord, i) => {
-          const newOrdId = String(docSnap.data()?.orderId).padStart(4, '0');
-          return {
-            ...ord,
-            ordId: `OS-${newInvId}-${newOrdId}`,
-            ongkir: arrayOngkir?.[i]
-          }
-        });
+      const newOrderId = await runTransaction(firestore, async (transaction) => {
+        const counterDoc = await transaction.get(docRef);
+
+        if (!counterDoc.exists()) {
+          throw new Error('Counter document does not exist!');
+        }
+
+        // Get the current order count and increment by 1
+        const currentCount = counterDoc.data().invoiceId || 0;
+        const newCount = currentCount + 1;
+        const newInvId = String(newCount).padStart(4, '0');
+
+        // Update the counter in Firestore
+        transaction.update(docRef, { invoiceId: newCount });
+
+        // Return the new order ID
+        return `INV-2024-${newInvId}`;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
+      });
+      const orderRef = doc(firestore, "orders", newOrderId)
+
+      // const orderDoc = await getDoc(orderRef);
+      await setDoc(orderRef, {
+        ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
+        paymentStatus: 'pending',
+        totalHargaProduk: totalAfterReduce,
+        userId: currentUser?.uid,
+        invoice_id: newOrderId,
+        firstOrdId: settings?.orderId
+      }, { merge: true });
+
+      const payment = httpsCallable(functions, 'createOrder');
+      const result = await payment({
+        amount: totalAfterDiskonDanOngkir,
+        id: newOrderId,
+        item: product,
+        customer_details: customer_details
+      });
+      await setDoc(orderRef, {
+        midtrans: result.data.items,
+      }, { merge: true });
+      // console.log(result.data.items)
+      setLinkMidtrans(result.data.items?.redirect_url)
+      setDialogRedirectWAShow({ open: true, id: newOrderId });
+
+      // if (orderDoc.exists()) {
+      //   // console.log('exist')
+      //   setUpdate((prevValue) => !prevValue);
+      //   const docSnap = await getDoc(docRef);
+      //   const newInvId = String(docSnap.data()?.invoiceId + 1).padStart(4, '0');
+      //   const orderUpdate = orders.map((ord, i) => {
+      //     const newOrdId = String(docSnap.data()?.orderId).padStart(4, '0');
+      //     return {
+      //       ...ord,
+      //       ordId: `OS-${newInvId}-${newOrdId}`,
+      //       ongkir: arrayOngkir?.[i]
+      //     }
+      //   });
 
 
-        const newOrderRef = doc(firestore, "orders", `INV-2024-${newInvId}`)
+      //   const newOrderRef = doc(firestore, "orders", `INV-2024-${newInvId}`)
 
-        await setDoc(newOrderRef, {
-          ...formData, orders: orderUpdate, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
-          paymentStatus: 'pending',
-          totalHargaProduk: totalAfterReduce,
-          userId: currentUser?.uid,
-          invoice_id: `INV-2024-${newInvId}`,
-          firstOrdId: docSnap.data()?.orderId
-        }, { merge: true });
-        //  settdoc
-        await setDoc(settingsRef, {
-          orderId: increment(orderUpdate.length),
-          invoiceId: increment(1),
-        }, { merge: true })
-        const payment = httpsCallable(functions, 'createOrder');
-        const result = await payment({
-          amount: totalAfterDiskonDanOngkir,
-          id: `INV-2024-${newInvId}`,
-          item: product,
-          customer_details: customer_details
-        });
-        await setDoc(newOrderRef, {
-          midtrans: result.data.items,
-        }, { merge: true });
-        // console.log(result.data.items)
-        setLinkMidtrans(result.data.items?.redirect_url)
-        setDialogRedirectWAShow({ open: true, id: `INV-2024-${newInvId}` });
+      //   await setDoc(newOrderRef, {
+      //     ...formData, orders: orderUpdate, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
+      //     paymentStatus: 'pending',
+      //     totalHargaProduk: totalAfterReduce,
+      //     userId: currentUser?.uid,
+      //     invoice_id: `INV-2024-${newInvId}`,
+      //     firstOrdId: docSnap.data()?.orderId
+      //   }, { merge: true });
+      //   //  settdoc
+      //   await setDoc(settingsRef, {
+      //     orderId: increment(orderUpdate.length),
+      //     invoiceId: increment(1),
+      //   }, { merge: true })
+      //   const payment = httpsCallable(functions, 'createOrder');
+      //   const result = await payment({
+      //     amount: totalAfterDiskonDanOngkir,
+      //     id: `INV-2024-${newInvId}`,
+      //     item: product,
+      //     customer_details: customer_details
+      //   });
+      //   await setDoc(newOrderRef, {
+      //     midtrans: result.data.items,
+      //   }, { merge: true });
+      //   // console.log(result.data.items)
+      //   setLinkMidtrans(result.data.items?.redirect_url)
+      //   setDialogRedirectWAShow({ open: true, id: `INV-2024-${newInvId}` });
 
-      } else {
-        // console.log('not')
+      // } else {
+      //   // console.log('not')
 
-        await setDoc(settingsRef, {
-          invoiceId: increment(updateOrder.length),
-          orderId: increment(1)
-        }, { merge: true })
-        await setDoc(orderRef, {
-          ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
-          paymentStatus: 'pending',
-          totalHargaProduk: totalAfterReduce,
-          userId: currentUser?.uid,
-          invoice_id: `INV-2024-${invId}`,
-          firstOrdId: settings?.orderId
-        }, { merge: true });
+      //   await setDoc(settingsRef, {
+      //     invoiceId: increment(updateOrder.length),
+      //     orderId: increment(1)
+      //   }, { merge: true })
+      //   await setDoc(orderRef, {
+      //     ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
+      //     paymentStatus: 'pending',
+      //     totalHargaProduk: totalAfterReduce,
+      //     userId: currentUser?.uid,
+      //     invoice_id: `INV-2024-${invId}`,
+      //     firstOrdId: settings?.orderId
+      //   }, { merge: true });
 
-        const payment = httpsCallable(functions, 'createOrder');
-        const result = await payment({
-          amount: totalAfterDiskonDanOngkir,
-          id: `INV-2024-${invId}`,
-          item: product,
-          customer_details: customer_details
-        });
-        await setDoc(orderRef, {
-          midtrans: result.data.items,
-        }, { merge: true });
-        // console.log(result.data.items)
-        setLinkMidtrans(result.data.items?.redirect_url)
-        setDialogRedirectWAShow({ open: true, id: `INV-2024-${invId}` });
+      //   const payment = httpsCallable(functions, 'createOrder');
+      //   const result = await payment({
+      //     amount: totalAfterDiskonDanOngkir,
+      //     id: `INV-2024-${invId}`,
+      //     item: product,
+      //     customer_details: customer_details
+      //   });
+      //   await setDoc(orderRef, {
+      //     midtrans: result.data.items,
+      //   }, { merge: true });
+      //   // console.log(result.data.items)
+      //   setLinkMidtrans(result.data.items?.redirect_url)
+      //   setDialogRedirectWAShow({ open: true, id: `INV-2024-${invId}` });
 
-      }
+      // }
 
 
       // console.log("Document written with ID: ", docRef.id);
