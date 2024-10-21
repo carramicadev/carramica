@@ -678,10 +678,7 @@ const AddOrder = () => {
       setLoading(true);
 
 
-      const arrayOngkir = Object.values(ongkir);
-      const updateOrder = orders?.map((ord, i) => {
-        return { ...ord, ongkir: arrayOngkir?.[i] }
-      })
+
       // inv id and order id
       if (formData?.additionalDiscount) {
         product.push({
@@ -753,7 +750,7 @@ const AddOrder = () => {
 
         // Get the current order count and increment by 1
         const currentCount = counterDoc.data().orderId || 0;
-        const newCount = currentCount + updateOrder.length;
+        const newCount = currentCount + 1;
         // const newInvId = String(newCount).padStart(4, '0');
 
         // Update the counter in Firestore
@@ -762,6 +759,11 @@ const AddOrder = () => {
         // Return the new order ID
         return newCount;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
       });
+      const arrayOngkir = Object.values(ongkir);
+      const updateOrder = orders?.map((ord, i) => {
+        const orderIds = String(newOrderCount).padStart(4, '0');
+        return { ...ord, ongkir: arrayOngkir?.[i], ordId: `OS-${newOrderId}-${orderIds}` }
+      })
       const orderRef = doc(firestore, "orders", newOrderId)
 
       // const orderDoc = await getDoc(orderRef);
@@ -771,7 +773,7 @@ const AddOrder = () => {
         totalHargaProduk: totalAfterReduce,
         userId: currentUser?.uid,
         invoice_id: newOrderId,
-        firstOrdId: newOrderCount
+        // firstOrdId: newOrderCount
       }, { merge: true });
 
       const payment = httpsCallable(functions, 'createOrder');
