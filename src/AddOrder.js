@@ -757,7 +757,7 @@ const AddOrder = () => {
         // const newInvId = String(newCount).padStart(4, '0');
 
         // Update the counter in Firestore
-        transaction.update(docRef, { invoiceId: newCount });
+        transaction.update(docRef, { orderId: newCount });
 
         // Return the new order ID
         return newCount;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
