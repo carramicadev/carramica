@@ -48,6 +48,7 @@ const OrderList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
 
   const [modalDownload, setModalDownload] = useState({
@@ -70,7 +71,56 @@ const OrderList = () => {
     data: {},
     userId: currentUser?.uid,
   });
-  const [user, setUser] = useState([])
+  const [user, setUser] = useState([]);
+
+  // get settings doc
+  // const settingsRef = collection(firestore, "settings");
+  const settingsRef = doc(firestore, 'settings', 'counter');
+
+  const [settings, setSettings] = useState({});
+
+  useEffect(() => {
+    // async function getUsers() {
+    //   if (update) {
+    //     const docRef = doc(firestore, "settings", 'counter');
+    //     const docSnap = await getDoc(docRef);
+
+    //     if (docSnap.exists()) {
+    //       setSettings({
+    //         ...docSnap.data()
+    //       })
+    //       console.log("Document data:", docSnap.data());
+    //     } else {
+    //       // docSnap.data() will be undefined in this case
+    //       console.log("No such document!");
+    //     }
+
+    //   } else {
+    //     const docRef = doc(firestore, "settings", 'counter');
+    //     const docSnap = await getDoc(docRef);
+
+    //     if (docSnap.exists()) {
+    //       setSettings({
+    //         ...docSnap.data()
+    //       })
+    //       console.log("Document data:", docSnap.data());
+    //     } else {
+    //       // docSnap.data() will be undefined in this case
+    //       console.log("No such document!");
+    //     }
+
+    //   }
+    // }
+    // getUsers()
+    const unsub = onSnapshot(settingsRef, (doc) => {
+      const source = doc.metadata.hasPendingWrites ? "Local" : "Server";
+      // console.log(source, " data: ", doc.data());
+      setSettings({
+        ...doc.data()
+      })
+    });
+    return () => unsub
+  }, []);
 
   // query coll orders
   const [list, setList] = useState([]);
@@ -245,7 +295,7 @@ const OrderList = () => {
 
 
   let mapData = []
-  const reBuildData = list?.map?.((item) => {
+  const reBuildData = list?.map?.((item, idx) => {
     // console.log(JSON.stringify(item?.invoices))
 
     return item?.orders?.map((ord, i) => {
@@ -269,6 +319,8 @@ const OrderList = () => {
 
         return truncated;
       };
+      const ordId = String(settings?.orderId - (i + idx)).padStart(4, '0');
+
       mapData.push({
         invoice_id: item?.invoice_id,
         id: item?.id,
@@ -298,7 +350,7 @@ const OrderList = () => {
         isResiSentToWASender: ord?.isResiSentToWASender,
         link: item?.midtrans?.redirect_url,
         harga: item?.totalHargaProduk + item?.totalOngkir,
-        ordId: ord?.ordId,
+        // ordId: ordId,
         sales: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
         resiCreatedBy: `${resiCreatedBy?.firstName || ''} ${resiCreatedBy?.lastName || ''}`,
         downloadedBy: `${downloadedBy?.firstName || ''} ${downloadedBy?.lastName || ''}`,
@@ -308,8 +360,18 @@ const OrderList = () => {
       })
 
     })
+  });
+  const fixedData = mapData.map((ord, i) => {
+    const invId = ord?.invoice_id?.split('-')?.[2]
+    const ordId = String(settings?.orderId - i).padStart(4, '0');
+
+    return {
+      ...ord,
+      ordId: `OS-${invId}-${ordId}`
+    }
   })
-  const filteredData = mapData?.filter?.(
+  console.log(fixedData)
+  const filteredData = fixedData?.filter?.(
     item =>
       item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
       item.senderPhone?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
@@ -328,7 +390,7 @@ const OrderList = () => {
   // checkbox
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedRows(mapData.map(item => item.unixId));
+      setSelectedRows(fixedData.map(item => item.unixId));
     } else {
       setSelectedRows([]);
     }
@@ -351,7 +413,7 @@ const OrderList = () => {
     }
   }
 
-  const selectedData = mapData?.filter?.(item => selectedRows.includes(item.unixId));
+  const selectedData = fixedData?.filter?.(item => selectedRows.includes(item.unixId));
   const filterForDownloadAll = selectedData.filter(item => !item.isDownloaded && item.paymentStatus === 'settlement')
   // console.log(arrayHarga);
 
@@ -576,7 +638,12 @@ Thank you :)`
     },
     { label: "Resi Update", key: (item) => item.resiUpdate ? formatDate(item?.resiUpdate?.toDate()) : '', style: {} },
     { label: "Resi Crated By", key: (item) => item.resiCreatedBy, style: {} },
-    { label: "Download ", key: (item, i) => <button style={item.isDownloaded ? { backgroundColor: 'lightgray', padding: '5px' } : item?.paymentStatus === 'settlement' ? { padding: '5px' } : { backgroundColor: 'red', padding: '5px' }} disabled={item?.isDownloaded || item?.paymentStatus !== 'settlement'} onClick={() => setModalDownload({ userId: currentUser?.uid, open: true, data: [item], index: i, userId: currentUser?.uid })} className="button button-primary">{item.isDownloaded ? 'Downloaded' : 'Download'}</button>, style: {} },
+    {
+      label: "Download ", key: (item, i) => <button style={item.isDownloaded ? { backgroundColor: 'lightgray', padding: '5px' } : item?.paymentStatus === 'settlement' ? { padding: '5px' } : { backgroundColor: 'red', padding: '5px' }} disabled={item?.isDownloaded || item?.paymentStatus !== 'settlement'} onClick={() => {
+        setLoading(true)
+        setModalDownload({ userId: currentUser?.uid, open: true, data: [item], index: i, userId: currentUser?.uid })
+      }} className="button button-primary">{item.isDownloaded ? 'Downloaded' : 'Download'}</button>, style: {}
+    },
     { label: "Downloaded By", key: (item) => item.downloadedBy, style: {} },
     { label: "Ceated By", key: (item) => item?.sales, style: {} },
 
@@ -784,10 +851,13 @@ Thank you :)`
           </div>
         </div>
         <div style={{}}>
-          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedData : mapData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
+          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedData : fixedData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
             <CloudArrowDown /> Export As CSV
           </CSVLink>
-          <button onClick={() => setModalDownload({ userId: currentUser?.uid, open: true, data: filterForDownloadAll, })} className="button button-primary">Download</button>
+          <button onClick={() => {
+            setLoading(true)
+            setModalDownload({ userId: currentUser?.uid, open: true, data: filterForDownloadAll, })
+          }} className="button button-primary">Download</button>
         </div>
       </div>
       <div >
@@ -816,7 +886,7 @@ Thank you :)`
                 <thead>
                   <tr style={{ whiteSpace: 'nowrap' }}>
                     <th>
-                      <input className="form-check-input" type="checkbox" checked={selectedRows.length === mapData.length}
+                      <input className="form-check-input" type="checkbox" checked={selectedRows.length === fixedData.length}
                         onChange={handleSelectAll} id="flexCheckChecked" />
                     </th>
                     {
@@ -919,6 +989,8 @@ Thank you :)`
         setUpdate={setUpdate}
         show={modalDownload}
         onHide={() => setModalDownload({ userId: currentUser?.uid, open: false, data: [], index: '' })}
+        loading={loading}
+        setLoading={setLoading}
       // handlePayment={handlePayment}
       // loading={loading}
       />

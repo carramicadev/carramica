@@ -428,10 +428,10 @@ const AddOrder = () => {
       try {
         setOrders([...orders, initialOrder]);
         setIndexOrder(indexOrder + 1)
-        await setDoc(settingsRef, {
-          // invoiceId: increment(1),
-          orderId: increment(1)
-        }, { merge: true })
+        // await setDoc(settingsRef, {
+        //   // invoiceId: increment(1),
+        //   orderId: increment(1)
+        // }, { merge: true })
         setUpdate((prevValue) => !prevValue)
         setOrdersErr(err => [...err, initialOrderErr])
 
@@ -487,10 +487,10 @@ const AddOrder = () => {
 
       setIndexOrder(indexOrder + 1)
 
-      await setDoc(settingsRef, {
-        // invoiceId: increment(1),
-        orderId: increment(1)
-      }, { merge: true });
+      // await setDoc(settingsRef, {
+      //   // invoiceId: increment(1),
+      //   orderId: increment(1)
+      // }, { merge: true });
       setUpdate((prevValue) => !prevValue)
       setOrdersErr(err => [...err, initialOrderErr])
 
@@ -749,7 +749,8 @@ const AddOrder = () => {
           paymentStatus: 'pending',
           totalHargaProduk: totalAfterReduce,
           userId: currentUser?.uid,
-          invoice_id: `INV-2024-${newInvId}`
+          invoice_id: `INV-2024-${newInvId}`,
+          firstOrdId: docSnap.data()?.orderId
         }, { merge: true });
         //  settdoc
         await setDoc(settingsRef, {
@@ -774,7 +775,7 @@ const AddOrder = () => {
         // console.log('not')
 
         await setDoc(settingsRef, {
-          invoiceId: increment(1),
+          invoiceId: increment(updateOrder.length),
           orderId: increment(1)
         }, { merge: true })
         await setDoc(orderRef, {
@@ -782,7 +783,8 @@ const AddOrder = () => {
           paymentStatus: 'pending',
           totalHargaProduk: totalAfterReduce,
           userId: currentUser?.uid,
-          invoice_id: `INV-2024-${invId}`
+          invoice_id: `INV-2024-${invId}`,
+          firstOrdId: settings?.orderId
         }, { merge: true });
 
         const payment = httpsCallable(functions, 'createOrder');
