@@ -741,29 +741,37 @@ const AddOrder = () => {
         return `INV-2024-${newInvId}`;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
       });
 
-      const newOrderCount = await runTransaction(firestore, async (transaction) => {
-        const counterDoc = await transaction.get(docRef);
 
-        if (!counterDoc.exists()) {
-          throw new Error('Counter document does not exist!');
-        }
-
-        // Get the current order count and increment by 1
-        const currentCount = counterDoc.data().orderId || 0;
-        const newCount = currentCount + 1;
-        // const newInvId = String(newCount).padStart(4, '0');
-
-        // Update the counter in Firestore
-        transaction.update(docRef, { orderId: newCount });
-
-        // Return the new order ID
-        return newCount;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
-      });
       const arrayOngkir = Object.values(ongkir);
-      const updateOrder = orders?.map((ord, i) => {
-        const orderIds = String(newOrderCount).padStart(4, '0');
-        return { ...ord, ongkir: arrayOngkir?.[i], ordId: `OS-${newOrderId}-${orderIds}` }
-      })
+      const updateOrder = await Promise.all(orders?.map(async (ord, i) => {
+        const newOrderCount = await runTransaction(firestore, async (transaction) => {
+          const counterDoc = await transaction.get(docRef);
+
+          if (!counterDoc.exists()) {
+            throw new Error('Counter document does not exist!');
+          }
+
+          // Get the current order count and increment by 1
+          const currentCount = counterDoc.data().orderId || 0;
+          const newCount = currentCount + 1;
+
+          // Update the counter in Firestore
+          transaction.update(docRef, { orderId: newCount });
+
+          // Return the new order ID
+          return newCount;
+        });
+
+        const orderIds = String(newOrderCount).padStart(4, '0');  // Format the order ID
+        const newOrderId = `OS-${newOrderCount}-${orderIds}`;  // Example: "OS-1-0001"
+
+        return {
+          ...ord,
+          ongkir: arrayOngkir?.[i],
+          ordId: newOrderId
+        };
+      }));
+
       const orderRef = doc(firestore, "orders", newOrderId)
 
       // const orderDoc = await getDoc(orderRef);
