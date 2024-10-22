@@ -350,7 +350,7 @@ const OrderList = () => {
         isResiSentToWASender: ord?.isResiSentToWASender,
         link: item?.midtrans?.redirect_url,
         harga: item?.totalHargaProduk + item?.totalOngkir,
-        // ordId: ordId,
+        ordId: ord?.ordId,
         sales: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
         resiCreatedBy: `${resiCreatedBy?.firstName || ''} ${resiCreatedBy?.lastName || ''}`,
         downloadedBy: `${downloadedBy?.firstName || ''} ${downloadedBy?.lastName || ''}`,
@@ -361,17 +361,17 @@ const OrderList = () => {
 
     })
   });
-  const fixedData = mapData.map((ord, i) => {
-    const invId = ord?.invoice_id?.split('-')?.[2]
-    const ordId = String(settings?.orderId - i).padStart(4, '0');
+  // const mapData = mapData.map((ord, i) => {
+  //   const invId = ord?.invoice_id?.split('-')?.[2]
+  //   const ordId = String(settings?.orderId - i).padStart(4, '0');
 
-    return {
-      ...ord,
-      ordId: `OS-${invId}-${ordId}`
-    }
-  })
-  console.log(fixedData)
-  const filteredData = fixedData?.filter?.(
+  //   return {
+  //     ...ord,
+  //     ordId: `OS-${invId}-${ordId}`
+  //   }
+  // })
+  // console.log(fixedData)
+  const filteredData = mapData?.filter?.(
     item =>
       item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
       item.senderPhone?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
@@ -390,7 +390,7 @@ const OrderList = () => {
   // checkbox
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedRows(fixedData.map(item => item.unixId));
+      setSelectedRows(mapData.map(item => item.unixId));
     } else {
       setSelectedRows([]);
     }
@@ -413,7 +413,7 @@ const OrderList = () => {
     }
   }
 
-  const selectedData = fixedData?.filter?.(item => selectedRows.includes(item.unixId));
+  const selectedData = mapData?.filter?.(item => selectedRows.includes(item.unixId));
   const filterForDownloadAll = selectedData.filter(item => !item.isDownloaded && item.paymentStatus === 'settlement')
   // console.log(arrayHarga);
 
@@ -851,7 +851,7 @@ Thank you :)`
           </div>
         </div>
         <div style={{}}>
-          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedData : fixedData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
+          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedData : mapData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
             <CloudArrowDown /> Export As CSV
           </CSVLink>
           <button onClick={() => {
@@ -886,7 +886,7 @@ Thank you :)`
                 <thead>
                   <tr style={{ whiteSpace: 'nowrap' }}>
                     <th>
-                      <input className="form-check-input" type="checkbox" checked={selectedRows.length === fixedData.length}
+                      <input className="form-check-input" type="checkbox" checked={selectedRows.length === mapData.length}
                         onChange={handleSelectAll} id="flexCheckChecked" />
                     </th>
                     {

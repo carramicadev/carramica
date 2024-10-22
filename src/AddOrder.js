@@ -763,7 +763,8 @@ const AddOrder = () => {
         });
 
         const orderIds = String(newOrderCount).padStart(4, '0');  // Format the order ID
-        const newOrderId = `OS-${newOrderCount}-${orderIds}`;  // Example: "OS-1-0001"
+        const invNumb = newOrderId?.split('-')?.[2]
+        const newOrderId = `OS-${invNumb}-${orderIds}`;  // Example: "OS-1-0001"
 
         return {
           ...ord,
