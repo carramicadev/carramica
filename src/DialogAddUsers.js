@@ -10,7 +10,7 @@ import { useSnackbar } from 'notistack';
 export default function DialogAddUsers({ show, handleClose, setUpdate }) {
     const { enqueueSnackbar } = useSnackbar();
 
-    const ListRules = ['admin', 'sales', 'shipping'];
+    const ListRules = ['admin', 'sales', 'shipping', 'Head Of Sales'];
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         email: '',

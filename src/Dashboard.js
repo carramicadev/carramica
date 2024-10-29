@@ -281,7 +281,7 @@ const Dashboard = ({ profile }) => {
                       <Card.Title>{data?.nama}</Card.Title>
                       <div>
                         <Card.Text style={{ whiteSpace: 'nowrap', marginLeft: '5px' }}>Order Total</Card.Text>
-                        <Card.Text style={{ float: 'right' }}> {data?.jumlahOrder > 10 ? '+10' : data?.jumlahOrder}</Card.Text>
+                        <Card.Text style={{ float: 'right' }}> {data?.jumlahOrder}</Card.Text>
                       </div>
                     </div>
                     <h6>Sale</h6>

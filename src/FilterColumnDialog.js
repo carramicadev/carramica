@@ -5,11 +5,13 @@ import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import { useAuth } from './AuthContext';
 import { firestore } from './FirebaseFrovider';
 
-export const FilterColumnDialog = ({ show, handleClose, setSelectColumn, dateTimestamp, setAllOrders, column, selectColumn }) => {
+export const FilterColumnDialog = ({ show, handleClose, setSelectColumn, dateTimestamp, setAllOrders, column, selectColumn, user, setColumn, newColumn }) => {
     const [checkedItems, setCheckedItems] = useState([]);
     const [checkedItemsAll, setCheckedItemsAll] = useState([]);
-    // get set column
     const { currentUser } = useAuth();
+
+    const findUser = user.find(itm => itm.userId === currentUser?.uid)
+    // get set column
     const columnRef = doc(firestore, "settings", "rules", "column", currentUser?.uid);
 
 
@@ -50,8 +52,14 @@ export const FilterColumnDialog = ({ show, handleClose, setSelectColumn, dateTim
 
     useEffect(() => {
         setCheckedItems(selectColumn)
-    }, [selectColumn])
-    // console.log(selectColumn)
+    }, [selectColumn]);
+
+    useEffect(() => {
+        if (findUser?.rules === 'admin' || findUser?.rules === 'Head Of Sales') {
+            setColumn([...column, newColumn])
+        }
+    }, [findUser?.rules])
+    console.log(findUser)
 
     return (
         <Modal style={{

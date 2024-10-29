@@ -2,24 +2,23 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
-import { firestore } from './FirebaseFrovider';
+import { firestore, functions } from './FirebaseFrovider';
 import { useNavigate } from 'react-router-dom';
+import { httpsCallable } from 'firebase/functions';
 
 export default function RedirectToWa(props) {
     const navigate = useNavigate();
 
     const sendMessage = async () => {
-        const message = `Halo ${props?.data?.senderName},\n\n
-Thank you for purchasing our product!.\n
-Total pembayaran Anda adalah Rp. ${props?.data?.harga}\n\n
 
-Silahkan melakukan pembayaran melalui link berikut : ${props?.data?.link}\n\n
-
-Kabarin ya jika ada kendala. Harap konfirmasi jika telah berhasil.\n\n
-Terima kasih`
-        const url = `https://wa.me/${props?.data?.senderPhone}?text=${encodeURIComponent(message)}`;
-        window.open(url, '_blank');
-
+        const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+        await getToken({
+            name: props?.data?.senderName,
+            no: props?.data?.senderPhone,
+            price: props?.data?.harga.toString(),
+            link: props?.data?.link,
+            type: 'pembayaran'
+        });
         await setDoc(doc(firestore, 'orders', props?.show.id), {
             isInvWASent: true
         }, { merge: true });

@@ -9,6 +9,7 @@ import lalamove from './lalamove.png'
 import { arrayUnion, doc, getDoc, onSnapshot, runTransaction, setDoc, updateDoc } from 'firebase/firestore';
 import { firestore } from './FirebaseFrovider';
 import { Document, Image, Page, PDFDownloadLink, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { useEffect, useState } from 'react';
 
 const styles = StyleSheet.create({
     page: {
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     disabledButton: { textDecoration: 'none', pointerEvents: 'none', backgroundColor: 'lightgray' },
     allowedButton: { textDecoration: 'none', }
 });
-function MyDoc({ item }) {
+function MyDoc({ item, setLoading }) {
     const chunkArray = (arr, size) => {
         const result = [];
         for (let i = 0; i < arr.length; i += size) {
@@ -113,7 +114,9 @@ function MyDoc({ item }) {
     };
     const chunks = chunkArray(item, 4);
 
-    return <Document>
+    return <Document
+        onRender={() => setLoading(false)}
+    >
         {chunks.map((chunk, chunkIndex) => (
             <Page size="A4" key={chunkIndex} >
                 {
@@ -230,7 +233,7 @@ export default function DownloadPdfDialog(props) {
     const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
     const item = props?.show?.data;
     // console.log(props?.show?.userId)
-
+    console.log(props?.loading)
     const downloadPdf = async () => {
         try {
             await Promise.all(
@@ -262,6 +265,8 @@ export default function DownloadPdfDialog(props) {
                     // Trigger UI updates
                     props?.setUpdate((prevValue) => !prevValue);
                     props?.onHide();
+                    // setLoading(true)
+
                 })
             );
         } catch (e) {
@@ -272,6 +277,7 @@ export default function DownloadPdfDialog(props) {
     // const arrayId = item?.map((ord) => ord?.unixId);
     const nameOfPdf = item?.length > 1 ? new Date().toLocaleString().replace(/ /g, '_').replace(',', '').replace('/', '-').replace('/', '-').replace(/:/g, '-') : item?.[0]?.unixId
     // console.log(new Date().toLocaleString().replace(/ /g, '_').replace(',', '').replace('/', '-').replace('/', '-'))
+
     return (
         <div
             className="modal show"
@@ -292,7 +298,11 @@ export default function DownloadPdfDialog(props) {
             scrollable={true}
             // {...props}
             show={props?.show?.open}
-            onHide={props?.onHide}
+            onHide={() => {
+                props?.onHide();
+                // setLoading(true);
+
+            }}
             backdrop="static"
             keyboard={false}
         >
@@ -305,70 +315,77 @@ export default function DownloadPdfDialog(props) {
 
                 }}>
 
-                    <div ref={targetRef}>
-                        <div className="">
-                            {
-                                item?.map?.((data, index) => {
-                                    // console.log(data?.nama)
-                                    return <>
-                                        <table key={index} className="gift-card-table">
-                                            <tbody>
-                                                <tr>
-                                                    <td className="left-section">
-                                                        <p><strong>To:</strong><br />{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
-                                                        <p><strong>From:</strong><br />{data?.senderName}<br />{data?.senderPhone}</p>
+                    {
+                        props?.loading ?
+                            <p>Loading PDF...</p> :
+                            <div ref={targetRef}>
+                                <div className="">
+                                    {
+                                        item?.map?.((data, index) => {
+                                            // console.log(data?.nama)
+                                            return <>
+                                                <table key={index} className="gift-card-table">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td className="left-section">
+                                                                <p><strong>To:</strong><br />{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
+                                                                <p><strong>From:</strong><br />{data?.senderName}<br />{data?.senderPhone}</p>
 
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                            <p><strong>Order:</strong><br />{data?.id}<br />
-                                                                {data.nama.map((nama, i) => {
-                                                                    return <>{nama} <br /></>
-                                                                })}
-                                                            </p>
-                                                            <div className="logos">
-                                                                <img src={logoFull}
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <p><strong>Order:</strong><br />{data?.id}<br />
+                                                                        {data.nama.map((nama, i) => {
+                                                                            return <>{nama} <br /></>
+                                                                        })}
+                                                                    </p>
+                                                                    <div className="logos">
+                                                                        <img src={logoFull}
 
-                                                                    alt="Carramica Logo" />
-                                                                <div
-                                                                    style={data.kurir === 'SAP' ? { marginTop: '-25px', marginLeft: '20px' } : { marginTop: '-25px', marginLeft: '-40px' }}
-                                                                    className="logoKurir">
+                                                                            alt="Carramica Logo" />
+                                                                        <div
+                                                                            style={data.kurir === 'SAP' ? { marginTop: '-25px', marginLeft: '20px' } : { marginTop: '-25px', marginLeft: '-40px' }}
+                                                                            className="logoKurir">
 
-                                                                    <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
+                                                                            <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="right-section">
-                                                        <p><strong>Gift Card:</strong><br />{data?.giftCard}</p>
-                                                        <p><strong>To:</strong>{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
-                                                        <p><strong>From:</strong><br />{data?.senderName}<br /></p>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '50px' }}>
-                                                            <p>Paid at: {data?.paidAt}</p>
-                                                            <div className="logoKurir">
+                                                            </td>
+                                                            <td className="right-section">
+                                                                <p><strong>Gift Card:</strong><br />{data?.giftCard}</p>
+                                                                <p><strong>To:</strong>{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
+                                                                <p><strong>From:</strong><br />{data?.senderName}<br /></p>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '50px' }}>
+                                                                    <p>Paid at: {data?.paidAt}</p>
+                                                                    <div className="logoKurir">
 
-                                                                <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </>
+                                                                        <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </>
 
-                                })
-                            }
-                        </div>
-                    </div>
+                                        })
+                                    }
+                                </div>
+                            </div>
+                    }
                     {/* <MyDoc item={item} /> */}
                 </Modal.Body>
                 <Modal.Footer
                     style={{ display: 'flex' }}
                 >
-                    {/* <Button variant="secondary" >
+                    <Button variant="secondary" onClick={() => {
+                        // setLoading(true);
+                        props?.onHide()
+                    }} >
                         Close
-                    </Button> */}
+                    </Button>
                     {/* <button onClick={downloadPdf} className="button button-primary" >DownloadPdf</button> */}
-                    <PDFDownloadLink className='button button-primary' style={item?.length > 0 ? styles.allowedButton : styles.disabledButton} onClick={downloadPdf} document={<MyDoc item={item} />} fileName={`CRM-${nameOfPdf}.pdf`}>
-                        DownloadPdf  {/* {({ loading }) => (loading ? 'Loading document...' : 'Download PDF')} */}
+                    <PDFDownloadLink className='button button-primary' style={item?.length < 1 ? styles.disabledButton : props?.loading ? styles.disabledButton : styles.allowedButton} onClick={downloadPdf} document={<MyDoc item={item} setLoading={props?.setLoading} />} fileName={`CRM-${nameOfPdf}.pdf`}>
+                        {props?.loading ? 'Loading document...' : 'Download PDF'}
                     </PDFDownloadLink>
                 </Modal.Footer>
             </Modal>

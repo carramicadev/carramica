@@ -16,7 +16,7 @@ const Settings = (props) => {
   const [update, setUpdate] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [selectedRules, setSelectedRules] = React.useState('sales');
-  const rules = ['sales', 'admin', 'shipping']
+  const rules = ['sales', 'admin', 'shipping', 'Head Of Sales']
   // const [selectedOptions, setSelectedOptions] = useState([]);
   const options = [
     { component: 'home', name: 'Home', path: '/' },

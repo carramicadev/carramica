@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot, runTransaction } from "firebase/firestore";
 import Header from './Header';
 import AddSalesModal from './AddSalesModal';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -8,6 +8,7 @@ import { httpsCallable } from "firebase/functions";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-phone-input-2/lib/style.css';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
 // import 'react-bootstrap-typeahead/css/Typeahead.css';
 import dataServiceLalamove from './kecamatan.json';
 import Autocomplete from 'react-autocomplete';
@@ -109,7 +110,7 @@ const AddOrder = () => {
     ongkir: 0,
     giftCard: '',
     kurirProduk: '',
-    products: [{ nama: '', quantity: 1, price: '', discount: '', amount: '' }]
+    products: [{ nama: '', quantity: 1, price: '', discount: '', amount: '', discount_type: 'Rp' }]
   };
 
   useEffect(() => {
@@ -269,15 +270,16 @@ const AddOrder = () => {
 
   const handleChange = async (e, orderIndex, productIndex, prod) => {
     setIndexOrder(orderIndex)
+    console.log(typeof e === 'object', !Array.isArray(e))
 
-    const { name, value } = typeof e === 'object' && e.target;
+    const { name, value } = !Array.isArray(e) && typeof e === 'object' && e.target;
+
     // let selectedObj = {}
     if (name === 'kurirProduk') {
       setKurirService(value)
     }
     // else if (name === 'kurirService') {
     //   selectedObj = listService?.find?.(option => option?.courier_service_code === value);
-
 
     // } 
     else if (name === 'kurir' && value === 'LALAMOVE') {
@@ -293,29 +295,28 @@ const AddOrder = () => {
       setKurirAktif(value)
     }
     if (productIndex !== undefined) {
-      const docRef = name === 'nama' ? doc(firestore, "product", value) : doc(firestore, "product", 'value');
-      const docSnap = await getDoc(docRef);
-      // console.log("Document data:", docSnap?.data());
 
-      if (docSnap.exists()) {
-        // console.log("Document data:", docSnap.data());
-      } else {
-        // docSnap.data() will be undefined in this case
-        console.log("No such document!");
-      }
       const updatedOrders = orders.map((order, i) =>
         i === orderIndex ? {
           ...order,
           products: order.products.map((product, j) => {
             const hargaProd = product?.price;
             let hargaAmountAfterDiscon = parseInt(product?.price) * parseInt(product?.quantity);
-            if (name === 'discount') {
-              // console.log(value)
+            if (typeof e === 'object' && name === 'discount_type' && value === '%' && product?.discount) {
+              console.log('%')
+              hargaAmountAfterDiscon = (1 - (parseInt(product?.discount ? product?.discount : 0) / 100)) * hargaAmountAfterDiscon
 
+            } else if (typeof e === 'object' && name === 'discount_type' && value === 'Rp' && product?.discount) {
+              console.log('Rp')
+              hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(product?.discount ? product?.discount : 0)
+            } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === '%') {
+              hargaAmountAfterDiscon = (1 - (parseInt(value ? value : 0) / 100)) * hargaAmountAfterDiscon
+            } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === 'Rp') {
+              console.log('Rp')
               hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(value ? value : 0)
             }
             // console.log(hargaAmountAfterDiscon)
-            return j === productIndex ? name === 'nama' ? { ...product, [name]: docSnap.data().nama, price: docSnap.data()?.harga, weight: docSnap.data().weight, height: docSnap.data().height, width: docSnap.data().width, length: docSnap.data().length, amount: docSnap.data()?.harga, sku: docSnap.data().sku, id: docSnap.id, stock: docSnap.data()?.stok } : name === 'quantity' ? { ...product, [name]: parseInt(value), amount: hargaProd * parseInt(value) - parseInt(product?.discount ? product.discount : 0) } : { ...product, [name]: parseInt(value), amount: hargaAmountAfterDiscon } : product
+            return j === productIndex ? Array.isArray(e) ? { ...product, prod: e, nama: e?.[0]?.nama, price: e?.[0]?.harga, weight: e?.[0]?.weight, height: e?.[0]?.height, width: e?.[0]?.width, length: e?.[0]?.length, amount: e?.[0]?.harga, sku: e?.[0]?.sku, id: e?.[0]?.id, stock: e?.[0]?.stok } : name === 'quantity' ? { ...product, [name]: parseInt(value), amount: product?.discount_type === '%' ? ((1 - (product?.discount / 100)) * (hargaProd * parseInt(value))) : hargaProd * parseInt(value) - parseInt(product?.discount ? product.discount : 0) } : name === 'discount_type' ? { ...product, [name]: value, amount: hargaAmountAfterDiscon } : { ...product, [name]: parseInt(value), amount: hargaAmountAfterDiscon } : product
           })
         } : order
       );
@@ -387,7 +388,7 @@ const AddOrder = () => {
     const updatedOrders = orders.map((order, i) =>
       i === orderIndex ? {
         ...order,
-        products: [...order.products, { nama: '', quantity: '', price: '', discount: '', amount: '' }]
+        products: [...order.products, { nama: '', quantity: '', price: '', discount: '', amount: '', discount_type: 'Rp' }]
       } : order
     );
     setOrders(updatedOrders);
@@ -427,10 +428,10 @@ const AddOrder = () => {
       try {
         setOrders([...orders, initialOrder]);
         setIndexOrder(indexOrder + 1)
-        await setDoc(settingsRef, {
-          // invoiceId: increment(1),
-          orderId: increment(1)
-        }, { merge: true })
+        // await setDoc(settingsRef, {
+        //   // invoiceId: increment(1),
+        //   orderId: increment(1)
+        // }, { merge: true })
         setUpdate((prevValue) => !prevValue)
         setOrdersErr(err => [...err, initialOrderErr])
 
@@ -486,10 +487,10 @@ const AddOrder = () => {
 
       setIndexOrder(indexOrder + 1)
 
-      await setDoc(settingsRef, {
-        // invoiceId: increment(1),
-        orderId: increment(1)
-      }, { merge: true });
+      // await setDoc(settingsRef, {
+      //   // invoiceId: increment(1),
+      //   orderId: increment(1)
+      // }, { merge: true });
       setUpdate((prevValue) => !prevValue)
       setOrdersErr(err => [...err, initialOrderErr])
 
@@ -540,18 +541,30 @@ const AddOrder = () => {
       }
     })
   })
-
   const hargaTotal = totalHarga?.map((tot) => {
     return tot.reduce((val, nilaiSekarang) => {
       return val + nilaiSekarang
     }, 0)
   })
-  // console.log(hargaTotal.reduce((val, nilaiSekarang) => {
-  //   return val + nilaiSekarang
-  // }, 0))
   const totalAfterReduce = hargaTotal.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang
   }, 0)
+  const totalAmount = orders?.map((ord) => {
+    return ord?.products?.map((prod) => {
+      return prod?.amount
+    })
+  })
+
+  const hargaTotalAmount = totalAmount?.map((tot) => {
+    return tot.reduce((val, nilaiSekarang) => {
+      return val + nilaiSekarang
+    }, 0)
+  })
+  const totalAmountAfterReduce = hargaTotalAmount.reduce((val, nilaiSekarang) => {
+    return val + nilaiSekarang
+  }, 0)
+  console.log(totalAmountAfterReduce)
+
 
   // diskon
   const diskon = orders?.map((ord) => {
@@ -665,10 +678,7 @@ const AddOrder = () => {
       setLoading(true);
 
 
-      const arrayOngkir = Object.values(ongkir);
-      const updateOrder = orders?.map((ord, i) => {
-        return { ...ord, ongkir: arrayOngkir?.[i] }
-      })
+
       // inv id and order id
       if (formData?.additionalDiscount) {
         product.push({
@@ -710,83 +720,160 @@ const AddOrder = () => {
       }
 
       // checking order id
-      const orderRef = doc(firestore, "orders", `INV-2024-${invId}`)
+      const docRef = doc(firestore, "settings", 'counter');
 
-      const orderDoc = await getDoc(orderRef);
-      if (orderDoc.exists()) {
-        // console.log('exist')
-        setUpdate((prevValue) => !prevValue);
-        const docRef = doc(firestore, "settings", 'counter');
-        const docSnap = await getDoc(docRef);
-        const newInvId = String(docSnap.data()?.invoiceId + 1).padStart(4, '0');
-        const orderUpdate = orders.map((ord, i) => {
-          const newOrdId = String(docSnap.data()?.orderId).padStart(4, '0');
-          return {
-            ...ord,
-            ordId: `OS-${newInvId}-${newOrdId}`,
-            ongkir: arrayOngkir?.[i]
+      const newOrderId = await runTransaction(firestore, async (transaction) => {
+        const counterDoc = await transaction.get(docRef);
+
+        if (!counterDoc.exists()) {
+          throw new Error('Counter document does not exist!');
+        }
+
+        // Get the current order count and increment by 1
+        const currentCount = counterDoc.data().invoiceId || 0;
+        const newCount = currentCount + 1;
+        const newInvId = String(newCount).padStart(4, '0');
+
+        // Update the counter in Firestore
+        transaction.update(docRef, { invoiceId: newCount });
+
+        // Return the new order ID
+        return `INV-2024-${newInvId}`;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
+      });
+
+
+      const arrayOngkir = Object.values(ongkir);
+      const updateOrder = await Promise.all(orders?.map(async (ord, i) => {
+        const newOrderCount = await runTransaction(firestore, async (transaction) => {
+          const counterDoc = await transaction.get(docRef);
+
+          if (!counterDoc.exists()) {
+            throw new Error('Counter document does not exist!');
           }
+
+          // Get the current order count and increment by 1
+          const currentCount = counterDoc.data().orderId || 0;
+          const newCount = currentCount + 1;
+
+          // Update the counter in Firestore
+          transaction.update(docRef, { orderId: newCount });
+
+          // Return the new order ID
+          return newCount;
         });
 
+        const orderIds = String(newOrderCount).padStart(4, '0');  // Format the order ID
+        const invNumb = newOrderId?.split('-')?.[2]
+        const newOrdId = `OS-${invNumb}-${orderIds}`;  // Example: "OS-1-0001"
 
-        const newOrderRef = doc(firestore, "orders", `INV-2024-${newInvId}`)
+        return {
+          ...ord,
+          ongkir: arrayOngkir?.[i],
+          ordId: newOrdId
+        };
+      }));
 
-        await setDoc(newOrderRef, {
-          ...formData, orders: orderUpdate, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
-          paymentStatus: 'pending',
-          totalHargaProduk: totalAfterReduce,
-          userId: currentUser?.uid,
-          invoice_id: `INV-2024-${newInvId}`
-        }, { merge: true });
-        //  settdoc
-        await setDoc(settingsRef, {
-          orderId: increment(orderUpdate.length),
-          invoiceId: increment(1),
-        }, { merge: true })
-        const payment = httpsCallable(functions, 'createOrder');
-        const result = await payment({
-          amount: totalAfterDiskonDanOngkir,
-          id: `INV-2024-${newInvId}`,
-          item: product,
-          customer_details: customer_details
-        });
-        await setDoc(newOrderRef, {
-          midtrans: result.data.items,
-        }, { merge: true });
-        // console.log(result.data.items)
-        setLinkMidtrans(result.data.items?.redirect_url)
-        setDialogRedirectWAShow({ open: true, id: `INV-2024-${newInvId}` });
+      const orderRef = doc(firestore, "orders", newOrderId)
 
-      } else {
-        // console.log('not')
+      // const orderDoc = await getDoc(orderRef);
+      await setDoc(orderRef, {
+        ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
+        paymentStatus: 'pending',
+        totalHargaProduk: totalAfterReduce,
+        userId: currentUser?.uid,
+        invoice_id: newOrderId,
+        // firstOrdId: newOrderCount
+      }, { merge: true });
 
-        await setDoc(settingsRef, {
-          invoiceId: increment(1),
-          orderId: increment(1)
-        }, { merge: true })
-        await setDoc(orderRef, {
-          ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
-          paymentStatus: 'pending',
-          totalHargaProduk: totalAfterReduce,
-          userId: currentUser?.uid,
-          invoice_id: `INV-2024-${invId}`
-        }, { merge: true });
+      const payment = httpsCallable(functions, 'createOrder');
+      const result = await payment({
+        amount: totalAfterDiskonDanOngkir,
+        id: newOrderId,
+        item: product,
+        customer_details: customer_details
+      });
+      await setDoc(orderRef, {
+        midtrans: result.data.items,
+      }, { merge: true });
+      // console.log(result.data.items)
+      setLinkMidtrans(result.data.items?.redirect_url)
+      setDialogRedirectWAShow({ open: true, id: newOrderId });
 
-        const payment = httpsCallable(functions, 'createOrder');
-        const result = await payment({
-          amount: totalAfterDiskonDanOngkir,
-          id: `INV-2024-${invId}`,
-          item: product,
-          customer_details: customer_details
-        });
-        await setDoc(orderRef, {
-          midtrans: result.data.items,
-        }, { merge: true });
-        // console.log(result.data.items)
-        setLinkMidtrans(result.data.items?.redirect_url)
-        setDialogRedirectWAShow({ open: true, id: `INV-2024-${invId}` });
+      // if (orderDoc.exists()) {
+      //   // console.log('exist')
+      //   setUpdate((prevValue) => !prevValue);
+      //   const docSnap = await getDoc(docRef);
+      //   const newInvId = String(docSnap.data()?.invoiceId + 1).padStart(4, '0');
+      //   const orderUpdate = orders.map((ord, i) => {
+      //     const newOrdId = String(docSnap.data()?.orderId).padStart(4, '0');
+      //     return {
+      //       ...ord,
+      //       ordId: `OS-${newInvId}-${newOrdId}`,
+      //       ongkir: arrayOngkir?.[i]
+      //     }
+      //   });
 
-      }
+
+      //   const newOrderRef = doc(firestore, "orders", `INV-2024-${newInvId}`)
+
+      //   await setDoc(newOrderRef, {
+      //     ...formData, orders: orderUpdate, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
+      //     paymentStatus: 'pending',
+      //     totalHargaProduk: totalAfterReduce,
+      //     userId: currentUser?.uid,
+      //     invoice_id: `INV-2024-${newInvId}`,
+      //     firstOrdId: docSnap.data()?.orderId
+      //   }, { merge: true });
+      //   //  settdoc
+      //   await setDoc(settingsRef, {
+      //     orderId: increment(orderUpdate.length),
+      //     invoiceId: increment(1),
+      //   }, { merge: true })
+      //   const payment = httpsCallable(functions, 'createOrder');
+      //   const result = await payment({
+      //     amount: totalAfterDiskonDanOngkir,
+      //     id: `INV-2024-${newInvId}`,
+      //     item: product,
+      //     customer_details: customer_details
+      //   });
+      //   await setDoc(newOrderRef, {
+      //     midtrans: result.data.items,
+      //   }, { merge: true });
+      //   // console.log(result.data.items)
+      //   setLinkMidtrans(result.data.items?.redirect_url)
+      //   setDialogRedirectWAShow({ open: true, id: `INV-2024-${newInvId}` });
+
+      // } else {
+      //   // console.log('not')
+
+      //   await setDoc(settingsRef, {
+      //     invoiceId: increment(updateOrder.length),
+      //     orderId: increment(1)
+      //   }, { merge: true })
+      //   await setDoc(orderRef, {
+      //     ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
+      //     paymentStatus: 'pending',
+      //     totalHargaProduk: totalAfterReduce,
+      //     userId: currentUser?.uid,
+      //     invoice_id: `INV-2024-${invId}`,
+      //     firstOrdId: settings?.orderId
+      //   }, { merge: true });
+
+      //   const payment = httpsCallable(functions, 'createOrder');
+      //   const result = await payment({
+      //     amount: totalAfterDiskonDanOngkir,
+      //     id: `INV-2024-${invId}`,
+      //     item: product,
+      //     customer_details: customer_details
+      //   });
+      //   await setDoc(orderRef, {
+      //     midtrans: result.data.items,
+      //   }, { merge: true });
+      //   // console.log(result.data.items)
+      //   setLinkMidtrans(result.data.items?.redirect_url)
+      //   setDialogRedirectWAShow({ open: true, id: `INV-2024-${invId}` });
+
+      // }
 
 
       // console.log("Document written with ID: ", docRef.id);
@@ -983,6 +1070,7 @@ const AddOrder = () => {
   //   }
 
   // }, [selectedService, kurirAktif, addressAktif, koordinateReceiver]);
+  const [typeahead, setTypehed] = useState([]);
 
   // check no hp
   const handleCheckPhone = async (phone) => {
@@ -1022,7 +1110,7 @@ const AddOrder = () => {
       console.log(e.message)
     }
   }
-  // console.log(orders)
+  console.log(orders)
   // console.log(ordersErr)
   // if (loadingProd) {
   //   return 'loading...'
@@ -1104,7 +1192,7 @@ const AddOrder = () => {
                     country={'id'} // Set a default country
                     value={order.receiverPhone}
                     onChange={(e) => handleChange(e, orderIndex)}
-                    onBlur={(e) => handleCheckPhone(order.receiverPhone)}
+                    // onBlur={(e) => handleCheckPhone(order.receiverPhone)}
                     enableSearch={true} // Enable search in the country dropdown
                     placeholder="Enter phone number"
                   />
@@ -1135,7 +1223,17 @@ const AddOrder = () => {
                 {order.products.map((product, productIndex) => {
 
                   return <div key={productIndex} className="productField">
-                    <div className="form-group">
+                    <Typeahead
+                      id="basic-typeahead"
+                      labelKey="nama"
+                      onChange={(e) => {
+                        handleChange(e, orderIndex, productIndex)
+                      }} options={allProduct}
+                      placeholder="Products..."
+                      selected={product?.prod}
+                      className="w-50"
+                    />
+                    {/* <div className="form-group">
                       <Form.Label className="label">Nama Produk</Form.Label>
                       <Form.Select isInvalid={ordersErr?.[orderIndex]?.products?.[productIndex]?.nama ? true : false} className="select" name="nama" value={product?.id} onChange={(e) => {
                         handleChange(e, orderIndex, productIndex)
@@ -1152,7 +1250,7 @@ const AddOrder = () => {
                           {ordersErr?.[orderIndex]?.products?.[productIndex]?.nama}
                         </div>
                       }
-                    </div>
+                    </div> */}
 
                     <div className="productInfo">
                       <div className="form-group">
@@ -1172,17 +1270,29 @@ const AddOrder = () => {
 
                       <div className="form-group">
                         <Form.Label className="label">Price</Form.Label>
-                        <Form.Control className="input" type="text" name="price" placeholder="Price" disabled value={product.price} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        <Form.Control className="input" type="text" name="price" placeholder="Price" disabled value={currency(product.price)} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
                       </div>
-
-                      <div className="form-group">
+                      <div className="form-group" style={{ marginRight: '-5px' }}>
+                        <Form.Label className="label" style={{ whiteSpace: 'nowrap', width: '90px', }}>Type </Form.Label>
+                        <Form.Select style={{ borderTopRightRadius: '0px', borderBottomRightRadius: '0px' }} className="select" name="discount_type" value={product?.discount_type} onChange={(e) => {
+                          handleChange(e, orderIndex, productIndex)
+                        }}>
+                          <option selected hidden >Type</option>
+                          {
+                            ['%', 'Rp']?.map?.((prod) => {
+                              return <option value={prod} >{prod}</option>
+                            })
+                          }
+                        </Form.Select>
+                      </div>
+                      <div className="form-group" style={{ marginLeft: '-5px' }}>
                         <Form.Label className="label">Discount</Form.Label>
-                        <Form.Control onWheel={(e) => e.target.blur()} className="input" type="number" name="discount" placeholder="Discount" value={product.discount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        <Form.Control style={{ borderTopLeftRadius: '0px', borderBottomLeftRadius: '0px' }} onWheel={(e) => e.target.blur()} className="input" type="number" name="discount" placeholder="Discount" value={product.discount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
                       </div>
 
                       <div className="form-group">
                         <Form.Label className="label">Amount</Form.Label>
-                        <Form.Control className="input" type="number" name="amount" placeholder="Amount" disabled value={product.amount} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
+                        <Form.Control className="input" type="text" name="amount" placeholder="Amount" disabled value={currency(product.amount)} onChange={(e) => handleChange(e, orderIndex, productIndex)} />
                       </div>
                     </div>
                   </div>
