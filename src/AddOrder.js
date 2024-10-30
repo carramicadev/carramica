@@ -23,10 +23,12 @@ import { useAuth } from './AuthContext';
 import { Form } from 'react-bootstrap';
 import { useSnackbar } from 'notistack';
 import PhoneInput from 'react-phone-input-2';
+import { useNavigate } from 'react-router-dom';
 
 const AddOrder = () => {
   const { currentUser } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   // get settings doc
   // const settingsRef = collection(firestore, "settings");
@@ -797,8 +799,20 @@ const AddOrder = () => {
       }, { merge: true });
       // console.log(result.data.items)
       setLinkMidtrans(result.data.items?.redirect_url)
-      setDialogRedirectWAShow({ open: true, id: newOrderId });
-
+      // setDialogRedirectWAShow({ open: true, id: newOrderId });
+      const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+      await getToken({
+        name: formData?.senderName,
+        no: formData?.senderPhone,
+        price: totalAfterDiskonDanOngkir?.toString(),
+        link: result.data.items?.redirect_url,
+        type: 'pembayaran'
+      });
+      await setDoc(doc(firestore, 'orders', newOrderId), {
+        isInvWASent: true
+      }, { merge: true });
+      // props?.onHide()
+      navigate('/orders')
       // if (orderDoc.exists()) {
       //   // console.log('exist')
       //   setUpdate((prevValue) => !prevValue);
