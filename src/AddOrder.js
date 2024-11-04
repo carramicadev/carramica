@@ -788,6 +788,7 @@ const AddOrder = () => {
           totalHargaProduk: totalAfterReduce ?? 0,
           userId: currentUser?.uid ?? '',
           invoice_id: newOrderId ?? '',
+          totalAfterDiskonDanOngkir: totalAfterDiskonDanOngkir ?? 0
           // firstOrdId: newOrderCount
         }, { merge: true });
 
