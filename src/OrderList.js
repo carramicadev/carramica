@@ -604,7 +604,7 @@ Thank you :)`
       )), style: {}
     },
     { label: "Date Order", key: (item) => formatDate(item?.createdAt?.toDate()), style: {} },
-    { label: "Payment Status", key: (item, i, idOrder, style) => <li style={style}>{item?.paymentStatus || 'Unpaid'}</li>, style: {} },
+    { label: "Payment Status", key: (item, i, idOrder, style) => <li style={style}>{item?.resi ? 'Sent' : item?.paymentStatus === 'settlement' ? 'Processing' : 'Unpaid'}</li>, style: {} },
     { label: "Paid At", key: (item) => item?.paidAt, style: {} },
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },
     { label: "Discount", key: (item) => item?.discount, style: {} },

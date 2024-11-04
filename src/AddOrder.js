@@ -743,175 +743,92 @@ const AddOrder = () => {
         return `INV-2024-${newInvId}`;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
       });
 
+      if (newOrderId) {
 
-      const arrayOngkir = Object.values(ongkir);
-      const updateOrder = await Promise.all(orders?.map(async (ord, i) => {
-        const newOrderCount = await runTransaction(firestore, async (transaction) => {
-          const counterDoc = await transaction.get(docRef);
+        const arrayOngkir = Object.values(ongkir);
+        const updateOrder = await Promise.all(orders?.map(async (ord, i) => {
+          const newOrderCount = await runTransaction(firestore, async (transaction) => {
+            const counterDoc = await transaction.get(docRef);
 
-          if (!counterDoc.exists()) {
-            throw new Error('Counter document does not exist!');
-          }
+            if (!counterDoc.exists()) {
+              throw new Error('Counter document does not exist!');
+            }
 
-          // Get the current order count and increment by 1
-          const currentCount = counterDoc.data().orderId || 0;
-          const newCount = currentCount + 1;
+            // Get the current order count and increment by 1
+            const currentCount = counterDoc.data().orderId || 0;
+            const newCount = currentCount + 1;
 
-          // Update the counter in Firestore
-          transaction.update(docRef, { orderId: newCount });
+            // Update the counter in Firestore
+            transaction.update(docRef, { orderId: newCount });
 
-          // Return the new order ID
-          return newCount;
+            // Return the new order ID
+            return newCount;
+          });
+
+          const orderIds = String(newOrderCount).padStart(4, '0');  // Format the order ID
+          const invNumb = newOrderId?.split('-')?.[2]
+          const newOrdId = `OS-${invNumb}-${orderIds}`;  // Example: "OS-1-0001"
+
+          return {
+            ...ord,
+            ongkir: arrayOngkir?.[i] ?? 0,
+            ordId: newOrdId ?? ''
+          };
+        }));
+
+        const orderRef = doc(firestore, "orders", newOrderId)
+
+        // const orderDoc = await getDoc(orderRef);
+        await setDoc(orderRef, {
+          ...formData,
+          orders: updateOrder,
+          totalOngkir: totalOngkir ?? 0,
+          createdAt: serverTimestamp(),
+          paymentStatus: 'pending',
+          totalHargaProduk: totalAfterReduce ?? 0,
+          userId: currentUser?.uid ?? '',
+          invoice_id: newOrderId ?? '',
+          // firstOrdId: newOrderCount
+        }, { merge: true });
+
+        const payment = httpsCallable(functions, 'createOrder');
+        const result = await payment({
+          amount: totalAfterDiskonDanOngkir,
+          id: newOrderId,
+          item: product,
+          customer_details: customer_details
         });
-
-        const orderIds = String(newOrderCount).padStart(4, '0');  // Format the order ID
-        const invNumb = newOrderId?.split('-')?.[2]
-        const newOrdId = `OS-${invNumb}-${orderIds}`;  // Example: "OS-1-0001"
-
-        return {
-          ...ord,
-          ongkir: arrayOngkir?.[i],
-          ordId: newOrdId
-        };
-      }));
-
-      const orderRef = doc(firestore, "orders", newOrderId)
-
-      // const orderDoc = await getDoc(orderRef);
-      await setDoc(orderRef, {
-        ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
-        paymentStatus: 'pending',
-        totalHargaProduk: totalAfterReduce,
-        userId: currentUser?.uid,
-        invoice_id: newOrderId,
-        // firstOrdId: newOrderCount
-      }, { merge: true });
-
-      const payment = httpsCallable(functions, 'createOrder');
-      const result = await payment({
-        amount: totalAfterDiskonDanOngkir,
-        id: newOrderId,
-        item: product,
-        customer_details: customer_details
-      });
-      await setDoc(orderRef, {
-        midtrans: result.data.items,
-      }, { merge: true });
-      // console.log(result.data.items)
-      setLinkMidtrans(result.data.items?.redirect_url)
-      // setDialogRedirectWAShow({ open: true, id: newOrderId });
-      const getToken = httpsCallable(functions, 'qontakSendWAToSender');
-      await getToken({
-        name: formData?.senderName,
-        no: formData?.senderPhone,
-        price: totalAfterDiskonDanOngkir?.toString(),
-        link: result.data.items?.redirect_url,
-        type: 'pembayaran'
-      });
-      await setDoc(doc(firestore, 'orders', newOrderId), {
-        isInvWASent: true
-      }, { merge: true });
-      // props?.onHide()
-      navigate('/orders')
-      // if (orderDoc.exists()) {
-      //   // console.log('exist')
-      //   setUpdate((prevValue) => !prevValue);
-      //   const docSnap = await getDoc(docRef);
-      //   const newInvId = String(docSnap.data()?.invoiceId + 1).padStart(4, '0');
-      //   const orderUpdate = orders.map((ord, i) => {
-      //     const newOrdId = String(docSnap.data()?.orderId).padStart(4, '0');
-      //     return {
-      //       ...ord,
-      //       ordId: `OS-${newInvId}-${newOrdId}`,
-      //       ongkir: arrayOngkir?.[i]
-      //     }
-      //   });
+        await setDoc(orderRef, {
+          midtrans: result.data.items,
+        }, { merge: true });
+        // console.log(result.data.items)
+        setLinkMidtrans(result.data.items?.redirect_url)
+        // setDialogRedirectWAShow({ open: true, id: newOrderId });
+        const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+        await getToken({
+          name: formData?.senderName,
+          no: formData?.senderPhone,
+          price: totalAfterDiskonDanOngkir?.toString(),
+          link: result.data.items?.redirect_url,
+          type: 'pembayaran'
+        });
+        await setDoc(doc(firestore, 'orders', newOrderId), {
+          isInvWASent: true
+        }, { merge: true });
+        // props?.onHide()
+        navigate('/orders')
 
 
-      //   const newOrderRef = doc(firestore, "orders", `INV-2024-${newInvId}`)
+        const contactRef = await setDoc(doc(firestore, "contact", formData?.senderPhone), { createdAt: serverTimestamp(), nama: formData.senderName, phone: formData.senderPhone, email: formData?.email || '', type: 'sender' });
 
-      //   await setDoc(newOrderRef, {
-      //     ...formData, orders: orderUpdate, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
-      //     paymentStatus: 'pending',
-      //     totalHargaProduk: totalAfterReduce,
-      //     userId: currentUser?.uid,
-      //     invoice_id: `INV-2024-${newInvId}`,
-      //     firstOrdId: docSnap.data()?.orderId
-      //   }, { merge: true });
-      //   //  settdoc
-      //   await setDoc(settingsRef, {
-      //     orderId: increment(orderUpdate.length),
-      //     invoiceId: increment(1),
-      //   }, { merge: true })
-      //   const payment = httpsCallable(functions, 'createOrder');
-      //   const result = await payment({
-      //     amount: totalAfterDiskonDanOngkir,
-      //     id: `INV-2024-${newInvId}`,
-      //     item: product,
-      //     customer_details: customer_details
-      //   });
-      //   await setDoc(newOrderRef, {
-      //     midtrans: result.data.items,
-      //   }, { merge: true });
-      //   // console.log(result.data.items)
-      //   setLinkMidtrans(result.data.items?.redirect_url)
-      //   setDialogRedirectWAShow({ open: true, id: `INV-2024-${newInvId}` });
-
-      // } else {
-      //   // console.log('not')
-
-      //   await setDoc(settingsRef, {
-      //     invoiceId: increment(updateOrder.length),
-      //     orderId: increment(1)
-      //   }, { merge: true })
-      //   await setDoc(orderRef, {
-      //     ...formData, orders: updateOrder, totalOngkir: totalOngkir, createdAt: serverTimestamp(),
-      //     paymentStatus: 'pending',
-      //     totalHargaProduk: totalAfterReduce,
-      //     userId: currentUser?.uid,
-      //     invoice_id: `INV-2024-${invId}`,
-      //     firstOrdId: settings?.orderId
-      //   }, { merge: true });
-
-      //   const payment = httpsCallable(functions, 'createOrder');
-      //   const result = await payment({
-      //     amount: totalAfterDiskonDanOngkir,
-      //     id: `INV-2024-${invId}`,
-      //     item: product,
-      //     customer_details: customer_details
-      //   });
-      //   await setDoc(orderRef, {
-      //     midtrans: result.data.items,
-      //   }, { merge: true });
-      //   // console.log(result.data.items)
-      //   setLinkMidtrans(result.data.items?.redirect_url)
-      //   setDialogRedirectWAShow({ open: true, id: `INV-2024-${invId}` });
-
-      // }
+        await Promise.all(orders?.map?.(async (data) => {
 
 
-      // console.log("Document written with ID: ", docRef.id);
+          await setDoc(doc(firestore, "contact", data?.receiverPhone), { createdAt: serverTimestamp(), nama: data.receiverName, phone: data.receiverPhone, email: '', type: 'receiver' });
+        }));
 
 
-      const contactRef = await setDoc(doc(firestore, "contact", formData?.senderPhone), { createdAt: serverTimestamp(), nama: formData.senderName, phone: formData.senderPhone, email: formData?.email || '', type: 'sender' });
-
-      await Promise.all(orders?.map?.(async (data) => {
-
-
-        await setDoc(doc(firestore, "contact", data?.receiverPhone), { createdAt: serverTimestamp(), nama: data.receiverName, phone: data.receiverPhone, email: '', type: 'receiver' });
-      }));
-
-      // kurangi stok
-      // await Promise.all(orders?.map?.(async (data) => {
-
-      //   Promise.all(data?.products.map(async (prod) => {
-      //     await setDoc(doc(firestore, "product", prod?.id), {
-      //       updatedAt: serverTimestamp(),
-      //       stok: increment(-prod?.quantity)
-      //     }, { merge: true });
-
-      //   }))
-      // }));
+      }
 
 
 
