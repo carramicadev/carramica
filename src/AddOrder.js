@@ -704,7 +704,7 @@ const AddOrder = () => {
       }
       let customer_details = {
         first_name: formData.senderName,
-        last_name: "test",
+        last_name: "",
         email: formData.email || '',
         phone: formData.senderPhone,
 
@@ -713,7 +713,7 @@ const AddOrder = () => {
       if (!formData.email) {
         customer_details = {
           first_name: formData.senderName,
-          last_name: "test",
+          last_name: "",
           // email: formData.email || '',
           phone: formData.senderPhone,
 
