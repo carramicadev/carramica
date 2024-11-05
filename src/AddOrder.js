@@ -800,9 +800,7 @@ const AddOrder = () => {
             item: product,
             customer_details: customer_details
           });
-          await setDoc(orderRef, {
-            midtrans: result.data.items,
-          }, { merge: true });
+
           // console.log(result.data.items)
           setLinkMidtrans(result.data.items?.redirect_url)
           // setDialogRedirectWAShow({ open: true, id: newOrderId });
@@ -814,11 +812,15 @@ const AddOrder = () => {
             link: result.data.items?.redirect_url,
             type: 'pembayaran'
           });
-          await setDoc(doc(firestore, 'orders', newOrderId), {
+
+          await setDoc(orderRef, {
+            midtrans: result.data.items,
             isInvWASent: true
+
           }, { merge: true });
-          // props?.onHide()
-          navigate('/orders')
+          // await setDoc(doc(firestore, 'orders', newOrderId), {
+          // }, { merge: true });
+          // // props?.onHide()
 
 
           const contactRef = await setDoc(doc(firestore, "contact", formData?.senderPhone), { createdAt: serverTimestamp(), nama: formData.senderName, phone: formData.senderPhone, email: formData?.email || '', type: 'sender' });
@@ -835,6 +837,7 @@ const AddOrder = () => {
 
 
 
+      navigate('/orders')
 
       setLoading(false)
       setModalShow(false)
