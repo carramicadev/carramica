@@ -814,7 +814,7 @@ const AddOrder = () => {
           });
 
           await setDoc(orderRef, {
-            midtrans: result.data.items,
+            midtrans: result.data.items ?? {},
             isInvWASent: true
 
           }, { merge: true });
