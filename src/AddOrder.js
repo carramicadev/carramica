@@ -776,57 +776,59 @@ const AddOrder = () => {
           };
         }));
 
-        const orderRef = doc(firestore, "orders", newOrderId)
+        if (updateOrder) {
+          const orderRef = doc(firestore, "orders", newOrderId)
 
-        // const orderDoc = await getDoc(orderRef);
-        await setDoc(orderRef, {
-          ...formData,
-          orders: updateOrder,
-          totalOngkir: totalOngkir ?? 0,
-          createdAt: serverTimestamp(),
-          paymentStatus: 'pending',
-          totalHargaProduk: totalAfterReduce ?? 0,
-          userId: currentUser?.uid ?? '',
-          invoice_id: newOrderId ?? '',
-          totalAfterDiskonDanOngkir: totalAfterDiskonDanOngkir ?? 0
-          // firstOrdId: newOrderCount
-        }, { merge: true });
+          // const orderDoc = await getDoc(orderRef);
+          await setDoc(orderRef, {
+            ...formData,
+            orders: updateOrder,
+            totalOngkir: totalOngkir ?? 0,
+            createdAt: serverTimestamp(),
+            paymentStatus: 'pending',
+            totalHargaProduk: totalAfterReduce ?? 0,
+            userId: currentUser?.uid ?? '',
+            invoice_id: newOrderId ?? '',
+            totalAfterDiskonDanOngkir: totalAfterDiskonDanOngkir ?? 0
+            // firstOrdId: newOrderCount
+          }, { merge: true });
 
-        const payment = httpsCallable(functions, 'createOrder');
-        const result = await payment({
-          amount: totalAfterDiskonDanOngkir,
-          id: newOrderId,
-          item: product,
-          customer_details: customer_details
-        });
-        await setDoc(orderRef, {
-          midtrans: result.data.items,
-        }, { merge: true });
-        // console.log(result.data.items)
-        setLinkMidtrans(result.data.items?.redirect_url)
-        // setDialogRedirectWAShow({ open: true, id: newOrderId });
-        const getToken = httpsCallable(functions, 'qontakSendWAToSender');
-        await getToken({
-          name: formData?.senderName,
-          no: formData?.senderPhone,
-          price: totalAfterDiskonDanOngkir?.toString(),
-          link: result.data.items?.redirect_url,
-          type: 'pembayaran'
-        });
-        await setDoc(doc(firestore, 'orders', newOrderId), {
-          isInvWASent: true
-        }, { merge: true });
-        // props?.onHide()
-        navigate('/orders')
-
-
-        const contactRef = await setDoc(doc(firestore, "contact", formData?.senderPhone), { createdAt: serverTimestamp(), nama: formData.senderName, phone: formData.senderPhone, email: formData?.email || '', type: 'sender' });
-
-        await Promise.all(orders?.map?.(async (data) => {
+          const payment = httpsCallable(functions, 'createOrder');
+          const result = await payment({
+            amount: totalAfterDiskonDanOngkir,
+            id: newOrderId,
+            item: product,
+            customer_details: customer_details
+          });
+          await setDoc(orderRef, {
+            midtrans: result.data.items,
+          }, { merge: true });
+          // console.log(result.data.items)
+          setLinkMidtrans(result.data.items?.redirect_url)
+          // setDialogRedirectWAShow({ open: true, id: newOrderId });
+          const getToken = httpsCallable(functions, 'qontakSendWAToSender');
+          await getToken({
+            name: formData?.senderName,
+            no: formData?.senderPhone,
+            price: totalAfterDiskonDanOngkir?.toString(),
+            link: result.data.items?.redirect_url,
+            type: 'pembayaran'
+          });
+          await setDoc(doc(firestore, 'orders', newOrderId), {
+            isInvWASent: true
+          }, { merge: true });
+          // props?.onHide()
+          navigate('/orders')
 
 
-          await setDoc(doc(firestore, "contact", data?.receiverPhone), { createdAt: serverTimestamp(), nama: data.receiverName, phone: data.receiverPhone, email: '', type: 'receiver' });
-        }));
+          const contactRef = await setDoc(doc(firestore, "contact", formData?.senderPhone), { createdAt: serverTimestamp(), nama: formData.senderName, phone: formData.senderPhone, email: formData?.email || '', type: 'sender' });
+
+          await Promise.all(orders?.map?.(async (data) => {
+
+
+            await setDoc(doc(firestore, "contact", data?.receiverPhone), { createdAt: serverTimestamp(), nama: data.receiverName, phone: data.receiverPhone, email: '', type: 'receiver' });
+          }));
+        }
 
 
       }
