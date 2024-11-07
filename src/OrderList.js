@@ -303,11 +303,11 @@ const OrderList = () => {
       const allDiscount = discount?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang
       }, 0);
-      const gross = ord?.products?.map(prod => prod?.amount);
+      const gross = ord?.products?.map(prod => parseInt(prod?.amount));
       const allGross = gross?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang
       }, 0);
-      const calculate = allGross + ord?.ongkir;
+      const calculate = allGross + parseInt(ord?.ongkir);
 
       // find user
       const userData = user.find(itm => itm.userId === item.userId);
