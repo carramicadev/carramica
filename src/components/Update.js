@@ -71,7 +71,7 @@ export default function FullScreenDialog() {
       setOpen(true);
     }
   }, [isUpdateAvailable]);
-
+  console.log('isUpdate=>', isUpdateAvailable)
   return (
     <React.Fragment>
       <Modal
