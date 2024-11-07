@@ -6,20 +6,25 @@ import reportWebVitals from './reportWebVitals';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { SnackbarProvider } from 'notistack';
 import { AuthProvider } from './AuthContext';
+import SwProvider from './components/SwProvider';
+import FullScreenDialog from './components/Update';
 
 const queryClient = new QueryClient();
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <SnackbarProvider maxSnack={20} autoHideDuration={3000}>
-        <AuthProvider>
+  <SwProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <SnackbarProvider maxSnack={20} autoHideDuration={3000}>
+          <AuthProvider>
 
-          <App />
-        </AuthProvider>
-      </SnackbarProvider>
-    </QueryClientProvider>
-  </React.StrictMode>
+            <App />
+          </AuthProvider>
+        </SnackbarProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+    <FullScreenDialog />
+  </SwProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

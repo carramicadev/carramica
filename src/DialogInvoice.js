@@ -91,7 +91,7 @@ export default function DownloadInvoiceDialog(props) {
 
     // Combine into the desired format
     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    const gross = allProduct?.map(prod => prod?.amount);
+    const gross = allProduct?.map(prod => parseInt(prod?.amount));
     const allGross = gross?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang
     }, 0);
@@ -233,7 +233,7 @@ export default function DownloadInvoiceDialog(props) {
                                                     <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(allGross + allOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
+                                                    <span style={styles.bold}></span> {currency(parseInt(allGross) + parseInt(allOngkir) - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
 
 
@@ -256,7 +256,7 @@ export default function DownloadInvoiceDialog(props) {
                                             <div>
 
                                                 <p>
-                                                    <span style={styles.bold}></span> {currency(allGross + allOngkir - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
+                                                    <span style={styles.bold}></span> {currency(parseInt(allGross) + parseInt(allOngkir) - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
                                             </div>
                                         </div>
