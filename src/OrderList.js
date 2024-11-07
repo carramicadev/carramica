@@ -307,7 +307,7 @@ const OrderList = () => {
       const allGross = gross?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang
       }, 0);
-      const calculate = allGross + parseInt(ord?.ongkir);
+      const calculate = parseInt(allGross) + parseInt(ord?.ongkir);
 
       // find user
       const userData = user.find(itm => itm.userId === item.userId);
