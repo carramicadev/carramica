@@ -673,8 +673,8 @@ const AddOrder = () => {
     }
   }
   const [loading, setLoading] = useState(false)
-  const handlePayment = async () => {
-
+  const handlePayment = async (e) => {
+    e.preventDefault();
     try {
       // console.log('run')
       setLoading(true);
@@ -746,35 +746,46 @@ const AddOrder = () => {
       if (newOrderId) {
 
         const arrayOngkir = Object.values(ongkir);
-        const updateOrder = await Promise.all(orders?.map(async (ord, i) => {
-          const newOrderCount = await runTransaction(firestore, async (transaction) => {
-            const counterDoc = await transaction.get(docRef);
+        const updateOrder = await Promise.all(
+          orders?.map(async (order, index) => {
+            try {
+              // Fetch and increment order count within a Firestore transaction
+              const newOrderCount = await runTransaction(firestore, async (transaction) => {
+                const counterDoc = await transaction.get(docRef);
 
-            if (!counterDoc.exists()) {
-              throw new Error('Counter document does not exist!');
+                if (!counterDoc.exists()) {
+                  throw new Error('Counter document does not exist!');
+                }
+
+                const currentCount = counterDoc.data().orderId || 0;
+                const newCount = currentCount + 1;
+
+                // Update Firestore with the incremented count
+                transaction.update(docRef, { orderId: newCount });
+
+                return newCount;
+              });
+
+              // Format the order ID with leading zeros
+              const formattedOrderId = String(newOrderCount).padStart(4, '0');
+
+              // Construct the new order ID
+              const invoiceNumberPart = newOrderId?.split('-')?.[2] || '0';
+              const newOrdId = `OS-${invoiceNumberPart}-${formattedOrderId}`;
+
+              // Return the updated order object
+              return {
+                ...order,
+                shippingCost: arrayOngkir?.[index] ?? 0,
+                orderId: newOrdId
+              };
+            } catch (error) {
+              console.error(`Error updating order at index ${index}:`, error);
+              return null;  // Handle error by returning null or some fallback object
             }
+          })
+        );
 
-            // Get the current order count and increment by 1
-            const currentCount = counterDoc.data().orderId || 0;
-            const newCount = currentCount + 1;
-
-            // Update the counter in Firestore
-            transaction.update(docRef, { orderId: newCount });
-
-            // Return the new order ID
-            return newCount;
-          });
-
-          const orderIds = String(newOrderCount).padStart(4, '0');  // Format the order ID
-          const invNumb = newOrderId?.split('-')?.[2]
-          const newOrdId = `OS-${invNumb}-${orderIds}`;  // Example: "OS-1-0001"
-
-          return {
-            ...ord,
-            ongkir: arrayOngkir?.[i] ?? 0,
-            ordId: newOrdId ?? ''
-          };
-        }));
 
         if (updateOrder) {
           const orderRef = doc(firestore, "orders", newOrderId)
