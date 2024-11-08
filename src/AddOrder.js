@@ -750,25 +750,22 @@ const AddOrder = () => {
         const updateOrder = await Promise.all(
           orders?.map(async (order, index) => {
             try {
-              // Fetch and increment order count within a Firestore transaction
-              const newOrderCount = await runTransaction(firestore, async (transaction) => {
-                const counterDoc = await transaction.get(docRef);
+              // Directly fetch the counter document
+              const counterDoc = await getDoc(docRef);
 
-                if (!counterDoc.exists()) {
-                  throw new Error('Counter document does not exist!');
-                }
+              if (!counterDoc.exists()) {
+                throw new Error('Counter document does not exist!');
+              }
 
-                const currentCount = counterDoc.data().orderId || 0;
-                const newCount = currentCount + 1;
+              // Get the current order count and increment by 1
+              const currentCount = counterDoc.data().orderId || 0;
+              const newCount = currentCount + 1;
 
-                // Update Firestore with the incremented count
-                transaction.update(docRef, { orderId: newCount });
-
-                return newCount;
-              });
+              // Update Firestore with the incremented count using setDoc
+              await setDoc(docRef, { orderId: newCount }, { merge: true });
 
               // Format the order ID with leading zeros
-              const formattedOrderId = String(newOrderCount).padStart(4, '0');
+              const formattedOrderId = String(newCount).padStart(4, '0');
 
               // Construct the new order ID
               const invoiceNumberPart = newOrderId?.split('-')?.[2] || '0';
@@ -778,17 +775,18 @@ const AddOrder = () => {
               return {
                 ...order,
                 shippingCost: arrayOngkir?.[index] ?? 0,
-                orderId: newOrdId ?? 'error'
+                orderId: newOrdId ?? 'error',
               };
             } catch (error) {
               console.error(`Error updating order at index ${index}:`, error);
               return {
                 ...order,
                 shippingCost: arrayOngkir?.[index] ?? 0,
-              };  // Handle error by returning null or some fallback object
+              };
             }
           })
         );
+
 
 
         if (updateOrder) {
