@@ -97,7 +97,7 @@ export default function DownloadInvoiceDialog(props) {
     }, 0);
 
     // all ongkir
-    const ongkir = findOrder?.orders?.map(ord => ord?.ongkir);
+    const ongkir = findOrder?.orders?.map(ord => parseInt(ord?.ongkir));
     const allOngkir = ongkir?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang
     }, 0);

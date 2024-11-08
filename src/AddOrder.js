@@ -735,12 +735,13 @@ const AddOrder = () => {
         const currentCount = counterDoc.data().invoiceId || 0;
         const newCount = currentCount + 1;
         const newInvId = String(newCount).padStart(4, '0');
+        const currentYear = new Date().getFullYear();
 
         // Update the counter in Firestore
         transaction.update(docRef, { invoiceId: newCount });
 
         // Return the new order ID
-        return `INV-2024-${newInvId}`;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
+        return `INV-${currentYear}-${newInvId}`;  // Format the order ID as needed, e.g., "ORD_1", "ORD_2", etc.
       });
 
       if (newOrderId) {
@@ -777,11 +778,14 @@ const AddOrder = () => {
               return {
                 ...order,
                 shippingCost: arrayOngkir?.[index] ?? 0,
-                orderId: newOrdId
+                orderId: newOrdId ?? 'error'
               };
             } catch (error) {
               console.error(`Error updating order at index ${index}:`, error);
-              return null;  // Handle error by returning null or some fallback object
+              return {
+                ...order,
+                shippingCost: arrayOngkir?.[index] ?? 0,
+              };  // Handle error by returning null or some fallback object
             }
           })
         );
@@ -793,7 +797,7 @@ const AddOrder = () => {
           // const orderDoc = await getDoc(orderRef);
           await setDoc(orderRef, {
             ...formData,
-            orders: updateOrder,
+            orders: updateOrder ?? [],
             totalOngkir: totalOngkir ?? 0,
             createdAt: serverTimestamp(),
             paymentStatus: 'pending',
@@ -1031,9 +1035,9 @@ const AddOrder = () => {
         if (window.confirm('Nomor ini sudah ada didalam contact, apakah anda ingin menggunakan data yang sudah ada?')) {
           // Save it!
           setFormData({
-            email: docSnap.data()?.email,
-            senderName: docSnap.data()?.nama,
-            senderPhone: docSnap.data()?.phone,
+            email: docSnap.data()?.email ?? '',
+            senderName: docSnap.data()?.nama ?? '',
+            senderPhone: docSnap.data()?.phone ?? '',
 
           });
           setFormError({
