@@ -350,7 +350,7 @@ const OrderList = () => {
         isResiSentToWASender: ord?.isResiSentToWASender,
         link: item?.midtrans?.redirect_url,
         harga: item?.totalHargaProduk + item?.totalOngkir,
-        ordId: ord?.ordId,
+        ordId: ord?.orderId ?? ord?.ordId,
         sales: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
         resiCreatedBy: `${resiCreatedBy?.firstName || ''} ${resiCreatedBy?.lastName || ''}`,
         downloadedBy: `${downloadedBy?.firstName || ''} ${downloadedBy?.lastName || ''}`,
