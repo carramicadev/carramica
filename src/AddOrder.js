@@ -747,45 +747,48 @@ const AddOrder = () => {
       if (newOrderId) {
 
         const arrayOngkir = Object.values(ongkir);
-        const updateOrder = await Promise.all(
-          orders?.map(async (order, index) => {
-            try {
-              // Directly fetch the counter document
-              const counterDoc = await getDoc(docRef);
+        const updateOrder = [];
+        let currentOrderId;
 
-              if (!counterDoc.exists()) {
-                throw new Error('Counter document does not exist!');
-              }
+        for (let index = 0; index < orders.length; index++) {
+          try {
+            const order = orders[index];
 
-              // Get the current order count and increment by 1
-              const currentCount = counterDoc.data().orderId || 0;
-              const newCount = currentCount + 1;
+            // Get the current order ID (sequentially)
+            const counterDoc = await getDoc(docRef);
 
-              // Update Firestore with the incremented count using setDoc
-              await setDoc(docRef, { orderId: newCount }, { merge: true });
-
-              // Format the order ID with leading zeros
-              const formattedOrderId = String(newCount).padStart(4, '0');
-
-              // Construct the new order ID
-              const invoiceNumberPart = newOrderId?.split('-')?.[2] || '0';
-              const newOrdId = `OS-${invoiceNumberPart}-${formattedOrderId}`;
-
-              // Return the updated order object
-              return {
-                ...order,
-                shippingCost: arrayOngkir?.[index] ?? 0,
-                orderId: newOrdId ?? 'error',
-              };
-            } catch (error) {
-              console.error(`Error updating order at index ${index}:`, error);
-              return {
-                ...order,
-                shippingCost: arrayOngkir?.[index] ?? 0,
-              };
+            if (!counterDoc.exists()) {
+              throw new Error('Counter document does not exist!');
             }
-          })
-        );
+
+            currentOrderId = counterDoc.data().orderId || 0;
+            const orderIdUpdate = currentOrderId + 1;
+
+            // Update Firestore with the incremented count
+            await setDoc(docRef, { orderId: orderIdUpdate }, { merge: true });
+
+            // Format the order ID with leading zeros
+            const formattedOrderId = String(orderIdUpdate).padStart(4, '0');
+
+            // Construct the new order ID
+            const invoiceNumberPart = newOrderId?.split?.('-')?.[2] || '0';
+            const newOrdId = `OS-${invoiceNumberPart}-${formattedOrderId}`;
+
+            // Add the updated order to the array
+            updateOrder.push({
+              ...order,
+              shippingCost: arrayOngkir?.[index] ?? 0,
+              orderId: newOrdId ?? 'error',
+            });
+          } catch (error) {
+            console.error(`Error updating order at index ${index}:`, error);
+            updateOrder.push({
+              ...orders[index],
+              shippingCost: arrayOngkir?.[index] ?? 0,
+            });
+          }
+        }
+
 
 
 
