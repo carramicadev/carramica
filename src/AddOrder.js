@@ -797,7 +797,12 @@ const AddOrder = () => {
 
           // const orderDoc = await getDoc(orderRef);
           await setDoc(orderRef, {
-            ...formData,
+            email: formData.email ?? '',
+            salesName: formData.salesName ?? '',
+            senderName: formData.senderName ?? '',
+            senderPhone: formData.senderPhone ?? '62',
+            additionalDiscount: formData.additionalDiscount ?? 0,
+            deliveryFee: formData.deliveryFee ?? '',
             orders: updateOrder ?? [],
             totalOngkir: totalOngkir ?? 0,
             createdAt: serverTimestamp(),
