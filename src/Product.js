@@ -155,7 +155,7 @@ const Product = () => {
 
     // setData(data.filter((row) => row.id !== id));
   };
-  // console.log(selectedRows)
+  // console.log(allProduct)
   return (
     <div className="container">
 
