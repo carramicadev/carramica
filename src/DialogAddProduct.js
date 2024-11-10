@@ -8,7 +8,7 @@ import lalamove from './lalamove.png'
 import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { firestore } from './FirebaseFrovider';
 import { useEffect, useState } from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { Col, Form, Row } from 'react-bootstrap';
 import { useSnackbar } from 'notistack';
 
 export default function DialogAddProduct(props) {
@@ -30,7 +30,16 @@ export default function DialogAddProduct(props) {
         harga: 0,
         stok: 0
     });
-
+    const [formError, setFormError] = useState({
+        weight: '',
+        height: '',
+        width: '',
+        length: '',
+        nama: '',
+        sku: '',
+        harga: '',
+        stok: ''
+    });
     const handleFormChange = (e) => {
         const { name, value } = e.target;
         if (e.target.type === 'number') {
@@ -42,30 +51,80 @@ export default function DialogAddProduct(props) {
             setFormData({ ...formData, [name]: value });
         }
 
+        setFormError({
+            ...formError,
+            [name]: ''
+        })
+
     };
-    const handleAdd = async () => {
-        try {
-            if (props?.show?.mode === 'edit') {
-                await setDoc(doc(firestore, "product", props?.show?.item?.id), { ...formData, updatedAt: serverTimestamp() });
-                // console.log("Document written with ID: ",);
-                enqueueSnackbar(`sukses mengedit product ${formData?.nama}`, { variant: 'success' })
 
-                props.onHide()
-            } else {
-                await addDoc(collection(firestore, "product"), { ...formData, createdAt: serverTimestamp() });
-                // console.log("Document written with ID: ",);
-                enqueueSnackbar(`sukses menambahkan product ${formData?.nama}`, { variant: 'success' })
+    // validate
+    const validate = () => {
+        const newError = { ...formError };
+        // console.log('er')
 
-                props.onHide()
-            }
-            props?.setUpdate((prevValue) => !prevValue)
-
-        } catch (e) {
-            enqueueSnackbar(`gagal menambahkan product ${e.message}`, { variant: 'error' })
-
+        if (!formData.width) {
+            // console.log('er')
+            newError.width = 'width is required';
         }
+
+        if (!formData.height) {
+            newError.height = 'height is required';
+        }
+        if (!formData.weight) {
+            newError.weight = 'weight is required';
+        }
+        if (!formData.length) {
+            newError.length = 'length is required';
+        }
+        if (!formData.nama) {
+            newError.nama = 'nama is required';
+        }
+        if (!formData.sku) {
+            newError.sku = 'sku is required';
+        }
+        if (!formData.harga) {
+            newError.harga = 'harga is required';
+        }
+        if (!formData.stok) {
+            newError.stok = 'stok is required';
+        }
+
+
+
+        return newError;
     }
-    // console.log(props)
+    const handleAdd = async (e) => {
+        e.preventDefault();
+        const findErros = validate();
+        if (Object.values(findErros).some((err) => err !== '')) {
+            // console.log('Errors found:', findErros);
+            setFormError(findErros);
+        } else {
+            try {
+                if (props?.show?.mode === 'edit') {
+                    await setDoc(doc(firestore, "product", props?.show?.item?.id), { ...formData, updatedAt: serverTimestamp() });
+                    // console.log("Document written with ID: ",);
+                    enqueueSnackbar(`sukses mengedit product ${formData?.nama}`, { variant: 'success' })
+
+                    props.onHide()
+                } else {
+                    await addDoc(collection(firestore, "product"), { ...formData, createdAt: serverTimestamp() });
+                    // console.log("Document written with ID: ",);
+                    enqueueSnackbar(`sukses menambahkan product ${formData?.nama}`, { variant: 'success' })
+
+                    props.onHide()
+                }
+                props?.setUpdate((prevValue) => !prevValue)
+
+            } catch (e) {
+                enqueueSnackbar(`gagal menambahkan product ${e.message}`, { variant: 'error' })
+
+            }
+        }
+
+    }
+    // console.log(formData)
     return (
         <div
             className="modal show"
@@ -103,47 +162,95 @@ export default function DialogAddProduct(props) {
                 }}><div>
                         <div className="form-group">
                             <label className="label">SKU</label>
-                            <input className="input" type="text" name="sku" placeholder="P46YUJH" value={formData.sku} onChange={handleFormChange} />
+                            <Form.Control isInvalid={formError.sku ? true : false}
+                                className="input" type="text" name="sku" placeholder="P46YUJH" value={formData.sku} onChange={handleFormChange} />
+                            {
+                                formError.sku && <Form.Control.Feedback type="invalid">
+                                    {formError.sku}
+                                </Form.Control.Feedback>
+                            }
                         </div>
                         <div className="form-group">
                             <label className="label">Product Name</label>
-                            <input className="input" type="text" name="nama" placeholder="Gelas" value={formData.nama} onChange={handleFormChange} />
+                            <Form.Control isInvalid={formError.nama ? true : false}
+                                className="input" type="text" name="nama" placeholder="Gelas" value={formData.nama} onChange={handleFormChange} />
+                            {
+                                formError.nama && <Form.Control.Feedback type="invalid">
+                                    {formError.nama}
+                                </Form.Control.Feedback>
+                            }
                         </div>
 
                         <Row>
                             <Col sm={3}>
                                 <div className="form-group">
                                     <label className="label">Weight(gr)</label>
-                                    <input className="input" type="number" name="weight" placeholder="200" value={formData.weight} onChange={handleFormChange} />
+                                    <Form.Control isInvalid={formError.weight ? true : false}
+                                        className="input" type="number" name="weight" placeholder="200" value={formData.weight} onChange={handleFormChange} />
+                                    {
+                                        formError.weight && <Form.Control.Feedback type="invalid">
+                                            {formError.weight}
+                                        </Form.Control.Feedback>
+                                    }
                                 </div>
                             </Col>
                             <Col sm={3}>
                                 <div className="form-group">
                                     <label className="label">Length(cm)</label>
-                                    <input className="input" type="number" name="length" placeholder="30" value={formData.length} onChange={handleFormChange} />
+                                    <Form.Control isInvalid={formError.length ? true : false}
+                                        className="input" type="number" name="length" placeholder="30" value={formData.length} onChange={handleFormChange} />
+                                    {
+                                        formError.length && <Form.Control.Feedback type="invalid">
+                                            {formError.length}
+                                        </Form.Control.Feedback>
+                                    }
                                 </div>
                             </Col>
                             <Col sm={3}>
                                 <div className="form-group">
                                     <label className="label">Width(cm)</label>
-                                    <input className="input" type="number" name="width" placeholder="10" value={formData.width} onChange={handleFormChange} />
+                                    <Form.Control isInvalid={formError.width ? true : false}
+                                        className="input" type="number" name="width" placeholder="10" value={formData.width} onChange={handleFormChange} />
+                                    {
+                                        formError.width && <Form.Control.Feedback type="invalid">
+                                            {formError.width}
+                                        </Form.Control.Feedback>
+                                    }
                                 </div>
                             </Col>
                             <Col sm={3}>
                                 <div className="form-group">
                                     <label className="label">Height(cm)</label>
-                                    <input className="input" type="number" name="height" placeholder="20" value={formData.height} onChange={handleFormChange} />
+                                    <Form.Control isInvalid={formError.height ? true : false}
+                                        className="input" type="number" name="height" placeholder="20" value={formData.height} onChange={handleFormChange} />
+                                    {
+                                        formError.height && <Form.Control.Feedback type="invalid">
+                                            {formError.height}
+                                        </Form.Control.Feedback>
+                                    }
                                 </div>
                             </Col>
 
                         </Row>
                         <div className="form-group">
                             <label className="label">Price</label>
-                            <input className="input" type="number" name="harga" placeholder="10000" value={formData.harga} onChange={handleFormChange} />
+                            <Form.Control isInvalid={formError.harga ? true : false}
+                                className="input" type="number" name="harga" placeholder="10000" value={formData.harga} onChange={handleFormChange} />
+                            {
+                                formError.harga && <Form.Control.Feedback type="invalid">
+                                    {formError.harga}
+                                </Form.Control.Feedback>
+                            }
                         </div>
                         <div className="form-group">
                             <label className="label">Stock</label>
-                            <input className="input" type="number" name="stok" placeholder="100" value={formData.stok} onChange={handleFormChange} />
+                            <Form.Control isInvalid={formError.stok ? true : false}
+                                className="input" type="number" name="stok" placeholder="100" value={formData.stok} onChange={handleFormChange} />
+                            {
+                                formError.stok && <Form.Control.Feedback type="invalid">
+                                    {formError.stok}
+                                </Form.Control.Feedback>
+                            }
                         </div>
                     </div>
                 </Modal.Body>
