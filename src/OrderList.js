@@ -656,6 +656,9 @@ Thank you :)`
         <TrashFill />
       </button></>, style: {}
   }
+
+  const findUser = user.find(itm => itm.userId === currentUser?.uid)
+
   const [selectColumn, setSelectColumn] = useState(column)
 
   const columnRef = doc(firestore, "settings", "rules", "column", currentUser?.uid);
@@ -667,7 +670,9 @@ Thank you :)`
       const selectedData = column?.filter?.(item => doc.data()?.columnOrder?.includes(item.label));
       if (selectedData.length > 0) {
         setSelectColumn(selectedData)
-
+        if (doc.data()?.columnOrder?.find(itm => itm === 'Action')) {
+          setSelectColumn(prevCol => [...prevCol, newColumn]);
+        }
       }
       // console.log(selectedData)
     });
