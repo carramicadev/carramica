@@ -25,6 +25,24 @@ import { useSnackbar } from 'notistack';
 import PhoneInput from 'react-phone-input-2';
 import { useNavigate } from 'react-router-dom';
 
+function findUndefinedOrEmptyFields(obj, path = '') {
+  let result = [];
+
+  // Iterate through each key in the object
+  for (const key in obj) {
+    const value = obj[key];
+    const currentPath = path ? `${path}.${key}` : key; // Track path for nested keys
+
+    if (value === undefined) {
+      result.push(currentPath); // Add to result if undefined or empty
+    } else if (typeof value === 'object' && value !== null) {
+      // Recurse if the value is a nested object or array
+      result = result.concat(findUndefinedOrEmptyFields(value, currentPath));
+    }
+  }
+
+  return result;
+}
 const AddOrder = () => {
   const { currentUser } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
@@ -671,7 +689,10 @@ const AddOrder = () => {
     } else {
       setModalShow(true)
     }
-  }
+  };
+
+  const undefinedOrEmptyFields = orders?.flatMap(item => findUndefinedOrEmptyFields(item));
+  console.log(undefinedOrEmptyFields)
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -791,18 +812,19 @@ const AddOrder = () => {
 
 
 
+        const undefinedOrEmptyFields = updateOrder?.flatMap(item => findUndefinedOrEmptyFields(item));
 
-        if (updateOrder) {
+        if (undefinedOrEmptyFields.length < 1) {
           const orderRef = doc(firestore, "orders", newOrderId)
 
           // const orderDoc = await getDoc(orderRef);
           await setDoc(orderRef, {
-            email: formData.email ?? '',
-            salesName: formData.salesName ?? '',
-            senderName: formData.senderName ?? '',
-            senderPhone: formData.senderPhone ?? '62',
-            additionalDiscount: formData.additionalDiscount ?? 0,
-            deliveryFee: formData.deliveryFee ?? '',
+            email: formData?.email ?? '',
+            salesName: formData?.salesName ?? '',
+            senderName: formData?.senderName ?? '',
+            senderPhone: formData?.senderPhone ?? '62',
+            additionalDiscount: formData?.additionalDiscount ?? 0,
+            deliveryFee: formData?.deliveryFee ?? '',
             orders: updateOrder ?? [],
             totalOngkir: totalOngkir ?? 0,
             createdAt: serverTimestamp(),
@@ -851,6 +873,8 @@ const AddOrder = () => {
 
             await setDoc(doc(firestore, "contact", data?.receiverPhone), { createdAt: serverTimestamp(), nama: data.receiverName, phone: data.receiverPhone, email: '', type: 'receiver' });
           }));
+        } else {
+          enqueueSnackbar(`order gagal dibuat, ada field yg undefined, ${undefinedOrEmptyFields}`, { variant: 'error' })
         }
 
 
@@ -866,7 +890,7 @@ const AddOrder = () => {
     } catch (e) {
       enqueueSnackbar(`order gagal dibuat, ${e.message}`, { variant: 'error' })
 
-      console.log(e.message)
+      console.log('error', e)
       setLoading(false)
 
     }

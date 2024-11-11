@@ -370,7 +370,7 @@ const OrderList = () => {
   //     ordId: `OS-${invId}-${ordId}`
   //   }
   // })
-  // console.log(fixedData)
+  console.log(allOrders)
   const filteredData = mapData?.filter?.(
     item =>
       item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
