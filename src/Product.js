@@ -169,7 +169,7 @@ const Product = () => {
                 id="basic-typeahead"
                 labelKey="nama"
                 onChange={setSearch}
-                options={allProduct}
+                options={allOfProduct}
                 placeholder="Search Products..."
                 selected={search}
                 // className="w-50"
