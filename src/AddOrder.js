@@ -1092,7 +1092,7 @@ const AddOrder = () => {
       console.log(e.message)
     }
   }
-  console.log(orders)
+  // console.log(listService)
   // console.log(ordersErr)
   // if (loadingProd) {
   //   return 'loading...'
