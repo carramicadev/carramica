@@ -650,9 +650,11 @@ Thank you :)`
 
   ]);
   const newColumn = {
-    label: "Action", key: (item) => <><button style={{ backgroundColor: '#998970' }} onClick={() => setEditDialog({ open: true, data: item })} className="button button-primary"><PencilSquare /></button><button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(item?.id)}>
-      <TrashFill />
-    </button></>, style: {}
+    label: "Action", key: (item) => <>
+      {/* <button style={{ backgroundColor: '#998970' }} onClick={() => setEditDialog({ open: true, data: item })} className="button button-primary"><PencilSquare /></button> */}
+      <button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(item?.id)}>
+        <TrashFill />
+      </button></>, style: {}
   }
   const [selectColumn, setSelectColumn] = useState(column)
 
