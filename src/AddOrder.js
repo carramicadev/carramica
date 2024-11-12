@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot, runTransaction } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot, runTransaction, deleteDoc } from "firebase/firestore";
 import Header from './Header';
 import AddSalesModal from './AddSalesModal';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -696,6 +696,7 @@ const AddOrder = () => {
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
+    let orderRef;
     try {
       // console.log('run')
       setLoading(true);
@@ -815,7 +816,7 @@ const AddOrder = () => {
         const undefinedOrEmptyFields = updateOrder?.flatMap(item => findUndefinedOrEmptyFields(item));
 
         if (undefinedOrEmptyFields.length < 1) {
-          const orderRef = doc(firestore, "orders", newOrderId)
+          orderRef = doc(firestore, "orders", newOrderId)
 
           // const orderDoc = await getDoc(orderRef);
           await setDoc(orderRef, {
@@ -888,11 +889,19 @@ const AddOrder = () => {
       setModalShow(false)
       enqueueSnackbar(`order berhasil dibuat`, { variant: 'success' })
     } catch (e) {
+      if (orderRef) {
+        try {
+          await deleteDoc(orderRef);
+          console.log("Document deleted from Firestore due to Qontak API error");
+        } catch (deleteError) {
+          console.error("Error deleting document:", deleteError);
+        }
+      }
       enqueueSnackbar(`order gagal dibuat, ${e.message}`, { variant: 'error' })
 
       console.log('error', e)
       setLoading(false)
-
+      window.location.reload();
     }
   }
 
