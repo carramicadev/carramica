@@ -1,7 +1,9 @@
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { set } from 'date-fns';
+import { collection, getDocs, orderBy, query, Timestamp, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import Autocomplete from 'react-autocomplete';
 import { Modal, Button, Form } from 'react-bootstrap';
+import DatePicker from 'react-datepicker';
 import { firestore } from './FirebaseFrovider';
 
 export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders }) => {
@@ -9,7 +11,18 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
     const [checkedItems, setCheckedItems] = useState('');
     const [value, setValue] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [shippingDate, setShippingDate] = useState(null)
+    const handleSelect = (dates) => {
+        const [start, end] = dates;
+        setStartDate(start);
+        setEndDate(end);
+        // if (start && end) {
+        //     filterByDate(start, end)
 
+        // }
+    };
     const handleChange = (e) => {
         const { name, checked } = e.target;
         setCheckedItems(name);
@@ -20,6 +33,24 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
     };
     const handleFilter = async () => {
         try {
+            const yearStart = startDate.getFullYear();
+            const monthStart = String(startDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+            const dayStart = String(startDate.getDate()).padStart(2, '0');
+            const formattedDateStart = `${yearStart}-${monthStart}-${dayStart}`;
+            // end
+            const yearEnd = endDate.getFullYear();
+            const monthEnd = String(endDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+            const dayEnd = String(endDate.getDate()).padStart(2, '0');
+            const formattedDateEnd = `${yearEnd}-${monthEnd}-${dayEnd}`;
+            // 
+            const startTimestamp = Timestamp.fromDate(new Date(formattedDateStart));
+            const endTimestamp = Timestamp.fromDate(set(new Date(formattedDateEnd), {
+                hours: 23,
+                minutes: 59,
+                seconds: 59,
+                milliseconds: 999
+
+            }));
             const filters = [];
             if (checkedItems) {
                 filters.push(where('paymentStatus', '==', checkedItems));
@@ -30,6 +61,10 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
             }
             if (dateTimestamp?.start && dateTimestamp?.end) {
                 filters.push(where("createdAt", ">=", dateTimestamp?.start), where("createdAt", "<=", dateTimestamp?.end))
+            }
+            if (startTimestamp && endTimestamp) {
+                filters.push(where("paidDate", ">=", startTimestamp), where("paidDate", "<=", endTimestamp))
+
             }
             const ref = query(collection(firestore, "orders"), ...filters, orderBy('createdAt', 'desc')
                 // where("createdAt", ">=", startTimestamp),
@@ -166,6 +201,36 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                     />
 
                 </Form>
+                <p style={{ marginTop: '20px' }}>Filter by Paid date</p>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                    <DatePicker
+                        dateFormat="dd/MM/yyyy"
+                        style={{ borderRadius: '10px', }}
+                        selected={startDate}
+                        onChange={handleSelect}
+                        startDate={startDate}
+                        endDate={endDate}
+                        selectsRange
+                        showIcon
+                    // icon
+                    // inline
+                    />
+                </div>
+                <p style={{ marginTop: '20px' }}>Filter by Shipping Date</p>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                    <DatePicker
+                        dateFormat="dd/MM/yyyy"
+                        style={{ borderRadius: '10px', }}
+                        selected={shippingDate}
+                        onChange={(date) => setShippingDate(date)}
+                        // startDate={startDate}
+                        // endDate={endDate}
+                        // selectsRange
+                        showIcon
+                    // icon
+                    // inline
+                    />
+                </div>
             </Modal.Body>
             <Modal.Footer style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', }}>

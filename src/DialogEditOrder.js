@@ -104,7 +104,7 @@ export default function EditOrders(props) {
         subscribe: true,
         idField: "id",
     });
-    console.log(allProduct)
+    // console.log(allProduct)
     const addProductField = () => {
         setOrder({
             ...order,
@@ -158,7 +158,7 @@ export default function EditOrders(props) {
             setOrder(props?.show?.data?.original)
         }
     }, [props?.show?.data?.original]);
-    console.log(order);
+    // console.log(order);
 
     useEffect(() => {
         // console.log('run')

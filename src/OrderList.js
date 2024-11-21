@@ -270,6 +270,7 @@ const OrderList = () => {
         }));
         setList(updatedData); // Update the state with the new data
       });
+      console.log('273=>', formattedDateEnd)
       // orders
       const refOrd = query(collection(firestore, "orders"), where("createdAt", ">=", startTimestamp), where("createdAt", "<=", endTimestamp), orderBy('createdAt', 'desc'));
       const querySnapshotOrd = await getDocs(refOrd);
@@ -370,7 +371,7 @@ const OrderList = () => {
   //     ordId: `OS-${invId}-${ordId}`
   //   }
   // })
-  console.log(allOrders)
+  // console.log(allOrders)
   const filteredData = mapData?.filter?.(
     item =>
       item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
@@ -416,7 +417,25 @@ const OrderList = () => {
   const selectedData = mapData?.filter?.(item => selectedRows.includes(item.unixId));
   const filterForDownloadAll = selectedData.filter(item => !item.isDownloaded && item.paymentStatus === 'settlement')
   // console.log(arrayHarga);
-
+  const selectedExcel = selectedData?.map((data) => {
+    return {
+      ...data,
+      address: data?.address?.props?.text,
+      createdAt: data?.createdAt?.toDate()?.toString(),
+      receiverPhone: parseInt(data?.receiverPhone),
+      senderPhone: parseInt(data?.senderPhone),
+      resiUpdate: data?.resiUpdate?.toDate()?.toString(),
+    }
+  })
+  const madDataExcel = mapData?.map((data) => {
+    return {
+      ...data,
+      address: data?.address?.props?.text,
+      createdAt: data?.createdAt?.toDate()?.toString(),
+      receiverPhone: parseInt(data?.receiverPhone),
+      senderPhone: parseInt(data?.senderPhone)
+    }
+  })
   // change resi
   const handleChange = async (e, unixId) => {
     try {
@@ -436,7 +455,7 @@ const OrderList = () => {
         arrayField[indexOrder] = { ...arrayField[indexOrder], resi: e.target.value, resiCreatedBy: currentUser?.uid };
 
         // Update the document with the modified array
-        await updateDoc(getDocOrd, { orders: arrayField, updatedAt: serverTimestamp(), [`resiUpdate${indexOrder}`]: serverTimestamp() });
+        await updateDoc(getDocOrd, { orders: arrayField, updatedAt: serverTimestamp(), [`resiUpdate${indexOrder}`]: serverTimestamp(), orderStatus: 'sent' });
         setEdit(null)
         setUpdate((prevValue) => !prevValue)
       }
@@ -581,7 +600,7 @@ Thank you :)`
     // setData(data.filter((row) => row.id !== id));
   };
   // header 
-  // console.log(edit)
+  console.log(selectedExcel)
   const [column, setColumn] = useState([
     {
       label: 'Invoice Id', key: (item, i, idOrder) => idOrder === 0 && <a href='#'
@@ -732,6 +751,7 @@ Thank you :)`
       {/* <div className="form-section"> */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
         <DatePicker
+          dateFormat="dd/MM/yyyy"
           style={{ borderRadius: '10px' }}
           selected={startDate}
           onChange={handleSelect}
@@ -858,7 +878,7 @@ Thank you :)`
           </div>
         </div>
         <div style={{}}>
-          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedData : mapData} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
+          <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedExcel : madDataExcel} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
             <CloudArrowDown /> Export As CSV
           </CSVLink>
           <button onClick={() => {
@@ -989,7 +1009,7 @@ Thank you :)`
           marginTop: '8px'
         }} />
         {/* //show next button only when we have items */}
-        <Button disabled={filteredData.length < 20} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={() => showNext({ item: filteredData[filteredData.length - 1] })}>{'Next->'}</Button>
+        <Button disabled={list.length < 20} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={() => showNext({ item: filteredData[filteredData.length - 1] })}>{'Next->'}</Button>
       </ButtonGroup>
 
       <DownloadPdfDialog

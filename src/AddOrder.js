@@ -830,6 +830,7 @@ const AddOrder = () => {
             totalOngkir: totalOngkir ?? 0,
             createdAt: serverTimestamp(),
             paymentStatus: 'pending',
+            orderStatus: 'pending',
             totalHargaProduk: totalAfterReduce ?? 0,
             userId: currentUser?.uid ?? '',
             invoice_id: newOrderId ?? '',
@@ -1106,6 +1107,10 @@ const AddOrder = () => {
   // if (loadingProd) {
   //   return 'loading...'
   // }
+
+  const [day, setDay] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
   return (
     <div className="container">
       <Header />
@@ -1390,12 +1395,47 @@ const AddOrder = () => {
 
 
                 <div className="form-group">
-                  <Form.Label className="label">Isi gift card</Form.Label>
+                  <Form.Label className="mr-2">Isi gift card</Form.Label>
                   <textarea className="textarea" type="text" name="giftCard" placeholder="Tulis disini" value={order.giftCard} onChange={(e) => handleChange(e, orderIndex)} />
                 </div>
               </div>
+              <Form.Label className="label">Shipping Date</Form.Label>
+
+              <form className="form-container" style={{ display: 'flex', }}>
+                {/* Day Selector */}
+                <div className="form-group mx-2">
+                  <Form.Label className="label">Day</Form.Label>
+
+                  <select className="form-control mr-2" value={day} onChange={(e) => setDay(e.target.value)}>
+                    <option value="">Day</option>
+                    {[...Array(31)].map((_, i) => (
+                      <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Month Selector */}
+                <div className="form-group mx-2">
+                  <label htmlFor="month" className="mr-2">Month:</label>
+                  <select className="form-control mr-2" value={month} onChange={(e) => setMonth(e.target.value)}>
+                    <option value="">Month</option>
+                    {[...Array(12)].map((_, i) => (
+                      <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                </div>
 
 
+                {/* Year Selector */}
+                <select className="form-control" value={year} onChange={(e) => setYear(e.target.value)}>
+                  <option value="">Year</option>
+                  {[...Array(121)].map((_, i) => (
+                    <option key={i} value={2024 + i}>{2024 + i}</option>
+                  ))}
+                </select>
+
+                {/* <button type="submit" className="btn btn-primary ml-2">Submit</button> */}
+              </form>
             </div>
           ))}
 
