@@ -653,7 +653,7 @@ Thank you :)`
     { label: "Date Order", key: (item) => formatDate(item?.createdAt?.toDate()), style: {} },
     { label: "Payment Status", key: (item, i, idOrder, style) => <li style={style}>{item?.paymentStatus || 'Unpaid'}</li>, style: {} },
     {
-      label: "Order Status", key: (item, i, idOrder, style) => <div style={{ display: 'flex', justifyContent: 'space-between' }}><li style={style}>{item?.orderStatus} </li><Button disabled={item?.paymentStatus === 'cancel' || item?.paymentStatus === 'refund'} style={{ backgroundColor: item?.paymentStatus !== 'settlement' ? 'red' : '#998970', padding: '0px 5px 0px 5px', marginLeft: '5px', fontSize: '8px', border: 'none' }} className="button button-primary" onClick={() => {
+      label: "Order Status", key: (item, i, idOrder, style) => <div style={{ display: 'flex', justifyContent: 'space-between' }}><li style={style}>{item?.orderStatus} </li><Button disabled={item?.paymentStatus === 'cancel' || item?.paymentStatus === 'refund' || item?.resi} style={{ backgroundColor: item?.paymentStatus !== 'settlement' ? 'red' : '#998970', padding: '0px 5px 0px 5px', marginLeft: '5px', fontSize: '8px', border: 'none' }} className="button button-primary" onClick={() => {
         if (item?.paymentStatus !== 'settlement') {
           handleCancelOrder(item?.id)
         } else {
