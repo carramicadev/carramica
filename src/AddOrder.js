@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot, runTransaction, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot, runTransaction, deleteDoc, Timestamp } from "firebase/firestore";
 import Header from './Header';
 import AddSalesModal from './AddSalesModal';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -100,7 +100,19 @@ const AddOrder = () => {
   // inv id ord id
   const invId = String(settings?.invoiceId).padStart(4, '0');
   const ordId = String(settings?.orderId).padStart(4, '0');
-  // console.log(settings);
+  const now = new Date();
+  // Add 1 day
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+
+  // Get the day of the month
+  const tomorrowDay = tomorrow.getDate();
+
+  const bulan = new Date(now).getMonth() + 1;
+  const tahun = new Date(now).getFullYear();
+  console.log(bulan);
+  const shippingDate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDay.toString().padStart(2, '0')}`
+  const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
 
   const [formData, setFormData] = useState({
     email: '',
@@ -130,7 +142,11 @@ const AddOrder = () => {
     ongkir: 0,
     giftCard: '',
     kurirProduk: '',
-    products: [{ nama: '', quantity: 1, price: '', discount: '', amount: '', discount_type: 'Rp' }]
+    products: [{ nama: '', quantity: 1, price: '', discount: '', amount: '', discount_type: 'Rp' }],
+    day: tomorrowDay.toString().padStart(2, '0'),
+    month: bulan.toString().padStart(2, '0'),
+    year: tahun.toString(),
+    shippingDate: shippingDateTimestamp
   };
 
   useEffect(() => {
@@ -692,7 +708,7 @@ const AddOrder = () => {
   };
 
   const undefinedOrEmptyFields = orders?.flatMap(item => findUndefinedOrEmptyFields(item));
-  console.log(undefinedOrEmptyFields)
+  // console.log(undefinedOrEmptyFields)
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -796,11 +812,15 @@ const AddOrder = () => {
             const invoiceNumberPart = newOrderId?.split?.('-')?.[2] || '0';
             const newOrdId = `OS-${invoiceNumberPart}-${formattedOrderId}`;
 
+            // update shipping date
+            const shippingDateUpdate = `${order?.year}-${order?.month}-${order?.day}`
+            const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
             // Add the updated order to the array
             updateOrder.push({
               ...order,
               shippingCost: arrayOngkir?.[index] ?? 0,
               orderId: newOrdId ?? 'error',
+              shippingDate: shippingDateTimestampUpdate ?? ''
             });
           } catch (error) {
             console.error(`Error updating order at index ${index}:`, error);
@@ -1103,7 +1123,7 @@ const AddOrder = () => {
     }
   }
   // console.log(listService)
-  // console.log(ordersErr)
+  console.log(orders)
   // if (loadingProd) {
   //   return 'loading...'
   // }
@@ -1395,29 +1415,24 @@ const AddOrder = () => {
 
 
                 <div className="form-group">
-                  <Form.Label className="mr-2">Isi gift card</Form.Label>
+                  <Form.Label className="label">Isi gift card</Form.Label>
                   <textarea className="textarea" type="text" name="giftCard" placeholder="Tulis disini" value={order.giftCard} onChange={(e) => handleChange(e, orderIndex)} />
                 </div>
               </div>
               <Form.Label className="label">Shipping Date</Form.Label>
-
-              <form className="form-container" style={{ display: 'flex', }}>
-                {/* Day Selector */}
-                <div className="form-group mx-2">
-                  <Form.Label className="label">Day</Form.Label>
-
-                  <select className="form-control mr-2" value={day} onChange={(e) => setDay(e.target.value)}>
+              <div className="form-container">
+                <div className="form-group" style={{ width: '100%' }}>
+                  <Form.Label className="label">Day:</Form.Label>
+                  <select name='day' className="input" value={order?.day} onChange={(e) => handleChange(e, orderIndex)}>
                     <option value="">Day</option>
                     {[...Array(31)].map((_, i) => (
                       <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
                     ))}
                   </select>
                 </div>
-
-                {/* Month Selector */}
-                <div className="form-group mx-2">
-                  <label htmlFor="month" className="mr-2">Month:</label>
-                  <select className="form-control mr-2" value={month} onChange={(e) => setMonth(e.target.value)}>
+                <div className="form-group" style={{ width: '100%' }}>
+                  <Form.Label className="label">Month:</Form.Label>
+                  <select name='month' className="input" value={order?.month} onChange={(e) => handleChange(e, orderIndex)}>
                     <option value="">Month</option>
                     {[...Array(12)].map((_, i) => (
                       <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
@@ -1425,17 +1440,17 @@ const AddOrder = () => {
                   </select>
                 </div>
 
+                <div className="form-group" style={{ width: '100%' }}>
+                  <Form.Label className="label">Year:</Form.Label>
+                  <select name='year' className="input" value={order?.year} onChange={(e) => handleChange(e, orderIndex)}>
+                    <option value="">Year</option>
+                    {[...Array(121)].map((_, i) => (
+                      <option key={i} value={2024 + i}>{2024 + i}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-                {/* Year Selector */}
-                <select className="form-control" value={year} onChange={(e) => setYear(e.target.value)}>
-                  <option value="">Year</option>
-                  {[...Array(121)].map((_, i) => (
-                    <option key={i} value={2024 + i}>{2024 + i}</option>
-                  ))}
-                </select>
-
-                {/* <button type="submit" className="btn btn-primary ml-2">Submit</button> */}
-              </form>
             </div>
           ))}
 

@@ -33,24 +33,7 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
     };
     const handleFilter = async () => {
         try {
-            const yearStart = startDate.getFullYear();
-            const monthStart = String(startDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-            const dayStart = String(startDate.getDate()).padStart(2, '0');
-            const formattedDateStart = `${yearStart}-${monthStart}-${dayStart}`;
-            // end
-            const yearEnd = endDate.getFullYear();
-            const monthEnd = String(endDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-            const dayEnd = String(endDate.getDate()).padStart(2, '0');
-            const formattedDateEnd = `${yearEnd}-${monthEnd}-${dayEnd}`;
-            // 
-            const startTimestamp = Timestamp.fromDate(new Date(formattedDateStart));
-            const endTimestamp = Timestamp.fromDate(set(new Date(formattedDateEnd), {
-                hours: 23,
-                minutes: 59,
-                seconds: 59,
-                milliseconds: 999
 
-            }));
             const filters = [];
             if (checkedItems) {
                 filters.push(where('paymentStatus', '==', checkedItems));
@@ -62,8 +45,36 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
             if (dateTimestamp?.start && dateTimestamp?.end) {
                 filters.push(where("createdAt", ">=", dateTimestamp?.start), where("createdAt", "<=", dateTimestamp?.end))
             }
-            if (startTimestamp && endTimestamp) {
+            if (startDate && endDate) {
+                const yearStart = startDate.getFullYear();
+                const monthStart = String(startDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const dayStart = String(startDate.getDate()).padStart(2, '0');
+                const formattedDateStart = `${yearStart}-${monthStart}-${dayStart}`;
+                // end
+                const yearEnd = endDate.getFullYear();
+                const monthEnd = String(endDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const dayEnd = String(endDate.getDate()).padStart(2, '0');
+                const formattedDateEnd = `${yearEnd}-${monthEnd}-${dayEnd}`;
+                // 
+                const startTimestamp = Timestamp.fromDate(new Date(formattedDateStart));
+                const endTimestamp = Timestamp.fromDate(set(new Date(formattedDateEnd), {
+                    hours: 23,
+                    minutes: 59,
+                    seconds: 59,
+                    milliseconds: 999
+
+                }));
                 filters.push(where("paidDate", ">=", startTimestamp), where("paidDate", "<=", endTimestamp))
+
+            }
+            if (shippingDate) {
+                const yearStart = shippingDate?.getFullYear();
+                const monthStart = String(shippingDate?.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const dayStart = String(shippingDate?.getDate()).padStart(2, '0');
+                const formattedDate = `${yearStart}-${monthStart}-${dayStart}`;
+                const shippingTimestamp = Timestamp.fromDate(new Date(formattedDate));
+
+                filters.push(where("shippingDate", "==", shippingTimestamp))
 
             }
             const ref = query(collection(firestore, "orders"), ...filters, orderBy('createdAt', 'desc')
@@ -234,10 +245,13 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
             </Modal.Body>
             <Modal.Footer style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', }}>
-                    <Button style={{ marginRight: '10px' }} disabled={!value && !checkedItems} variant="secondary" onClick={() => {
+                    <Button style={{ marginRight: '10px' }} disabled={!value && !checkedItems && !startDate && !endDate && !shippingDate} variant="secondary" onClick={() => {
                         setValue('')
                         setCheckedItems('')
                         setSelectedUser(null)
+                        setEndDate(null)
+                        setStartDate(null)
+                        setShippingDate(null)
                         // handleClearFilter()
                     }}>
                         Clear

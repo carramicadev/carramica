@@ -43,7 +43,7 @@ body {
 }
 
 table {
-    width: 2000px;
+    width: 90%;
     border-collapse: collapse;
     margin: 20px 0;
 }
@@ -109,7 +109,7 @@ th {
 }
 
 .table-vertical-scroll-content {
-    width: 2280px;
+    width: 2300px;
 }
 
 .section-new-analytic {

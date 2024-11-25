@@ -203,7 +203,7 @@ const Logistik = () => {
   });
 
   const totalSent = mapData.filter(item => item?.resi)
-  const arrayOngkir = mapData.map(item => item?.ongkir)
+  const arrayOngkir = mapData.map(item => parseInt(item?.ongkir))
   const totalOngkir = arrayOngkir?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang
   }, 0);

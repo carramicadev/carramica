@@ -356,7 +356,9 @@ const OrderList = () => {
         resiCreatedBy: `${resiCreatedBy?.firstName || ''} ${resiCreatedBy?.lastName || ''}`,
         downloadedBy: `${downloadedBy?.firstName || ''} ${downloadedBy?.lastName || ''}`,
         hargaAfterDiscProd: allGross,
-        shippingCost: ord?.ongkir
+        shippingCost: ord?.ongkir,
+        orderStatus: ord?.orderStatus ? ord?.orderStatus : item?.paymentStatus === 'settlement' ? 'processing' : item?.paymentStatus,
+        shippingDate: ord?.shippingDate
 
       })
 
@@ -452,10 +454,10 @@ const OrderList = () => {
 
         // console.log(currentUser)
         // Update the specific item
-        arrayField[indexOrder] = { ...arrayField[indexOrder], resi: e.target.value, resiCreatedBy: currentUser?.uid };
+        arrayField[indexOrder] = { ...arrayField[indexOrder], resi: e.target.value, resiCreatedBy: currentUser?.uid, orderStatus: 'sent' };
 
         // Update the document with the modified array
-        await updateDoc(getDocOrd, { orders: arrayField, updatedAt: serverTimestamp(), [`resiUpdate${indexOrder}`]: serverTimestamp(), orderStatus: 'sent' });
+        await updateDoc(getDocOrd, { orders: arrayField, updatedAt: serverTimestamp(), [`resiUpdate${indexOrder}`]: serverTimestamp() });
         setEdit(null)
         setUpdate((prevValue) => !prevValue)
       }
@@ -582,7 +584,7 @@ Thank you :)`
 
   // delete
   const handleDeleteClick = async (id) => {
-    if (window.confirm(' apakah anda yakin ingin menghapus product ini?')) {
+    if (window.confirm(' apakah anda yakin ingin menghapus order ini?')) {
       try {
         const docRef = doc(firestore, 'orders', id);
         await deleteDoc(docRef);
@@ -599,6 +601,32 @@ Thank you :)`
 
     // setData(data.filter((row) => row.id !== id));
   };
+
+  // cancel
+  const handleCancelOrder = async (id) => {
+    if (window.confirm(` apakah anda yakin ingin mengcancel order ${id}?`)) {
+      try {
+        const cancelOrder = httpsCallable(functions, 'cancelOrder');
+        const result = await cancelOrder({
+
+          id: id,
+
+        });
+        await setDoc(doc(firestore, 'orders', id), {
+          paymentStatus: 'cancel'
+        }, { merge: true });
+        enqueueSnackbar(`Order berhasil dicancel!.`, { variant: 'success' })
+
+      } catch (e) {
+        enqueueSnackbar(`Order gagal dicancel!.`, { variant: 'error' })
+
+        console.log(e.message)
+      }
+    } else {
+
+    }
+
+  }
   // header 
   console.log(selectedExcel)
   const [column, setColumn] = useState([
@@ -623,11 +651,23 @@ Thank you :)`
       )), style: {}
     },
     { label: "Date Order", key: (item) => formatDate(item?.createdAt?.toDate()), style: {} },
-    { label: "Payment Status", key: (item, i, idOrder, style) => <li style={style}>{item?.resi ? 'Sent' : item?.paymentStatus === 'settlement' ? 'Processing' : 'Unpaid'}</li>, style: {} },
+    { label: "Payment Status", key: (item, i, idOrder, style) => <li style={style}>{item?.paymentStatus || 'Unpaid'}</li>, style: {} },
+    {
+      label: "Order Status", key: (item, i, idOrder, style) => <div style={{ display: 'flex', justifyContent: 'space-between' }}><li style={style}>{item?.orderStatus} </li><Button disabled={item?.paymentStatus === 'cancel' || item?.paymentStatus === 'refund'} style={{ backgroundColor: item?.paymentStatus !== 'settlement' ? 'red' : '#998970', padding: '0px 5px 0px 5px', marginLeft: '5px', fontSize: '8px', border: 'none' }} className="button button-primary" onClick={() => {
+        if (item?.paymentStatus !== 'settlement') {
+          handleCancelOrder(item?.id)
+        } else {
+          console.log('refund')
+        }
+      }}>
+        {item?.paymentStatus === 'settlement' ? 'Refund' : 'Cancel'}
+      </Button></div>, style: {}
+    },
     { label: "Paid At", key: (item) => item?.paidAt, style: {} },
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },
     { label: "Discount", key: (item) => item?.discount, style: {} },
     { label: "Gross Revenue", key: (item) => currency(item?.grossRevenue), style: {} },
+    { label: "Shipping Date", key: (item) => formatDate(item?.shippingDate?.toDate()), style: {} },
     { label: "Shipping Info", key: (item) => item?.kurir, style: {} },
     { label: "Shipping Cost", key: (item) => currency(item?.shippingCost), style: {} },
     {
@@ -928,15 +968,15 @@ Thank you :)`
                     // console.log(i === edit)
                     const idOrder = parseInt(item.unixId.split('_')?.[1]);
                     let style = {
-                      borderRadius: '20px', backgroundColor: '#FBD5D5', padding: '5px', textAlign: 'center', color: '#C81E1E'
+                      borderRadius: '20px', backgroundColor: '#FBD5D5', padding: '5px', textAlign: 'center', color: '#C81E1E', width: '80px'
                     }
                     if (item.paymentStatus === 'pending') {
                       style = {
-                        borderRadius: '20px', backgroundColor: '#E5E9FC', padding: '5px', textAlign: 'center', color: '#141BBA'
+                        borderRadius: '20px', backgroundColor: '#E5E9FC', padding: '5px', textAlign: 'center', color: '#141BBA', width: '80px'
                       }
                     } else if (item.paymentStatus === 'paid' || item.paymentStatus === 'settlement') {
                       style = {
-                        borderRadius: '20px', backgroundColor: '#ECFDF3', padding: '5px', textAlign: 'center', color: '#14BA6D'
+                        borderRadius: '20px', backgroundColor: '#ECFDF3', padding: '5px', textAlign: 'center', color: '#14BA6D', width: '80px'
                       }
                     }
                     return <tr key={item.unixId} style={{ whiteSpace: 'nowrap' }}>
