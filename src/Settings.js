@@ -10,6 +10,7 @@ import { firestore, functions } from './FirebaseFrovider';
 import Header from './Header';
 import ProfilePage from './settingsProfil';
 import './settings.css';
+import Warehouse from './warehouse';
 
 const Settings = (props) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -317,7 +318,9 @@ const Settings = (props) => {
         <Tab eventKey="profile" title="Profile">
           <ProfilePage enqueueSnackbar={enqueueSnackbar} />
         </Tab>
-
+        <Tab eventKey="warehouse" title="Warehouse">
+          <Warehouse />
+        </Tab>
       </Tabs>
 
     </div>

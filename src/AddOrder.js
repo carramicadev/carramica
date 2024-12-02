@@ -101,31 +101,41 @@ const AddOrder = () => {
   const invId = String(settings?.invoiceId).padStart(4, '0');
   const ordId = String(settings?.orderId).padStart(4, '0');
   const now = new Date();
+  const hour = now.getHours()
   // Add 1 day
   const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
+  useEffect(() => {
+    if (hour > 14) {
+      tomorrow.setDate(now.getDate() + 1);
+
+    }
+  }, [hour])
 
   // Get the day of the month
   const tomorrowDay = tomorrow.getDate();
 
   const bulan = new Date(now).getMonth() + 1;
   const tahun = new Date(now).getFullYear();
-  console.log(bulan);
+  console.log(now.getHours());
   const shippingDate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDay.toString().padStart(2, '0')}`
   const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
 
   const [formData, setFormData] = useState({
     email: '',
-    salesName: '',
+    warehouse: '',
     senderName: '',
     senderPhone: '62',
     additionalDiscount: 0,
     deliveryFee: '',
+    day: tomorrowDay.toString().padStart(2, '0'),
+    month: bulan.toString().padStart(2, '0'),
+    year: tahun.toString(),
+    shippingDate: shippingDateTimestamp
   });
 
   const [formError, setFormError] = useState({
     email: '',
-    salesName: '',
+    warehouse: '',
     senderName: '',
     senderPhone: '',
     additionalDiscount: '',
@@ -143,10 +153,7 @@ const AddOrder = () => {
     giftCard: '',
     kurirProduk: '',
     products: [{ nama: '', quantity: 1, price: '', discount: '', amount: '', discount_type: 'Rp' }],
-    day: tomorrowDay.toString().padStart(2, '0'),
-    month: bulan.toString().padStart(2, '0'),
-    year: tahun.toString(),
-    shippingDate: shippingDateTimestamp
+
   };
 
   useEffect(() => {
@@ -173,7 +180,7 @@ const AddOrder = () => {
   const [orders, setOrders] = useState([initialOrder]);
   const [ordersErr, setOrdersErr] = useState([initialOrderErr]);
 
-  const [salesOptions, setSalesOptions] = useState([]);
+  const [warehouseOptions, setWarehouseOptions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [kurirServic, setKurirService] = useState('');
   const [listService, setListService] = useState({});
@@ -191,6 +198,10 @@ const AddOrder = () => {
   const [modalShow, setModalShow] = useState(false);
   const [dialoglRedirectWAShow, setDialogRedirectWAShow] = useState({ open: false, id: '' });
   const [koordinateReceiver, setKoordinateReceiver] = useState({
+    lat: '',
+    lng: ''
+  });
+  const [koordinateOrigin, setKoordinateOrigin] = useState({
     lat: '',
     lng: ''
   })
@@ -296,9 +307,20 @@ const AddOrder = () => {
   // Fetch sales data from Firestore on component mount
   useEffect(() => {
     const fetchSales = async () => {
-      const salesSnapshot = await getDocs(collection(db, "sales"));
+      const salesSnapshot = await getDocs(collection(firestore, "warehouse"));
       const salesList = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setSalesOptions(salesList);
+      setWarehouseOptions(salesList);
+      const findDefaultWH = salesList.find(sal => sal?.name === 'default');
+      if (findDefaultWH?.name) {
+        setFormData({
+          ...formData,
+          warehouse: findDefaultWH?.name
+        })
+        setKoordinateOrigin({
+          lat: findDefaultWH?.coordinates?.lat,
+          lng: findDefaultWH?.coordinates?.lng
+        })
+      }
     };
 
     fetchSales();
@@ -399,6 +421,13 @@ const AddOrder = () => {
       if (e.target.type === 'number') {
         setFormData({ ...formData, [name]: parseInt(value) });
 
+      } else if (name === 'warehouse') {
+        setFormData({ ...formData, [name]: value });
+        const findWH = warehouseOptions?.find(wh => wh?.name === value);
+        setKoordinateOrigin({
+          lat: findWH?.coordinates?.lat,
+          lng: findWH?.coordinates?.lng
+        })
       } else {
         setFormData({ ...formData, [name]: value });
       }
@@ -708,7 +737,7 @@ const AddOrder = () => {
   };
 
   const undefinedOrEmptyFields = orders?.flatMap(item => findUndefinedOrEmptyFields(item));
-  // console.log(undefinedOrEmptyFields)
+  console.log(formData)
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -812,15 +841,15 @@ const AddOrder = () => {
             const invoiceNumberPart = newOrderId?.split?.('-')?.[2] || '0';
             const newOrdId = `OS-${invoiceNumberPart}-${formattedOrderId}`;
 
-            // update shipping date
-            const shippingDateUpdate = `${order?.year}-${order?.month}-${order?.day}`
-            const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
+            // // update shipping date
+            // const shippingDateUpdate = `${order?.year}-${order?.month}-${order?.day}`
+            // const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
             // Add the updated order to the array
             updateOrder.push({
               ...order,
               shippingCost: arrayOngkir?.[index] ?? 0,
               orderId: newOrdId ?? 'error',
-              shippingDate: shippingDateTimestampUpdate ?? ''
+              // shippingDate: shippingDateTimestampUpdate ?? ''
             });
           } catch (error) {
             console.error(`Error updating order at index ${index}:`, error);
@@ -840,12 +869,14 @@ const AddOrder = () => {
 
           // const orderDoc = await getDoc(orderRef);
           await setDoc(orderRef, {
-            email: formData?.email ?? '',
-            salesName: formData?.salesName ?? '',
-            senderName: formData?.senderName ?? '',
-            senderPhone: formData?.senderPhone ?? '62',
-            additionalDiscount: formData?.additionalDiscount ?? 0,
-            deliveryFee: formData?.deliveryFee ?? '',
+            ...formData,
+            // email: formData?.email ?? '',
+            // warehouse: formData?.warehouse ?? '',
+            // senderName: formData?.senderName ?? '',
+            // senderPhone: formData?.senderPhone ?? '62',
+            // additionalDiscount: formData?.additionalDiscount ?? 0,
+            // deliveryFee: formData?.deliveryFee ?? '',
+            // shippingDate: formData?.shippingDate,
             orders: updateOrder ?? [],
             totalOngkir: totalOngkir ?? 0,
             createdAt: serverTimestamp(),
@@ -956,7 +987,7 @@ const AddOrder = () => {
   useEffect(() => {
     // console.log('run')
 
-    if (selected && orders?.[indexOrder]?.products?.length > 0 && koordinateReceiver?.lat && koordinateReceiver.lng) {
+    if (selected && orders?.[indexOrder]?.products?.length > 0 && koordinateReceiver?.lat && koordinateReceiver.lng && koordinateOrigin?.lat && koordinateOrigin.lng) {
       const ordersProduct = orders?.[indexOrder].products?.map((prod) => {
         return {
           name: prod?.nama,
@@ -983,8 +1014,8 @@ const AddOrder = () => {
           setLoadingRate(true)
           const result = await helloWorld({
             items: ordersProduct,
-            origin_latitude: -6.197150,
-            origin_longitude: 106.699000,
+            origin_latitude: koordinateOrigin?.lat,
+            origin_longitude: koordinateOrigin?.lng,
             destination_latitude: koordinateReceiver?.lat,
             destination_longitude: koordinateReceiver?.lng,
           });
@@ -1005,7 +1036,7 @@ const AddOrder = () => {
 
     }
 
-  }, [selected, orders?.[indexOrder]?.products, koordinateReceiver?.lat, koordinateReceiver?.lng]);
+  }, [selected, orders?.[indexOrder]?.products, koordinateReceiver?.lat, koordinateReceiver?.lng, koordinateOrigin?.lat, koordinateOrigin?.lng]);
 
   // // call getPrice SAP
   // useEffect(() => {
@@ -1095,6 +1126,7 @@ const AddOrder = () => {
         if (window.confirm('Nomor ini sudah ada didalam contact, apakah anda ingin menggunakan data yang sudah ada?')) {
           // Save it!
           setFormData({
+            ...formData,
             email: docSnap.data()?.email ?? '',
             senderName: docSnap.data()?.nama ?? '',
             senderPhone: docSnap.data()?.phone ?? '',
@@ -1122,7 +1154,7 @@ const AddOrder = () => {
       console.log(e.message)
     }
   }
-  // console.log(listService)
+  console.log(koordinateOrigin)
   console.log(orders)
   // if (loadingProd) {
   //   return 'loading...'
@@ -1138,16 +1170,16 @@ const AddOrder = () => {
       <div className="form-container">
         <div className="form-section">
           <div className="salesField">
-            {/* <div className="form-group sales-name">
-              <Form.Label className="label">Sales</Form.Label>
-              <Form.Select className="select" name="salesName" value={formData.salesName} onChange={handleFormChange}>
-                <option>Pilih Nama Sales</option>
-                {salesOptions.map(sales => (
-                  <option key={sales.id} value={sales.name}>{sales.name}</option>
+            <div className="form-group ">
+              <Form.Label className="label">Warehouse</Form.Label>
+              <Form.Select className="select" name="warehouse" value={formData.warehouse} onChange={handleFormChange}>
+                <option>Pilih Nama Warehouse</option>
+                {warehouseOptions.map(warehouse => (
+                  <option key={warehouse.id} value={warehouse.name}>{warehouse.name}</option>
                 ))}
               </Form.Select>
-              <button className="button button-tertiary" onClick={openModal}>Tambah Sales</button>
-            </div> */}
+              {/* <button className="button button-tertiary" onClick={openModal}>Tambah Sales</button> */}
+            </div>
             <div className="form-group">
               <Form.Label className="label">Email Pengirim</Form.Label>
               <Form.Control className="input" type="text" name="email" placeholder="nashir@example.com" value={formData.email} onChange={handleFormChange} />
@@ -1183,7 +1215,38 @@ const AddOrder = () => {
               }
             </div>
           </div>
+          <Form.Label className="label">Shipping Date</Form.Label>
 
+          <div className="form-container">
+            <div className="form-group" style={{ width: '100%' }}>
+              <Form.Label className="label">Day:</Form.Label>
+              <select name='day' className="input" value={formData?.day} onChange={handleFormChange}>
+                <option value="">Day</option>
+                {[...Array(31)].map((_, i) => (
+                  <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group" style={{ width: '100%' }}>
+              <Form.Label className="label">Month:</Form.Label>
+              <select name='month' className="input" value={formData?.month} onChange={handleFormChange}>
+                <option value="">Month</option>
+                {[...Array(12)].map((_, i) => (
+                  <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group" style={{ width: '100%' }}>
+              <Form.Label className="label">Year:</Form.Label>
+              <select name='year' className="input" value={formData?.year} onChange={handleFormChange}>
+                <option value="">Year</option>
+                {[...Array(121)].map((_, i) => (
+                  <option key={i} value={2024 + i}>{2024 + i}</option>
+                ))}
+              </select>
+            </div>
+          </div>
           {orders.map((order, orderIndex) => (
             <div key={orderIndex} id={`order-${orderIndex}`} className="orders">
               <h3>Orderan {orderIndex + 1}</h3>
@@ -1419,37 +1482,7 @@ const AddOrder = () => {
                   <textarea className="textarea" type="text" name="giftCard" placeholder="Tulis disini" value={order.giftCard} onChange={(e) => handleChange(e, orderIndex)} />
                 </div>
               </div>
-              <Form.Label className="label">Shipping Date</Form.Label>
-              <div className="form-container">
-                <div className="form-group" style={{ width: '100%' }}>
-                  <Form.Label className="label">Day:</Form.Label>
-                  <select name='day' className="input" value={order?.day} onChange={(e) => handleChange(e, orderIndex)}>
-                    <option value="">Day</option>
-                    {[...Array(31)].map((_, i) => (
-                      <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group" style={{ width: '100%' }}>
-                  <Form.Label className="label">Month:</Form.Label>
-                  <select name='month' className="input" value={order?.month} onChange={(e) => handleChange(e, orderIndex)}>
-                    <option value="">Month</option>
-                    {[...Array(12)].map((_, i) => (
-                      <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
-                    ))}
-                  </select>
-                </div>
 
-                <div className="form-group" style={{ width: '100%' }}>
-                  <Form.Label className="label">Year:</Form.Label>
-                  <select name='year' className="input" value={order?.year} onChange={(e) => handleChange(e, orderIndex)}>
-                    <option value="">Year</option>
-                    {[...Array(121)].map((_, i) => (
-                      <option key={i} value={2024 + i}>{2024 + i}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
             </div>
           ))}

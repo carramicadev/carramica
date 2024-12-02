@@ -613,7 +613,35 @@ Thank you :)`
 
         });
         await setDoc(doc(firestore, 'orders', id), {
-          paymentStatus: 'cancel'
+          paymentStatus: 'cancel',
+          orderStatus: 'cancel'
+        }, { merge: true });
+        enqueueSnackbar(`Order berhasil dicancel!.`, { variant: 'success' })
+
+      } catch (e) {
+        enqueueSnackbar(`Order gagal dicancel!.`, { variant: 'error' })
+
+        console.log(e.message)
+      }
+    } else {
+
+    }
+
+  }
+
+  // refund
+  const handleRefundOrder = async (id) => {
+    if (window.confirm(` apakah anda yakin ingin refund order ${id}?`)) {
+      try {
+        // const cancelOrder = httpsCallable(functions, 'cancelOrder');
+        // const result = await cancelOrder({
+
+        //   id: id,
+
+        // });
+        await setDoc(doc(firestore, 'orders', id), {
+          paymentStatus: 'refund',
+          orderStatus: 'refund'
         }, { merge: true });
         enqueueSnackbar(`Order berhasil dicancel!.`, { variant: 'success' })
 
@@ -657,6 +685,7 @@ Thank you :)`
         if (item?.paymentStatus !== 'settlement') {
           handleCancelOrder(item?.id)
         } else {
+          handleRefundOrder(item?.id)
           console.log('refund')
         }
       }}>

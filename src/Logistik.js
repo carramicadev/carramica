@@ -20,6 +20,7 @@ const Logistik = () => {
   const [allOrders, setAllOrders] = useState([])
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [year, setYear] = useState('2024')
   const [page, setPage] = useState(1);
   const [length, setLength] = useState(20);
   const listLength = [5, 10, 20, 50];
@@ -34,7 +35,13 @@ const Logistik = () => {
   useEffect(() => {
     if (!endDate) {
       const fetchData = async () => {
-        const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "desc"),);
+        const startOfYear = Timestamp.fromDate(new Date(`${year}-01-01T00:00:00.000Z`)); // Millisecond precision
+        const endOfYear = Timestamp.fromDate(new Date(`${parseInt(year) + 1}-01-01T00:00:00.000Z`));
+        console.log(endOfYear.toDate())
+        const getDoc = query(collection(firestore, "orders"),
+          where("createdAt", ">=", startOfYear),
+          where("createdAt", "<", endOfYear),
+          orderBy("createdAt", "asc"));
         const documentSnapshots = await getDocs(getDoc);
         var items = [];
 
@@ -47,7 +54,7 @@ const Logistik = () => {
       };
       fetchData();
     }
-  }, [length]);
+  }, [length, year]);
 
   const showNext = ({ item }) => {
     if (allOrders.length === 0) {
@@ -71,7 +78,7 @@ const Logistik = () => {
 
   const showPrevious = ({ item }) => {
     const fetchPreviousData = async () => {
-      const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "desc"), endBefore(item.createdAt), limitToLast(length));
+      const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "asc"), endBefore(item.createdAt), limitToLast(length));
       const documentSnapshots = await getDocs(getDoc);
       var items = [];
 
@@ -249,17 +256,15 @@ const Logistik = () => {
       <Header />
       <h1 className="page-title">Logistik</h1>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-        <DatePicker
-          style={{ borderRadius: '10px' }}
-          selected={startDate}
-          onChange={handleSelect}
-          startDate={startDate}
-          endDate={endDate}
-          selectsRange
-          showIcon
-        // icon
-        // inline
-        />
+        {/* <div className="form-group" style={{ width: '100%' }}> */}
+        {/* <Form.Label className="label">Year:</Form.Label> */}
+        <select style={{ width: '200px' }} name='year' className="input" value={year} onChange={(e) => setYear(e.target.value)}>
+          <option value="">Year</option>
+          {[...Array(121)].map((_, i) => (
+            <option key={i} value={2024 + i}>{2024 + i}</option>
+          ))}
+        </select>
+        {/* </div> */}
       </div>
       <Row className="mb-4">
         <Col md={3}>
@@ -370,10 +375,10 @@ const Logistik = () => {
           </tr>
         </thead>
 
-        {currentItems.map((row, rowIdx) => {
+        {allData?.map((row, rowIdx) => {
           const findByCourierDed = row.item.filter(item => item?.kurir === "Dedicated")
           const dedSent = findByCourierDed?.filter(item => item?.resi && item?.resi)
-          const ongkirDed = findByCourierDed?.map((pax) => pax?.ongkir)
+          const ongkirDed = findByCourierDed?.map((pax) => parseInt(pax?.ongkir))
           const totOngDed = ongkirDed?.reduce((val, nilaiSekarang) => {
             return val + nilaiSekarang
           }, 0);
@@ -437,25 +442,22 @@ const Logistik = () => {
         })}
 
       </Table>
-      <ButtonGroup style={{ textAlign: 'center', float: 'right' }}>
+      {/* <ButtonGroup style={{ textAlign: 'center', float: 'right' }}>
         <div>
           <Form.Select style={{
             width: 'auto',
             marginTop: '10px',
             marginRight: '10px',
-            // fontSize: '10px'
           }} defaultChecked={false} className="select" name="length" onChange={handleChangeLength} value={length}>
-            {/* <option selected hidden >Kurir</option> */}
+           
 
             {
               listLength?.map((kur) => {
                 return <option value={kur}>{kur} Rows </option>
               })
             }
-            {/* <Form.Control placeholder='Tambah kurir baru' className='input' onBlur={handleAddOption} />    */}
           </Form.Select>
         </div>
-        {/* //show previous button only when we have items */}
         <Button style={{ marginRight: '10px', whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={handlePreviousPage} disabled={currentPage === 1}>{'<-Prev'}</Button>
         <input value={currentPage} className="input" disabled style={{
           padding: '0px',
@@ -466,9 +468,8 @@ const Logistik = () => {
           marginBottom: '8px',
           marginTop: '8px'
         }} />
-        {/* //show next button only when we have items */}
         <Button style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={handleNextPage} disabled={currentPage === totalPages}>{'Next->'}</Button>
-      </ButtonGroup>
+      </ButtonGroup> */}
     </div>
   );
 };
