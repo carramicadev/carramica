@@ -123,7 +123,7 @@ const AddOrder = () => {
     senderPhone: '62',
     additionalDiscount: 0,
     deliveryFee: '',
-    day: tomorrowDay.toString().padStart(2, '0'),
+    day: tomorrowDay,
     month: bulan.toString().padStart(2, '0'),
     year: tahun.toString(),
     shippingDate: shippingDateTimestamp
@@ -132,9 +132,12 @@ const AddOrder = () => {
     if (hour > 14) {
       tomorrow.setDate(now.getDate() + 1);
       const tomorrowDayUpdate = tomorrow.getDate();
+      const shippingDateUpdate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDayUpdate.toString().padStart(2, '0')}`
+      const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
       setFormData({
         ...formData,
-        day: tomorrowDayUpdate.toString().padStart(2, '0')
+        day: tomorrowDayUpdate,
+        shippingDate: shippingDateTimestampUpdate
       })
 
     }
@@ -743,7 +746,7 @@ const AddOrder = () => {
   };
 
   const undefinedOrEmptyFields = orders?.flatMap(item => findUndefinedOrEmptyFields(item));
-  console.log(formData.day)
+  console.log(formData)
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
