@@ -104,21 +104,17 @@ const AddOrder = () => {
   const hour = now.getHours()
   // Add 1 day
   const tomorrow = new Date(now);
-  useEffect(() => {
-    if (hour > 14) {
-      tomorrow.setDate(now.getDate() + 1);
 
-    }
-  }, [hour])
 
   // Get the day of the month
   const tomorrowDay = tomorrow.getDate();
 
   const bulan = new Date(now).getMonth() + 1;
   const tahun = new Date(now).getFullYear();
-  console.log(now.getHours());
+  console.log(tomorrowDay);
   const shippingDate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDay.toString().padStart(2, '0')}`
   const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
+
 
   const [formData, setFormData] = useState({
     email: '',
@@ -132,7 +128,17 @@ const AddOrder = () => {
     year: tahun.toString(),
     shippingDate: shippingDateTimestamp
   });
+  useEffect(() => {
+    if (hour > 14) {
+      tomorrow.setDate(now.getDate() + 1);
+      const tomorrowDayUpdate = tomorrow.getDate();
+      setFormData({
+        ...formData,
+        day: tomorrowDayUpdate.toString().padStart(2, '0')
+      })
 
+    }
+  }, [hour])
   const [formError, setFormError] = useState({
     email: '',
     warehouse: '',
@@ -737,7 +743,7 @@ const AddOrder = () => {
   };
 
   const undefinedOrEmptyFields = orders?.flatMap(item => findUndefinedOrEmptyFields(item));
-  console.log(formData)
+  console.log(formData.day)
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
