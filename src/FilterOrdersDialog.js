@@ -1,4 +1,4 @@
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import Autocomplete from 'react-autocomplete';
 import { Modal, Button, Form } from 'react-bootstrap';
@@ -18,7 +18,9 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
         const { value } = e.target;
         setValue(value);
     };
+    const [loading, setLoading] = useState(false)
     const handleFilter = async () => {
+        setLoading(true)
         try {
             const filters = [];
             if (checkedItems) {
@@ -36,18 +38,20 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                 // where("createdAt", "<=", endTimestamp)
             );
             // console.log(filters)
-            const querySnapshot = await getDocs(ref);
-            const documents = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            // console.log()
-            setList(documents)
-            setAllOrders(documents)
-            handleClose()
+            const unsubscribe = onSnapshot(ref, (snapshot) => {
+                const updatedData = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                setList(updatedData); // Update the state with the new data
+                setAllOrders(updatedData)
+                handleClose()
+            });
+            return () => unsubscribe();
         } catch (e) {
             console.log(e.message)
         }
+        setLoading(false)
     }
 
     const handleClearFilter = async () => {
@@ -177,8 +181,8 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                     }}>
                         Clear
                     </Button>
-                    <Button onClick={handleFilter}>
-                        Filter
+                    <Button disabled={loading} onClick={handleFilter}>
+                        {`${loading ? 'loading' : 'Filter'}`}
                     </Button>
                 </div>
             </Modal.Footer>
