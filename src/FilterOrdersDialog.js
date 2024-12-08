@@ -1,10 +1,10 @@
-import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { collection, getDocs, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import Autocomplete from 'react-autocomplete';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { firestore } from './FirebaseFrovider';
 
-export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders }) => {
+export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders, length }) => {
     const [user, setUser] = useState([])
     const [checkedItems, setCheckedItems] = useState('');
     const [value, setValue] = useState('');
@@ -33,7 +33,7 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
             if (dateTimestamp?.start && dateTimestamp?.end) {
                 filters.push(where("createdAt", ">=", dateTimestamp?.start), where("createdAt", "<=", dateTimestamp?.end))
             }
-            const ref = query(collection(firestore, "orders"), ...filters, orderBy('createdAt', 'desc')
+            const ref = query(collection(firestore, "orders"), ...filters, orderBy('createdAt', 'desc'), limit(length)
                 // where("createdAt", ">=", startTimestamp),
                 // where("createdAt", "<=", endTimestamp)
             );
