@@ -169,7 +169,7 @@ const Logistik = () => {
   })
   const formattedOrders = mapData.map((all) => {
 
-    return { ...all, tgl: formatToDate(all?.createdAt.toDate()), month: all?.createdAt.toDate().toLocaleString('default', { month: 'long', year: 'numeric' }) }
+    return { ...all, tgl: formatToDate(all.shippingDate ? all.shippingDate?.toDate() : all?.createdAt.toDate()), month: all?.createdAt.toDate().toLocaleString('default', { month: 'long', year: 'numeric' }) }
   })
 
   const groupedDataAll = formattedOrders.reduce((acc, item) => {
