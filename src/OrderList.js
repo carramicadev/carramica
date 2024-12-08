@@ -49,7 +49,7 @@ const OrderList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [allFilters, setAllFilters] = useState([]);
 
   const [modalDownload, setModalDownload] = useState({
     open: false,
@@ -203,7 +203,7 @@ const OrderList = () => {
       if (dateTimestamp.end) {
         filter.push(where("createdAt", ">=", dateTimestamp?.start), where("createdAt", "<=", dateTimestamp?.end))
       }
-      const getDoc = query(collection(firestore, "orders"), ...filter, orderBy("createdAt", "desc"), startAfter(item.createdAt), limit(length));
+      const getDoc = query(collection(firestore, "orders"), ...filter, ...allFilters, orderBy("createdAt", "desc"), startAfter(item.createdAt), limit(length));
       const unsubscribe = onSnapshot(getDoc, (snapshot) => {
         const updatedData = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -218,7 +218,7 @@ const OrderList = () => {
   };
 
   const showPrevious = ({ item }) => {
-    const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "desc"), endBefore(item.createdAt), limitToLast(length));
+    const getDoc = query(collection(firestore, "orders"), ...allFilters, orderBy("createdAt", "desc"), endBefore(item.createdAt), limitToLast(length));
     const unsubscribe = onSnapshot(getDoc, (snapshot) => {
       const updatedData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -1024,6 +1024,8 @@ Thank you :)`
         dateTimestamp={dateTimestamp}
         setAllOrders={setAllOrders}
         length={length}
+        setAllFilters={setAllFilters}
+        setPage={setPage}
       />
       <FilterColumnDialog
         show={filterColomDialog}

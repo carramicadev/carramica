@@ -4,7 +4,7 @@ import Autocomplete from 'react-autocomplete';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { firestore } from './FirebaseFrovider';
 
-export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders, length }) => {
+export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders, length, setAllFilters, setPage }) => {
     const [user, setUser] = useState([])
     const [checkedItems, setCheckedItems] = useState('');
     const [value, setValue] = useState('');
@@ -33,6 +33,7 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
             if (dateTimestamp?.start && dateTimestamp?.end) {
                 filters.push(where("createdAt", ">=", dateTimestamp?.start), where("createdAt", "<=", dateTimestamp?.end))
             }
+            setAllFilters(filters)
             const ref = query(collection(firestore, "orders"), ...filters, orderBy('createdAt', 'desc'), limit(length)
                 // where("createdAt", ">=", startTimestamp),
                 // where("createdAt", "<=", endTimestamp)
@@ -47,6 +48,8 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                 setAllOrders(updatedData)
                 handleClose()
             });
+            setPage(1)
+            setLoading(false)
             return () => unsubscribe();
         } catch (e) {
             console.log(e.message)
