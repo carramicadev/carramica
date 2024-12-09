@@ -10,6 +10,7 @@ import { arrayUnion, doc, getDoc, onSnapshot, runTransaction, setDoc, updateDoc 
 import { firestore } from './FirebaseFrovider';
 import { Document, Image, Page, PDFDownloadLink, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { useEffect, useState } from 'react';
+import { useSnackbar } from 'notistack';
 
 const styles = StyleSheet.create({
     page: {
@@ -232,6 +233,8 @@ function MyDoc({ item, setLoading }) {
 export default function DownloadPdfDialog(props) {
     const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
     const item = props?.show?.data;
+    const { enqueueSnackbar } = useSnackbar();
+
     // console.log(props?.show?.userId)
     console.log(props?.loading)
     const downloadPdf = async () => {
@@ -253,7 +256,7 @@ export default function DownloadPdfDialog(props) {
 
                         // Update only if the array element is not already marked as downloaded
                         if (!arrayField[indexOrder]?.isDownloaded) {
-                            arrayField[indexOrder] = { ...arrayField[indexOrder], isDownloaded: true, downloadedBy: props?.show?.userId };
+                            arrayField[indexOrder] = { ...arrayField[indexOrder], isDownloaded: true, downloadedBy: props?.show?.userId ?? '' };
 
                             // console.log('Updated orders array:', arrayField);
 
@@ -270,6 +273,7 @@ export default function DownloadPdfDialog(props) {
                 })
             );
         } catch (e) {
+            enqueueSnackbar(`error ${e.message}`, { variant: 'error' })
             console.log(`Error updating document: ${e.message}`);
         }
     };
