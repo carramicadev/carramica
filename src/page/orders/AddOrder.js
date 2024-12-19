@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { db } from './firebase';
+import { db } from '../../firebase';
 import { collection, addDoc, getDocs, doc, getDoc, setDoc, serverTimestamp, query, where, orderBy, increment, onSnapshot, runTransaction, deleteDoc, Timestamp } from "firebase/firestore";
-import Header from './Header';
-import AddSalesModal from './AddSalesModal';
+import Header from '../../components/Header';
+import AddSalesModal from '../../AddSalesModal';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import { httpsCallable } from "firebase/functions";
 
@@ -10,16 +10,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-phone-input-2/lib/style.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 // import 'react-bootstrap-typeahead/css/Typeahead.css';
-import dataServiceLalamove from './kecamatan.json';
+import dataServiceLalamove from '../../kecamatan.json';
 import Autocomplete from 'react-autocomplete';
-import { firestore, functions } from './FirebaseFrovider';
-import { SAPProduct } from './ShippingProduct';
+import { firestore, functions } from '../../FirebaseFrovider';
+// import { SAPProduct } from '../../ShippingProduct';
 import SaveInvoiceModal from './SaveInvoiceModal';
 import RedirectToWa from './DialogRedirectToWA';
-import { currency } from './formatter';
-import MapComponent from './MapComponent';
+import { currency } from '../../formatter';
+import MapComponent from '../../components/MapComponent';
 import { useFirestoreDocument, useFirestoreDocumentData, useFirestoreQueryData } from '@react-query-firebase/firestore';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../../AuthContext';
 import { Form } from 'react-bootstrap';
 import { useSnackbar } from 'notistack';
 import PhoneInput from 'react-phone-input-2';
@@ -56,38 +56,7 @@ const AddOrder = () => {
   const [update, setUpdate] = useState(false);
 
   useEffect(() => {
-    // async function getUsers() {
-    //   if (update) {
-    //     const docRef = doc(firestore, "settings", 'counter');
-    //     const docSnap = await getDoc(docRef);
 
-    //     if (docSnap.exists()) {
-    //       setSettings({
-    //         ...docSnap.data()
-    //       })
-    //       console.log("Document data:", docSnap.data());
-    //     } else {
-    //       // docSnap.data() will be undefined in this case
-    //       console.log("No such document!");
-    //     }
-
-    //   } else {
-    //     const docRef = doc(firestore, "settings", 'counter');
-    //     const docSnap = await getDoc(docRef);
-
-    //     if (docSnap.exists()) {
-    //       setSettings({
-    //         ...docSnap.data()
-    //       })
-    //       console.log("Document data:", docSnap.data());
-    //     } else {
-    //       // docSnap.data() will be undefined in this case
-    //       console.log("No such document!");
-    //     }
-
-    //   }
-    // }
-    // getUsers()
     const unsub = onSnapshot(settingsRef, (doc) => {
       const source = doc.metadata.hasPendingWrites ? "Local" : "Server";
       // console.log(source, " data: ", doc.data());
@@ -216,15 +185,6 @@ const AddOrder = () => {
   })
   // select kurir
   const [ListKurir, setListKurir] = useState(['Biteship', 'Dedicated']);
-  const [newKurir, setNewKurir] = useState('');
-  const handleAddOption = (e) => {
-    if (e.target.value && !ListKurir.includes(e.target.value)) {
-      setListKurir([...ListKurir, e.target.value]);
-      setNewKurir(''); // Clear the input field after adding
-    }
-  };
-  const [error, setError] = useState(null);
-
 
   // validate
   const validate = () => {
@@ -297,6 +257,7 @@ const AddOrder = () => {
   // console.log(formData)
   // query coll product
   const ref = query(collection(firestore, "product"),
+    where("stok", ">", 0)
     // limit(10),
   );
 
@@ -305,21 +266,13 @@ const AddOrder = () => {
     subscribe: true,
     idField: "id",
   });
-  // console.log(err)
-  // console.log(dataServiceLalamove?.services.map((ser) => {
-  //   return ser?.key
-  // }))
-  // select service kurir
-  // const handleSelectKurirProd = (e) => {
-  //   setKurirService(e.target.value)
-  // }
-  // Fetch sales data from Firestore on component mount
+
   useEffect(() => {
     const fetchSales = async () => {
       const salesSnapshot = await getDocs(collection(firestore, "warehouse"));
       const salesList = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setWarehouseOptions(salesList);
-      const findDefaultWH = salesList.find(sal => sal?.name === 'default');
+      const findDefaultWH = salesList.find(sal => sal?.id === 'SSUWQwC374ZY3pg4gPEt');
       if (findDefaultWH?.name) {
         setFormData({
           ...formData,
@@ -1182,7 +1135,7 @@ const AddOrder = () => {
             <div className="form-group ">
               <Form.Label className="label">Warehouse</Form.Label>
               <Form.Select className="select" name="warehouse" value={formData.warehouse} onChange={handleFormChange}>
-                <option>Pilih Nama Warehouse</option>
+                <option selected hidden>Pilih Nama Warehouse</option>
                 {warehouseOptions.map(warehouse => (
                   <option key={warehouse.id} value={warehouse.name}>{warehouse.name}</option>
                 ))}
@@ -1321,24 +1274,7 @@ const AddOrder = () => {
                       selected={product?.prod}
                       className="w-50"
                     />
-                    {/* <div className="form-group">
-                      <Form.Label className="label">Nama Produk</Form.Label>
-                      <Form.Select isInvalid={ordersErr?.[orderIndex]?.products?.[productIndex]?.nama ? true : false} className="select" name="nama" value={product?.id} onChange={(e) => {
-                        handleChange(e, orderIndex, productIndex)
-                      }}>
-                        <option selected hidden >Nama Produk</option>
-                        {
-                          allProduct?.map?.((prod) => {
-                            return <option value={prod?.id} >{prod?.nama}</option>
-                          })
-                        }
-                      </Form.Select>
-                      {
-                        ordersErr?.[orderIndex]?.products?.[productIndex]?.nama && <div class="invalid-feedback">
-                          {ordersErr?.[orderIndex]?.products?.[productIndex]?.nama}
-                        </div>
-                      }
-                    </div> */}
+
 
                     <div className="productInfo">
                       <div className="form-group">
@@ -1445,28 +1381,7 @@ const AddOrder = () => {
                         })}
                       </Form.Select>
                     </div>
-                    {/* <div className="form-group">
 
-                      <Form.Label className="label">Service</Form.Label>
-                      <Form.Select className="select" name="kurirProduk" value={order.kurirProduk} onChange={(e) => handleChange(e, orderIndex)}>
-                        <option selected hidden >Service</option>
-                        {SAPProduct?.map((kur) => {
-                          return <option value={kur?.product_code}>{kur?.product_name}</option>;
-                        })}
-                      </Form.Select>
-                    </div>
-                  
-                  </> : kurirAktif === 'LALAMOVE' ?
-                    <><div className="form-group">
-                      <Form.Label className="label">Jenis Service</Form.Label>
-
-                      <Form.Select className="select" name="kurirService" value={order.kurirService} onChange={(e) => handleChange(e, orderIndex)}>
-                        <option selected hidden >Jenis Service</option>
-                        {listService?.map((kur) => {
-                          return <option key={kur?.service_type_code ? kur?.service_type_code : kur || ''} value={kur?.service_type_code ? kur?.service_type_code : kur || ''}>{kur?.service_type_name ? kur?.service_type_name : kur || ''}</option>;
-                        })}
-                      </Form.Select>
-                    </div> */}
                   </>
                   : null
 
@@ -1525,10 +1440,6 @@ const AddOrder = () => {
             <Form.Label>Delivery Fee</Form.Label>
             <span>{currency(totalOngkir)}</span>
           </div>
-          {/* <div className="summary-item">
-            <Form.Form.Label>Tax</Form.Label>
-            <span>0.00</span>
-          </div> */}
           <div className="summary-item">
             <Form.Label>Total</Form.Label>
             <span>{currency(totalAfterDiskonDanOngkir)}</span>

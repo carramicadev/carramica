@@ -3,14 +3,16 @@ import { collection, deleteDoc, doc, endBefore, getDocs, limit, limitToLast, onS
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Table } from 'react-bootstrap';
-import { PencilSquare, Search, TrashFill } from 'react-bootstrap-icons';
+import { Images, PencilSquare, Search, SortAlphaDown, SortAlphaDownAlt, SortDown, TrashFill } from 'react-bootstrap-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import DialogAddProduct from './DialogAddProduct';
-import { firestore } from './FirebaseFrovider';
-import Header from './Header';
+import { firestore } from '../../FirebaseFrovider';
+import Header from '../../components/Header';
+import { useNavigate } from 'react-router-dom';
 
-const Product = () => {
+const ListProduct = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -156,6 +158,41 @@ const Product = () => {
     // setData(data.filter((row) => row.id !== id));
   };
   // console.log(allProduct)
+  // sort
+  const [sortConfig, setSortConfig] = useState({ key: "id", direction: "asc" });
+
+  const sortedData = React.useMemo(() => {
+    let sortableItems = [...filteredData];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredData, sortConfig]);
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (
+      sortConfig.key === key &&
+      sortConfig.direction === "asc"
+    ) {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+  const renderSortIcon = (key) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === "asc" ? <SortAlphaDown /> : <SortAlphaDownAlt />;
+    }
+    return <SortDown />;
+  };
   return (
     <div className="container">
 
@@ -203,9 +240,10 @@ const Product = () => {
                   <input className="form-check-input" type="checkbox" checked={selectedRows?.length === filteredData?.length}
                     onChange={handleSelectAll} id="flexCheckChecked" />
                 </th>
-                <th>Product Id</th>
+                <th>Image</th>
+                {/* <th>Product Id</th> */}
                 <th>SKU</th>
-                <th>Product Name</th>
+                <th onClick={() => handleSort("nama")}>Product Name {renderSortIcon('nama')}</th>
                 <th>Weight/gr</th>
                 <th>Length</th>
                 <th>Width</th>
@@ -217,7 +255,7 @@ const Product = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData?.map?.((item, i) => {
+              {sortedData?.map?.((item, i) => {
                 // console.log(item)
                 return <tr key={item.id}>
                   <td>
@@ -225,7 +263,15 @@ const Product = () => {
                       checked={selectedRows.includes(item.id)}
                       onChange={(e) => handleSelectRow(e, item.id)} />
                   </td>
-                  <td>{item?.id}</td>
+                  <td>
+                    {
+                      item?.thumbnail?.length > 0 ?
+                        <img src={item?.thumbnail?.[0]} alt='' height={50} width={50} style={{ borderRadius: '5px' }} />
+                        :
+                        <Images size={50} />
+                    }
+                  </td>
+                  {/* <td>{item?.id}</td> */}
                   <td>{item?.sku}</td>
                   <td>{item?.nama}</td>
                   <td>{item?.weight}</td>
@@ -234,7 +280,10 @@ const Product = () => {
                   <td>{item?.height}</td>
                   <td>{item?.harga}</td>
                   <td>{item?.stok}</td>
-                  <td>              <button onClick={() => setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })} style={{ backgroundColor: '#998970' }} className="button button-primary"><PencilSquare /></button>
+                  <td>              <button onClick={() => {
+                    navigate(`/products/detailProduct/${item?.id}`)
+                    // setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
+                  }} style={{ backgroundColor: '#998970' }} className="button button-primary"><PencilSquare /></button>
                     <button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(item?.id)}>
                       <TrashFill />
                     </button>
@@ -272,4 +321,4 @@ const Product = () => {
   );
 };
 
-export default Product;
+export default ListProduct;

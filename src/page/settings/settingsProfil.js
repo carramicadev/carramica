@@ -3,8 +3,8 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap';
 import { PersonCircle } from 'react-bootstrap-icons';
-import { useAuth } from './AuthContext';
-import { firestore } from './FirebaseFrovider';
+import { useAuth } from '../../AuthContext';
+import { firestore } from '../../FirebaseFrovider';
 
 const ProfilePage = (props) => {
     const { currentUser } = useAuth();

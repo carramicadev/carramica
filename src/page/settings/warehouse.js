@@ -5,7 +5,7 @@ import { Button, ButtonGroup } from "react-bootstrap"
 import { PencilSquare, PersonSquare, TrashFill } from "react-bootstrap-icons"
 import DialogAddUsers from "./DialogAddUsers"
 import DialogAddWarehouse from "./DialogAddWarehouse";
-import { firestore } from "./FirebaseFrovider";
+import { firestore } from "../../FirebaseFrovider";
 
 export default function Warehouse() {
     const [list, setList] = useState([]);
@@ -99,8 +99,7 @@ export default function Warehouse() {
             <thead>
                 <tr>
                     <th>NAME</th>
-                    <th>EMAIL</th>
-                    <th>PHONE</th>
+
                     <th>ADRESS</th>
                     <th>COORDINATES</th>
                     <th>ACTIONS</th>
@@ -110,7 +109,7 @@ export default function Warehouse() {
 
                 {
                     list?.map((user) => {
-                        return <tr>
+                        return <tr style={{ whiteSpace: 'nowrap' }}>
                             <td>
                                 {user?.name}
                                 {/* <div className="d-flex align-items-center">
@@ -120,9 +119,8 @@ export default function Warehouse() {
                                     {user?.firstName} {user?.lastName}
                                 </div> */}
                             </td>
-                            <td>{user?.email}</td>
-                            <td>{user?.phone}</td>
-                            <td><TruncatedText text={user?.address} maxLength={25} /></td>
+
+                            <td><TruncatedText text={user?.address} maxLength={40} /></td>
                             <td>{user?.coordinates?.lat},{user?.coordinates?.lng}</td>
                             <td>
                                 <button onClick={() => setOpenAddDialog({ open: true, mode: 'edit', item: user })} style={{ backgroundColor: '#998970' }} className="button button-primary"><PencilSquare /></button>

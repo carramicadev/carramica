@@ -1,20 +1,21 @@
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { usePDF } from 'react-to-pdf';
-import './dialogDownload.css';
-import logoFull from './logoFull.png';
-import sap from './sap.png'
-import lalamove from './lalamove.png'
+import '../orders/dialogDownload.css';
+// import logoFull from './logoFull.png';
+// import sap from './sap.png'
+// import lalamove from './lalamove.png'
 import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { firestore } from './FirebaseFrovider';
+import { firestore } from '../../FirebaseFrovider';
 import { useEffect, useState } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 import { useSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
 
 export default function DialogAddProduct(props) {
 
     const { enqueueSnackbar } = useSnackbar();
-
+    const navigate = useNavigate();
     useEffect(() => {
         if (props?.show?.mode === 'edit') {
             setFormData({ ...props?.show?.item })
@@ -109,9 +110,10 @@ export default function DialogAddProduct(props) {
 
                     props.onHide()
                 } else {
-                    await addDoc(collection(firestore, "product"), { ...formData, createdAt: serverTimestamp() });
+                    const tambahProduk = await addDoc(collection(firestore, "product"), { ...formData, createdAt: serverTimestamp() });
                     // console.log("Document written with ID: ",);
                     enqueueSnackbar(`sukses menambahkan product ${formData?.nama}`, { variant: 'success' })
+                    navigate(`/products/detailProduct/${tambahProduk?.id}`)
 
                     props.onHide()
                 }

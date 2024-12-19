@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup, Card, Col, Form, OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
 import { CSVLink } from 'react-csv';
-import Header from './Header';
+// import Header from './Header';
 import { useFirestoreQuery, useFirestoreQueryData } from '@react-query-firebase/firestore';
 import {
   query,
@@ -25,9 +25,9 @@ import {
   // QuerySnapshot,
   // DocumentData,
 } from "firebase/firestore";
-import { firestore, functions } from './FirebaseFrovider';
+import { firestore, functions } from '../../FirebaseFrovider';
 import DownloadPdfDialog from './DialogDonwloadPdf';
-import formatDate, { currency } from './formatter';
+import formatDate, { currency } from '../../formatter';
 import { BoxFill, CloudArrowDown, Filter, FilterSquare, GraphUp, PencilSquare, PeopleFill, TrashFill, Whatsapp, XCircleFill } from 'react-bootstrap-icons';
 import DatePicker from 'react-datepicker';
 import { set } from 'date-fns';
@@ -35,13 +35,15 @@ import { FilterDialog } from './FilterOrdersDialog';
 import { httpsCallable } from 'firebase/functions';
 import { useSnackbar } from 'notistack';
 import { FilterColumnDialog } from './FilterColumnDialog';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../../AuthContext';
 import DownloadInvoiceDialog from './DialogInvoice';
 import Scrollbars from 'react-custom-scrollbars-2';
 // import RSC, { Scrollbar } from "react-scrollbars-custom";
 import './orders.css';
 import DialogSendWA from './DialogSendWA';
 import EditOrders from './DialogEditOrder';
+import Header from '../../components/Header';
+import DialogEditShipDate from './DialogEditShippingDate';
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -80,38 +82,7 @@ const OrderList = () => {
   const [settings, setSettings] = useState({});
 
   useEffect(() => {
-    // async function getUsers() {
-    //   if (update) {
-    //     const docRef = doc(firestore, "settings", 'counter');
-    //     const docSnap = await getDoc(docRef);
 
-    //     if (docSnap.exists()) {
-    //       setSettings({
-    //         ...docSnap.data()
-    //       })
-    //       console.log("Document data:", docSnap.data());
-    //     } else {
-    //       // docSnap.data() will be undefined in this case
-    //       console.log("No such document!");
-    //     }
-
-    //   } else {
-    //     const docRef = doc(firestore, "settings", 'counter');
-    //     const docSnap = await getDoc(docRef);
-
-    //     if (docSnap.exists()) {
-    //       setSettings({
-    //         ...docSnap.data()
-    //       })
-    //       console.log("Document data:", docSnap.data());
-    //     } else {
-    //       // docSnap.data() will be undefined in this case
-    //       console.log("No such document!");
-    //     }
-
-    //   }
-    // }
-    // getUsers()
     const unsub = onSnapshot(settingsRef, (doc) => {
       const source = doc.metadata.hasPendingWrites ? "Local" : "Server";
       // console.log(source, " data: ", doc.data());
@@ -127,6 +98,10 @@ const OrderList = () => {
   const [page, setPage] = useState(1);
   const [update, setUpdate] = useState(false);
   const [edit, setEdit] = useState(null);
+  const [editShipDateDialog, setEditShipDateDialog] = useState({
+    open: false,
+    id: ''
+  });
   const [length, setLength] = useState(20);
   const listLength = [5, 10, 20, 50];
   const handleChangeLength = (e) => {
@@ -358,22 +333,13 @@ const OrderList = () => {
         hargaAfterDiscProd: allGross,
         shippingCost: ord?.ongkir,
         orderStatus: ord?.orderStatus ? ord?.orderStatus : item?.paymentStatus === 'settlement' ? 'processing' : item?.paymentStatus,
-        shippingDate: ord?.shippingDate
+        shippingDate: item?.shippingDate
 
       })
 
     })
   });
-  // const mapData = mapData.map((ord, i) => {
-  //   const invId = ord?.invoice_id?.split('-')?.[2]
-  //   const ordId = String(settings?.orderId - i).padStart(4, '0');
 
-  //   return {
-  //     ...ord,
-  //     ordId: `OS-${invId}-${ordId}`
-  //   }
-  // })
-  // console.log(allOrders)
   const filteredData = mapData?.filter?.(
     item =>
       item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
@@ -393,30 +359,43 @@ const OrderList = () => {
   // checkbox
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedRows(mapData.map(item => item.unixId));
+      setSelectedRows(mapData.map((item, i) => i));
     } else {
       setSelectedRows([]);
     }
   };
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(null); // Tracks the last selected checkbox index
 
-  const handleSelectRow = (e, unixId) => {
-    if (e.target.checked) {
-      setSelectedRows([...selectedRows, unixId]);
+  const handleSelectRow = (e, index, id) => {
+    let updatedSelected = [...selectedRows];
+
+    if (e.nativeEvent.shiftKey && lastSelectedIndex !== null) {
+      console.log('shift')
+      // Select range
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+      const range = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
+      // Ensure range items are selected
+      range.forEach((i) => {
+        if (!updatedSelected.includes(i)) {
+          updatedSelected.push(i);
+        }
+      });
     } else {
-      setSelectedRows(selectedRows.filter(rowId => rowId !== unixId));
+      // Toggle single checkbox selection
+      if (updatedSelected.includes(index)) {
+        updatedSelected = updatedSelected.filter((i) => i !== index); // Deselect
+      } else {
+        updatedSelected.push(index); // Select
+      }
     }
+
+    setSelectedRows(updatedSelected);
+    setLastSelectedIndex(index);
   };
 
-  // get invoice
-  const handleCLickInvoice = async (e) => {
-    try {
-
-    } catch (e) {
-
-    }
-  }
-
-  const selectedData = mapData?.filter?.(item => selectedRows.includes(item.unixId));
+  const selectedData = selectedRows?.map((index) => mapData[index]);
   const filterForDownloadAll = selectedData.filter(item => !item.isDownloaded && item.paymentStatus === 'settlement')
   // console.log(arrayHarga);
   const selectedExcel = selectedData?.map((data) => {
@@ -470,89 +449,6 @@ const OrderList = () => {
     // setUpdate(false)
   }
 
-  // wa
-  const sendMessage = async (data) => {
-    try {
-      const message = `Halo ${data?.senderName},\n
-Thank you for purchasing our product!.\n
-Total pembayaran Anda adalah Rp. ${data?.harga}\n\n
-
-Silahkan melakukan pembayaran melalui link berikut : ${data?.link}\n\n
-
-Kabarin ya jika ada kendala. Harap konfirmasi jika telah berhasil.\n 
-Thank you 😊`
-      const url = `https://wa.me/${data?.senderPhone}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-
-      await setDoc(doc(firestore, 'orders', data.id), {
-        isInvWASent: true
-      }, { merge: true });
-      // console.log('run')
-      setUpdate((prevValue) => !prevValue)
-
-    } catch (e) {
-      console.log(e.message)
-    }
-  };
-
-  const sendMessageResi = async (data) => {
-    try {
-      const message = `Halo ${data?.receiverName},\n\n
-Berikut resi pembelian produk Carramica dari ${data?.senderName}. untuk order id ${data?.unixId}.\n\n
- ${data?.resi}\n
-Menggunakan kurir: ${data?.kurir}\n\n
-
-Thank you :)`
-      const url = `https://wa.me/${data?.receiverPhone}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-
-      const indexOrder = parseInt(data?.unixId?.split('_')?.[1])
-      const getDocOrd = doc(firestore, 'orders', data?.id);
-      const getDataOrd = await getDoc(getDocOrd)
-      const arrayField = getDataOrd.data().orders
-
-
-      // if (itemIndex !== -1) {
-      // Update the specific item
-      arrayField[indexOrder] = { ...arrayField[indexOrder], isResiWASent: true };
-
-      // Update the document with the modified array
-      await updateDoc(getDocOrd, { orders: arrayField });
-      setUpdate((prevValue) => !prevValue)
-
-    } catch (e) {
-      console.log(e.message)
-    }
-  };
-
-  const sendResiToSender = async (data) => {
-    try {
-      const message = `Halo ${data?.senderName}, berikut resi pengiriman kamu untuk produk Carramica atas nama ${data?.receiverName}. \n\n
- ${data?.resi}\n
- Kurir: ${data?.kurir}\n\n
-
-Thank you :)`
-      const url = `https://wa.me/${data?.senderPhone}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-
-      const indexOrder = parseInt(data?.unixId?.split('_')?.[1])
-      const getDocOrd = doc(firestore, 'orders', data?.id);
-      const getDataOrd = await getDoc(getDocOrd)
-      const arrayField = getDataOrd.data().orders
-
-
-      // if (itemIndex !== -1) {
-      // Update the specific item
-      arrayField[indexOrder] = { ...arrayField[indexOrder], isResiSentToWASender: true };
-
-      // Update the document with the modified array
-      await updateDoc(getDocOrd, { orders: arrayField });
-      setUpdate((prevValue) => !prevValue)
-
-    } catch (e) {
-      console.log(e.message)
-    }
-  };
 
   // create invoice
   const handlecreateInv = async (id) => {
@@ -569,18 +465,7 @@ Thank you :)`
     }
   }
 
-  // qontak
-  const sendWAToSender = async ({ data }) => {
-    try {
-      const getToken = httpsCallable(functions, 'qontakSendWAToSender');
-      const result = await getToken({
-        no: data?.receiverName
-      });
-      console.log(result)
-    } catch (e) {
 
-    }
-  }
 
   // delete
   const handleDeleteClick = async (id) => {
@@ -696,7 +581,11 @@ Thank you :)`
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },
     { label: "Discount", key: (item) => item?.discount, style: {} },
     { label: "Gross Revenue", key: (item) => currency(item?.grossRevenue), style: {} },
-    { label: "Shipping Date", key: (item) => formatDate(item?.shippingDate?.toDate()), style: {} },
+    {
+      label: "Shipping Date", key: (item) => <div>{formatDate(item?.shippingDate?.toDate?.())}
+        <Button disabled={item?.orderStatus === 'sent'} onClick={() => setEditShipDateDialog({ open: true, id: item?.id })} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button>
+      </div>, style: {}
+    },
     { label: "Shipping Info", key: (item) => item?.kurir, style: {} },
     { label: "Shipping Cost", key: (item) => currency(item?.shippingCost), style: {} },
     {
@@ -962,17 +851,6 @@ Thank you :)`
           // onWheel={handleWheel} 
           style={{ maxWidth: '100vw', overflowX: 'scroll', }}
         >
-          {/* <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0
-        }}>
-          swn
-        </div> */}
-          {/* <Scrollbar elementRef={scrollRef} id="RSC-Example" style={{ width: "100vw", height: "60%" }}> */}
-          {/* {renderAmountOfParagraphs(25, { style: { width: "249%" } })} */}
-          {/* <Scrollbars style={{ width: '100vw', height: 250 }}> */}
 
           {/* Section 3: Table */}
           <div className="section-table" id="table-section">
@@ -985,6 +863,7 @@ Thank you :)`
                       <input className="form-check-input" type="checkbox" checked={selectedRows.length === mapData.length}
                         onChange={handleSelectAll} id="flexCheckChecked" />
                     </th>
+
                     {
                       selectColumn.map((col, i) => (
                         <th key={i}>{col?.label}</th>
@@ -1008,11 +887,11 @@ Thank you :)`
                         borderRadius: '20px', backgroundColor: '#ECFDF3', padding: '5px', textAlign: 'center', color: '#14BA6D', width: '80px'
                       }
                     }
-                    return <tr key={item.unixId} style={{ whiteSpace: 'nowrap' }}>
+                    return <tr key={i} style={{ whiteSpace: 'nowrap' }}>
                       <td>
                         <input type="checkbox"
-                          checked={selectedRows.includes(item.unixId)}
-                          onChange={(e) => handleSelectRow(e, item.unixId)} />
+                          checked={selectedRows.includes(i)}
+                          onChange={(e) => handleSelectRow(e, i, item?.unixId)} />
                       </td>
                       {selectColumn.map((col, colIndex) => (
                         <td key={colIndex} style={col.style}>{col.key(item, i, idOrder, style, edit)}</td>
@@ -1036,13 +915,7 @@ Thank you :)`
               className="table-vertical-scroll-content"
             ></div>
           </div>
-          {/* </Scrollbars> */}
-          {/* </ Scrollbar> */}
-          {/* <div style={styles.scrollbarWrapper}>
-            <div style={styles.horizontalScrollbar} onScroll={handleScroll}>
-              <div style={styles.fakeContent}></div>
-            </div>
-          </div> */}
+
         </div>
         {/* Fixed Horizontal Scrollbar */}
 
@@ -1063,7 +936,7 @@ Thank you :)`
                 return <option value={kur}>{kur} Rows </option>
               })
             }
-            {/* <Form.Control placeholder='Tambah kurir baru' className='input' onBlur={handleAddOption} />    */}
+
           </Form.Select>
         </div>
         {/* //show previous button only when we have items */}
@@ -1130,40 +1003,15 @@ Thank you :)`
         handleClose={() => setEditDialog({ open: false, data: {} })}
 
       />
-      {/* </div> */}
-      {/* </div> */}
+      <DialogEditShipDate
+        show={editShipDateDialog}
+        handleClose={() => setEditShipDateDialog({ open: false, id: '' })}
+
+      />
+
     </div>
   );
 };
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh',
-    position: 'relative',
-  },
-  scrollableWrapper: {
-    flexGrow: 1,
-    overflowY: 'auto', // Allow vertical scrolling for content
-  },
-  scrollbarWrapper: {
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    // width: '100%',
-    backgroundColor: 'white',
-    zIndex: 200, // Make sure it's above the content
-    paddingTop: '5px',
-  },
-  horizontalScrollbar: {
-    // width: '100%',
-    height: '20px',
-    overflowX: 'auto',
-  },
-  fakeContent: {
-    width: '2000px', // Match the content width to ensure the scrollbar appears
-    height: '1px', // Small height so it's only for the scrollbar
-  },
-};
+
 
 export default OrderList;

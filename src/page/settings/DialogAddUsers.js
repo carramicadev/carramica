@@ -1,7 +1,7 @@
 import Modal from 'react-bootstrap/Modal';
-import './dialogDownload.css';
+import '../orders/dialogDownload.css';
 import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { firestore, functions } from './FirebaseFrovider';
+import { firestore, functions } from '../../FirebaseFrovider';
 import { useState } from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 import { httpsCallable } from 'firebase/functions';

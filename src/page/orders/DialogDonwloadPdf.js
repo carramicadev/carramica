@@ -2,14 +2,15 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { usePDF } from 'react-to-pdf';
 import './dialogDownload.css';
-import logoFull from './logoFull.png';
-import sap from './sap.png'
-import paxel from './paxel.png'
-import lalamove from './lalamove.png'
+import logoFull from '../../logoFull.png';
+import sap from '../../sap.png'
+import paxel from '../../paxel.png'
+import lalamove from '../../lalamove.png'
 import { arrayUnion, doc, getDoc, onSnapshot, runTransaction, setDoc, updateDoc } from 'firebase/firestore';
-import { firestore } from './FirebaseFrovider';
+// import { firestore } from './FirebaseFrovider';
 import { Document, Image, Page, PDFDownloadLink, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { useEffect, useState } from 'react';
+import { firestore } from '../../FirebaseFrovider';
 
 const styles = StyleSheet.create({
     page: {

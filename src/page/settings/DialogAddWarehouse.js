@@ -1,12 +1,13 @@
 import Modal from 'react-bootstrap/Modal';
-import './dialogDownload.css';
+import '../orders/dialogDownload.css';
 import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { firestore, functions } from './FirebaseFrovider';
+import { firestore, functions } from '../../FirebaseFrovider';
 import { useEffect, useState } from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 import { httpsCallable } from 'firebase/functions';
 import { useSnackbar } from 'notistack';
-import MapComponent from './MapComponent';
+import MapCompWarehouse from '../../components/MapCompWarehouse';
+// import MapComponent from './MapComponent';
 
 export default function DialogAddWarehouse({ show, handleClose, setUpdate }) {
     const { enqueueSnackbar } = useSnackbar();
@@ -71,10 +72,7 @@ export default function DialogAddWarehouse({ show, handleClose, setUpdate }) {
             // console.log('er')
             newError.name = 'name is required';
         }
-        if (!formData.email) {
-            // console.log('er')
-            newError.email = 'email is required';
-        }
+
         if (!formData.address) {
             // console.log('er')
             newError.address = 'address is required';
@@ -83,9 +81,7 @@ export default function DialogAddWarehouse({ show, handleClose, setUpdate }) {
             // console.log('er')
             newError.coordinates = 'coordinates is required';
         }
-        if (formData.phone.length <= 2) {
-            newError.phone = ' phone is required';
-        }
+
         // console.log(newError)
 
 
@@ -218,7 +214,7 @@ export default function DialogAddWarehouse({ show, handleClose, setUpdate }) {
 
                     </Form.Group> */}
 
-                        <Form.Group as={Row} controlId="formPhone">
+                        {/* <Form.Group as={Row} controlId="formPhone">
                             <Col sm={12}>
                                 <label >Phone</label>
 
@@ -235,9 +231,9 @@ export default function DialogAddWarehouse({ show, handleClose, setUpdate }) {
                                     </Form.Control.Feedback>
                                 }
                             </Col>
-                        </Form.Group>
+                        </Form.Group> */}
 
-                        <Form.Group as={Row} controlId="formEmail">
+                        {/* <Form.Group as={Row} controlId="formEmail">
                             <Col sm={12}>
                                 <label >Email</label>
 
@@ -254,7 +250,7 @@ export default function DialogAddWarehouse({ show, handleClose, setUpdate }) {
                                     </Form.Control.Feedback>
                                 }
                             </Col>
-                        </Form.Group>
+                        </Form.Group> */}
 
                         <Form.Group as={Row} controlId="formPassword">
                             <Col sm={12}>
@@ -287,7 +283,7 @@ export default function DialogAddWarehouse({ show, handleClose, setUpdate }) {
                                         })
                                     }
                                 </Form.Select>
-                                <MapComponent setKoordinateReceiver={setKoordinateReceiver} koordinateReceiver={koordinateReceiver} />
+                                <MapCompWarehouse setKoordinateReceiver={setKoordinateReceiver} koordinateReceiver={koordinateReceiver} />
                                 {
                                     formError.coordinates && <Form.Control.Feedback type="invalid">
                                         {formError.coordinates}

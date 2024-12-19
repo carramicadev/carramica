@@ -2,7 +2,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
-import { firestore, functions } from './FirebaseFrovider';
+import { firestore, functions } from '../../FirebaseFrovider';
 import { useNavigate } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
 

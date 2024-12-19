@@ -6,9 +6,9 @@ import { BoxFill, CloudArrowDown, GraphUp, PencilSquare, PeopleFill, PersonSquar
 import { CSVLink } from 'react-csv';
 import DatePicker from 'react-datepicker';
 import DialogAddContact from './DialogAddContact';
-import { firestore } from './FirebaseFrovider';
-import formatDate, { currency, decimal } from './formatter';
-import Header from './Header';
+import { firestore } from '../../FirebaseFrovider';
+import formatDate, { currency, decimal } from '../../formatter';
+import Header from '../../components/Header';
 
 const Contact = () => {
   const [startDate, setStartDate] = useState(null);

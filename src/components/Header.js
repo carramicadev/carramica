@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { NavDropdown } from 'react-bootstrap';
 import { EnvelopeAtFill, PersonCircle } from 'react-bootstrap-icons';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { auth, firestore } from './FirebaseFrovider';
+import { useAuth } from '../AuthContext';
+import { auth, firestore } from '../FirebaseFrovider';
 import { LogoutDialog } from './logoutDialog';
 
 const Header = () => {
@@ -90,7 +90,7 @@ const Header = () => {
         <div className="nav-links">
           {
             akses.map((acc) => (
-              <Link key={acc?.path} style={path === acc?.path ? style : { padding: '10px', }} className="nav-link" to={acc?.path}>{acc?.name}</Link>
+              <Link key={acc?.path} style={path === '/products' && acc?.path === '/products/*' ? style : path === acc?.path ? style : { padding: '10px', }} className="nav-link" to={acc?.path === '/products/*' ? '/products' : acc?.path}>{acc?.name}</Link>
 
             ))
           }

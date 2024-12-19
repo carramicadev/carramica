@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Autocomplete from 'react-autocomplete';
 import { Modal, Button, Form } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
-import { firestore } from './FirebaseFrovider';
+import { firestore } from '../../FirebaseFrovider';
+// import { firestore } from './FirebaseFrovider';
 
 export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders }) => {
     const [user, setUser] = useState([])
@@ -13,11 +14,21 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
     const [selectedUser, setSelectedUser] = useState(null);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const [shippingDate, setShippingDate] = useState(null)
+    const [shippingDate, setShippingDate] = useState(null);
+    const [endShippingDate, setEndShippingDate] = useState(null);
     const handleSelect = (dates) => {
         const [start, end] = dates;
         setStartDate(start);
         setEndDate(end);
+        // if (start && end) {
+        //     filterByDate(start, end)
+
+        // }
+    };
+    const handleSelectShippingDate = (dates) => {
+        const [start, end] = dates;
+        setShippingDate(start);
+        setEndShippingDate(end);
         // if (start && end) {
         //     filterByDate(start, end)
 
@@ -69,14 +80,27 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                 filters.push(where("paidDate", ">=", startTimestamp), where("paidDate", "<=", endTimestamp))
 
             }
-            if (shippingDate) {
+            if (shippingDate && endShippingDate) {
                 const yearStart = shippingDate?.getFullYear();
                 const monthStart = String(shippingDate?.getMonth() + 1).padStart(2, '0'); // Months are 0-based
                 const dayStart = String(shippingDate?.getDate()).padStart(2, '0');
                 const formattedDate = `${yearStart}-${monthStart}-${dayStart}`;
                 const shippingTimestamp = Timestamp.fromDate(new Date(formattedDate));
 
-                filters.push(where("shippingDate", "==", shippingTimestamp))
+                // end
+                // end
+                const yearEnd = endShippingDate.getFullYear();
+                const monthEnd = String(endShippingDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const dayEnd = String(endShippingDate.getDate()).padStart(2, '0');
+                const formattedDateEnd = `${yearEnd}-${monthEnd}-${dayEnd}`;
+                const endShippingTimestamp = Timestamp.fromDate(set(new Date(formattedDateEnd), {
+                    hours: 23,
+                    minutes: 59,
+                    seconds: 59,
+                    milliseconds: 999
+
+                }));
+                filters.push(where("shippingDate", ">=", shippingTimestamp), where("shippingDate", "<=", endShippingTimestamp))
 
             }
             const ref = query(collection(firestore, "orders"), ...filters, orderBy('createdAt', 'desc')
@@ -93,6 +117,7 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                 setList(updatedData); // Update the state with the new data
                 setAllOrders(updatedData)
                 handleClose()
+                setLoading(false)
             });
             return () => unsubscribe();
 
@@ -240,10 +265,10 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                         dateFormat="dd/MM/yyyy"
                         style={{ borderRadius: '10px', }}
                         selected={shippingDate}
-                        onChange={(date) => setShippingDate(date)}
-                        // startDate={startDate}
-                        // endDate={endDate}
-                        // selectsRange
+                        onChange={handleSelectShippingDate}
+                        startDate={shippingDate}
+                        endDate={endShippingDate}
+                        selectsRange
                         showIcon
                     // icon
                     // inline
@@ -259,6 +284,7 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                         setEndDate(null)
                         setStartDate(null)
                         setShippingDate(null)
+                        setEndShippingDate(null)
                         // handleClearFilter()
                     }}>
                         Clear

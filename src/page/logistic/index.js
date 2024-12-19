@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import Header from './Header';
+import Header from '../../components/Header';
 import { Button, ButtonGroup, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import { collection, endBefore, getDocs, limit, limitToLast, orderBy, query, startAfter, Timestamp, where } from 'firebase/firestore';
-import { firestore } from './FirebaseFrovider';
+import { firestore } from '../../FirebaseFrovider';
 import { format, set } from 'date-fns';
-import { formatOrders } from './LogisticFormatted';
-import { currency, formatToDate } from './formatter';
+import { formatOrders } from '../../LogisticFormatted';
+import { currency, formatToDate } from '../../formatter';
 import { BoxFill, GraphUp, PeopleFill, Truck } from 'react-bootstrap-icons';
 
 

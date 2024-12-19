@@ -2,8 +2,8 @@ import { collection, doc, getDocs, onSnapshot, orderBy, query, setDoc, where } f
 import React, { useEffect, useState } from 'react';
 import Autocomplete from 'react-autocomplete';
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
-import { useAuth } from './AuthContext';
-import { firestore } from './FirebaseFrovider';
+import { useAuth } from '../../AuthContext';
+import { firestore } from '../../FirebaseFrovider';
 
 export const FilterColumnDialog = ({ show, handleClose, setSelectColumn, dateTimestamp, setAllOrders, column, selectColumn, user, setColumn, newColumn }) => {
     const [checkedItems, setCheckedItems] = useState([]);

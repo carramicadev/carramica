@@ -6,9 +6,10 @@ import { useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { Typeahead } from "react-bootstrap-typeahead";
 import PhoneInput from 'react-phone-input-2';
-import { firestore, functions } from "./FirebaseFrovider";
-import { currency } from "./formatter";
-import MapComponent from "./MapComponent";
+import MapComponent from "../../components/MapComponent";
+import { firestore, functions } from "../../FirebaseFrovider";
+import { currency } from "../../formatter";
+// import MapComponent from "./MapComponent";
 
 export default function EditOrders(props) {
     const { enqueueSnackbar } = useSnackbar();

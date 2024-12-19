@@ -6,11 +6,11 @@ import { Container, Row, Col, Nav, Tab, Form, Button, Tabs, ButtonGroup } from '
 import { PersonSquare, TrashFill } from 'react-bootstrap-icons';
 import DialogAddUsers from './DialogAddUsers';
 // import DialogAddContact from './DialogAddContact';
-import { firestore, functions } from './FirebaseFrovider';
-import Header from './Header';
+import { firestore, functions } from '../../FirebaseFrovider';
 import ProfilePage from './settingsProfil';
 import './settings.css';
 import Warehouse from './warehouse';
+import Header from '../../components/Header';
 
 const Settings = (props) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -23,7 +23,7 @@ const Settings = (props) => {
     { component: 'home', name: 'Home', path: '/' },
     { component: 'addOrder', name: 'Add Order', path: '/add-order' },
     { component: 'orders', name: 'Orders', path: '/orders' },
-    { component: 'products', name: 'Products', path: '/products' },
+    { component: 'products', name: 'Products', path: '/products/*' },
     { component: 'logistic', name: 'Logistic', path: '/logistic' },
     { component: 'contact', name: 'Contact', path: '/contact' },
     { component: 'settings', name: 'Settings', path: '/settings' },

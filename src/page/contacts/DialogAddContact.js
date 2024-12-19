@@ -1,15 +1,16 @@
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { usePDF } from 'react-to-pdf';
-import './dialogDownload.css';
-import logoFull from './logoFull.png';
-import sap from './sap.png'
-import lalamove from './lalamove.png'
+import '../orders/dialogDownload.css';
+// import logoFull from './logoFull.png';
+// import sap from './sap.png'
+// import lalamove from './lalamove.png'
 import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { firestore } from './FirebaseFrovider';
+// import { firestore } from './FirebaseFrovider';
 import { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { useSnackbar } from 'notistack';
+import { firestore } from '../../FirebaseFrovider';
 
 export default function DialogAddContact(props) {
     const { enqueueSnackbar } = useSnackbar();

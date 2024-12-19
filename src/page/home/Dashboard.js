@@ -4,10 +4,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Container, Row, Col, Card } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import TransactionChart from "./Charts";
-import { firestore } from "./FirebaseFrovider";
-import Header from "./Header";
+import { firestore } from "../../FirebaseFrovider";
+import Header from "../../components/Header";
 import "react-datepicker/dist/react-datepicker.css";
-import { currency } from "./formatter";
+import { currency } from "../../formatter";
 import { set } from "date-fns";
 import { BoxFill, GraphUp, PeopleFill, XCircleFill } from "react-bootstrap-icons";
 
