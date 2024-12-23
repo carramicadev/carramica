@@ -29,7 +29,10 @@ export default function DetailProduct() {
         harga: 0,
         stok: 0,
         thumbnail: [],
-        description: ''
+        description: '',
+        cogs: 0,
+        warning_stock: 0,
+        status: 'Live'
     });
     const [error, setError] = useState({
         weight: '',
@@ -69,7 +72,10 @@ export default function DetailProduct() {
             docRef,
             (doc) => {
                 if (doc.exists()) {
-                    setForm(doc.data());
+                    setForm({
+                        ...form,
+                        ...doc.data()
+                    });
                 } else {
                     // setError("Document does not exist");
                 }
@@ -420,7 +426,7 @@ export default function DetailProduct() {
                         <label className="form-label" for="cogs">
                             COGS
                         </label>
-                        <input style={{ width: '70%', }} className="form-control" id="cogs" type="text" value="RP. 199.000" />
+                        <input style={{ width: '70%', }} className="form-control" id="cogs" name='cogs' type="number" value={form?.cogs} onChange={handleFormChange} />
                     </div>
                 </div>
                 <div className='card' style={{ padding: '20px', marginBottom: '20px' }}>
@@ -433,9 +439,12 @@ export default function DetailProduct() {
                         <label className="form-label" for="product-status">
                             Product Status
                         </label>
-                        <select style={{ width: '70%', }} className="form-select" id="product-status">
-                            <option selected="">
+                        <select style={{ width: '70%', }} className="form-select" id="product-status" name='status' value={form?.status} onChange={handleFormChange}>
+                            <option value="Live">
                                 Live
+                            </option>
+                            <option value="Hold">
+                                Hold
                             </option>
                         </select>
                     </div>
@@ -449,7 +458,7 @@ export default function DetailProduct() {
                         <label className="form-label" for="warning-stock">
                             Warning Stock
                         </label>
-                        <input style={{ width: '70%', }} className="form-control" id="warning-stock" type="number" value="10" />
+                        <input style={{ width: '70%', }} className="form-control" id="warning-stock" name='warning_stock' type="number" value={form?.warning_stock} onChange={handleFormChange} />
                     </div>
                 </div>
                 <div className='card' style={{ padding: '20px', marginBottom: '20px' }}>

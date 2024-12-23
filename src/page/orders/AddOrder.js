@@ -80,7 +80,7 @@ const AddOrder = () => {
 
   const bulan = new Date(now).getMonth() + 1;
   const tahun = new Date(now).getFullYear();
-  console.log(tomorrowDay);
+  // console.log(hour);
   const shippingDate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDay.toString().padStart(2, '0')}`
   const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
 
@@ -98,18 +98,23 @@ const AddOrder = () => {
     shippingDate: shippingDateTimestamp
   });
   useEffect(() => {
-    if (hour > 14) {
-      tomorrow.setDate(now.getDate() + 1);
-      const tomorrowDayUpdate = tomorrow.getDate();
-      const shippingDateUpdate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDayUpdate.toString().padStart(2, '0')}`
-      const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
-      setFormData({
-        ...formData,
-        day: tomorrowDayUpdate,
-        shippingDate: shippingDateTimestampUpdate
-      })
+    setTimeout(() => {
+      if (hour > 14) {
+        const nowN = new Date();
+        const tomorrowUpdate = new Date(nowN);
+        tomorrowUpdate.setDate(now.getDate() + 1);
+        const tomorrowDayUpdate = tomorrowUpdate?.getDate();
+        const shippingDateUpdate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDayUpdate?.toString().padStart(2, '0')}`
+        const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
+        // console.log('newdate', tomorrowDayUpdate)
+        setFormData({
+          ...formData,
+          day: tomorrowDayUpdate,
+          shippingDate: shippingDateTimestampUpdate
+        })
 
-    }
+      }
+    }, 500)
   }, [hour])
   const [formError, setFormError] = useState({
     email: '',
@@ -290,7 +295,7 @@ const AddOrder = () => {
 
   const handleChange = async (e, orderIndex, productIndex, prod) => {
     setIndexOrder(orderIndex)
-    console.log(typeof e === 'object', !Array.isArray(e))
+    // console.log(typeof e === 'object', !Array.isArray(e))
 
     const { name, value } = !Array.isArray(e) && typeof e === 'object' && e.target;
 
@@ -323,16 +328,16 @@ const AddOrder = () => {
             const hargaProd = product?.price;
             let hargaAmountAfterDiscon = parseInt(product?.price) * parseInt(product?.quantity);
             if (typeof e === 'object' && name === 'discount_type' && value === '%' && product?.discount) {
-              console.log('%')
+              // console.log('%')
               hargaAmountAfterDiscon = (1 - (parseInt(product?.discount ? product?.discount : 0) / 100)) * hargaAmountAfterDiscon
 
             } else if (typeof e === 'object' && name === 'discount_type' && value === 'Rp' && product?.discount) {
-              console.log('Rp')
+              // console.log('Rp')
               hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(product?.discount ? product?.discount : 0)
             } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === '%') {
               hargaAmountAfterDiscon = (1 - (parseInt(value ? value : 0) / 100)) * hargaAmountAfterDiscon
             } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === 'Rp') {
-              console.log('Rp')
+              // console.log('Rp')
               hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(value ? value : 0)
             }
             // console.log(hargaAmountAfterDiscon)
@@ -590,7 +595,7 @@ const AddOrder = () => {
   const totalAmountAfterReduce = hargaTotalAmount.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang
   }, 0)
-  console.log(totalAmountAfterReduce)
+  // console.log(totalAmountAfterReduce)
 
 
   // diskon
@@ -699,7 +704,7 @@ const AddOrder = () => {
   };
 
   const undefinedOrEmptyFields = orders?.flatMap(item => findUndefinedOrEmptyFields(item));
-  console.log(formData)
+  // console.log(formData)
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -1116,8 +1121,8 @@ const AddOrder = () => {
       console.log(e.message)
     }
   }
-  console.log(koordinateOrigin)
-  console.log(orders)
+  // console.log(koordinateOrigin)
+  // console.log(orders)
   // if (loadingProd) {
   //   return 'loading...'
   // }

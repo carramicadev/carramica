@@ -51,7 +51,7 @@ const OrderList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [allFilters, setAllFilters] = useState([]);
 
   const [modalDownload, setModalDownload] = useState({
     open: false,
@@ -102,8 +102,8 @@ const OrderList = () => {
     open: false,
     id: ''
   });
-  const [length, setLength] = useState(20);
-  const listLength = [5, 10, 20, 50];
+  const [length, setLength] = useState(200);
+  const listLength = [20, 50, 100, 200];
   const handleChangeLength = (e) => {
     setLength(e.target.value)
     if (startDate && endDate) {
@@ -128,7 +128,7 @@ const OrderList = () => {
   const paidLength = allOrders.filter(ord => ord?.paymentStatus === 'settlement').length
   useEffect(() => {
     // const fetchData = async () => {
-    const getDoc = query(collection(firestore, "orders"), where('totalHargaProduk', '!=', ''));
+    const getDoc = query(collection(firestore, "orders"), ...allFilters, where('totalHargaProduk', '!=', ''));
     const unsubscribe = onSnapshot(getDoc, (snapshot) => {
       const updatedData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -139,7 +139,7 @@ const OrderList = () => {
     return () => unsubscribe();
     // };
     // fetchData();
-  }, []);
+  }, [allFilters]);
   // console.log(lengthAll)
   // getUserColl
   useEffect(() => {
@@ -157,9 +157,16 @@ const OrderList = () => {
     };
     fetchData();
   }, []);
+
+  const findDataUser = user?.find(usr => usr?.userId === currentUser?.uid);
+  useEffect(() => {
+    if (findDataUser?.rules === 'agen') {
+      setAllFilters([where("warehouse", "==", findDataUser?.warehouse)])
+    }
+  }, [findDataUser?.rules])
   // getordersColl
   useEffect(() => {
-    const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "desc"), limit(length));
+    const getDoc = query(collection(firestore, "orders"), ...allFilters, orderBy("createdAt", "desc"), limit(length));
     const unsubscribe = onSnapshot(getDoc, (snapshot) => {
       const updatedData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -168,8 +175,8 @@ const OrderList = () => {
       setList(updatedData); // Update the state with the new data
     });
     return () => unsubscribe();
-  }, [length]);
-  // console.log(list)
+  }, [length, allFilters]);
+  console.log(allFilters)
   const showNext = ({ item }) => {
     if (list.length === 0) {
       alert("Thats all we have for now !")
@@ -237,7 +244,7 @@ const OrderList = () => {
         milliseconds: 999
 
       }));
-      const ref = query(collection(firestore, "orders"), where("createdAt", ">=", startTimestamp), where("createdAt", "<=", endTimestamp), orderBy('createdAt', 'desc'), limit(length));
+      const ref = query(collection(firestore, "orders"), ...allFilters, where("createdAt", ">=", startTimestamp), where("createdAt", "<=", endTimestamp), orderBy('createdAt', 'desc'), limit(length));
       const unsubscribe = onSnapshot(ref, (snapshot) => {
         const updatedData = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -245,7 +252,7 @@ const OrderList = () => {
         }));
         setList(updatedData); // Update the state with the new data
       });
-      console.log('273=>', formattedDateEnd)
+      // console.log('273=>', formattedDateEnd)
       // orders
       const refOrd = query(collection(firestore, "orders"), where("createdAt", ">=", startTimestamp), where("createdAt", "<=", endTimestamp), orderBy('createdAt', 'desc'));
       const querySnapshotOrd = await getDocs(refOrd);
@@ -370,7 +377,7 @@ const OrderList = () => {
     let updatedSelected = [...selectedRows];
 
     if (e.nativeEvent.shiftKey && lastSelectedIndex !== null) {
-      console.log('shift')
+      // console.log('shift')
       // Select range
       const start = Math.min(lastSelectedIndex, index);
       const end = Math.max(lastSelectedIndex, index);
@@ -541,7 +548,7 @@ const OrderList = () => {
 
   }
   // header 
-  console.log(selectedExcel)
+  // console.log(selectedExcel)
   const [column, setColumn] = useState([
     {
       label: 'Invoice Id', key: (item, i, idOrder) => idOrder === 0 && <a href='#'
@@ -571,7 +578,7 @@ const OrderList = () => {
           handleCancelOrder(item?.id)
         } else {
           handleRefundOrder(item?.id)
-          console.log('refund')
+          // console.log('refund')
         }
       }}>
         {item?.paymentStatus === 'settlement' ? 'Refund' : 'Cancel'}
@@ -985,6 +992,7 @@ const OrderList = () => {
         setList={setList}
         dateTimestamp={dateTimestamp}
         setAllOrders={setAllOrders}
+        setAllFilters={setAllFilters}
       />
       <FilterColumnDialog
         show={filterColomDialog}
