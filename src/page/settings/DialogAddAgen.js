@@ -301,7 +301,7 @@ export default function DialogAddAgen({ show, handleClose, setUpdate }) {
 
                                     {
                                         warehouseOptions?.map((wh) => {
-                                            return <option value={wh?.id}>{wh?.name}</option>
+                                            return <option value={wh?.name}>{wh?.name}</option>
                                         })
                                     }
                                 </Form.Select>
