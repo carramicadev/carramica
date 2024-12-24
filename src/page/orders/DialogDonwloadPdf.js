@@ -257,7 +257,7 @@ export default function DownloadPdfDialog(props) {
 
                         // Update only if the array element is not already marked as downloaded
                         if (!arrayField[indexOrder]?.isDownloaded) {
-                            arrayField[indexOrder] = { ...arrayField[indexOrder], isDownloaded: true, downloadedBy: props?.show?.userId };
+                            arrayField[indexOrder] = { ...arrayField[indexOrder], isDownloaded: true, downloadedBy: props?.show?.userId ?? '' };
 
                             // console.log('Updated orders array:', arrayField);
 
