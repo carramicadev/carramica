@@ -18,6 +18,7 @@ import Logistik from './page/logistic';
 import OrderList from './page/orders/OrderList';
 import Settings from './page/settings';
 import Product from './page/products';
+import PaymentRedirect from './PaymentRedirect';
 
 function App() {
   const { currentUser } = useAuth();
@@ -114,7 +115,7 @@ function App() {
         }
         <Route path="/login" element={<Login />} />
         {!currentUser && <Route path="*" element={<Navigate to='/login' />} />}
-
+        <Route path="/payment-redirect" element={<PaymentRedirect />} />
       </Routes>
     </Router>
   );
