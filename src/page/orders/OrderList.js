@@ -481,6 +481,12 @@ const OrderList = () => {
       try {
         const docRef = doc(firestore, 'orders', id);
         await deleteDoc(docRef);
+        const cancelOrder = httpsCallable(functions, 'cancelOrder');
+        await cancelOrder({
+
+          id: id,
+
+        });
         setUpdate((prevValue) => !prevValue)
         enqueueSnackbar(`Order berhasil dihapus!.`, { variant: 'success' })
       } catch (e) {
