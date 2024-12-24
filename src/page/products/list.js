@@ -281,8 +281,8 @@ const ListProduct = () => {
                   <td>{item?.harga}</td>
                   <td>{item?.stok}</td>
                   <td>              <button onClick={() => {
-                    navigate(`/products/detailProduct/${item?.id}`)
-                    // setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
+                    // navigate(`/products/detailProduct/${item?.id}`)
+                    setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
                   }} style={{ backgroundColor: '#998970' }} className="button button-primary"><PencilSquare /></button>
                     <button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(item?.id)}>
                       <TrashFill />

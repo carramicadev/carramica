@@ -140,7 +140,7 @@ const OrderList = () => {
     // };
     // fetchData();
   }, [allFilters]);
-  // console.log(lengthAll)
+  console.log(allOrders)
   // getUserColl
   useEffect(() => {
     const fetchData = async () => {
@@ -340,7 +340,8 @@ const OrderList = () => {
         hargaAfterDiscProd: allGross,
         shippingCost: ord?.ongkir,
         orderStatus: ord?.orderStatus ? ord?.orderStatus : item?.paymentStatus === 'settlement' ? 'processing' : item?.paymentStatus,
-        shippingDate: item?.shippingDate
+        shippingDate: item?.shippingDate,
+        notes: item?.notes
 
       })
 

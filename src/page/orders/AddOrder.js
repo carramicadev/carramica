@@ -94,7 +94,8 @@ const AddOrder = () => {
     day: tomorrowDay,
     month: bulan.toString().padStart(2, '0'),
     year: tahun.toString(),
-    shippingDate: shippingDateTimestamp
+    shippingDate: shippingDateTimestamp,
+    notes: ''
   });
   console.log(shippingDateTimestamp)
 
@@ -1339,6 +1340,10 @@ const AddOrder = () => {
             {orders.length > 1 && (
               <button className="button button-red" onClick={deleteLastOrderField}>Delete Order</button>
             )}
+          </div>
+          <div className="form-group">
+            <Form.Label className="label">Notes</Form.Label>
+            <textarea className="textarea" type="text" name="notes" placeholder="Tulis disini" value={formData.notes} onChange={handleFormChange} />
           </div>
         </div>
 
