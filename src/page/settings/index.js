@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, endBefore, getDoc, getDocs, limit, limitToLast, orderBy, query, setDoc, startAfter } from 'firebase/firestore';
+import { collection, deleteDoc, doc, endBefore, getDoc, getDocs, limit, limitToLast, orderBy, query, setDoc, startAfter, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
@@ -11,13 +11,14 @@ import ProfilePage from './settingsProfil';
 import './settings.css';
 import Warehouse from './warehouse';
 import Header from '../../components/Header';
+import Agen from './agen';
 
 const Settings = (props) => {
   const { enqueueSnackbar } = useSnackbar();
   const [update, setUpdate] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [selectedRules, setSelectedRules] = React.useState('sales');
-  const rules = ['sales', 'admin', 'shipping', 'Head Of Sales']
+  const rules = ['sales', 'admin', 'shipping', 'Head Of Sales', 'agen']
   // const [selectedOptions, setSelectedOptions] = useState([]);
   const options = [
     { component: 'home', name: 'Home', path: '/' },
@@ -63,7 +64,7 @@ const Settings = (props) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const getDoc = query(collection(firestore, "users"), orderBy("createdAt", "desc"), limit(20));
+      const getDoc = query(collection(firestore, "users"), where("rules", "!=", "agen"), orderBy("createdAt", "desc"), limit(20));
       const documentSnapshots = await getDocs(getDoc);
       var items = [];
 
@@ -315,11 +316,22 @@ const Settings = (props) => {
               </Row>
             </Tab.Container>        </Tab>
         }
+
+        {/* Admin-only Warehouse Tab */}
+        {props?.profile?.rules === 'admin' && (
+          <Tab eventKey="warehouse" title="Warehouse">
+            <Warehouse />
+          </Tab>
+        )}
+
+        {/* Admin-only Agen Tab */}
+        {props?.profile?.rules === 'admin' && (
+          <Tab eventKey="agen" title="Agen">
+            <Agen />
+          </Tab>
+        )}
         <Tab eventKey="profile" title="Profile">
           <ProfilePage enqueueSnackbar={enqueueSnackbar} />
-        </Tab>
-        <Tab eventKey="warehouse" title="Warehouse">
-          <Warehouse />
         </Tab>
       </Tabs>
 

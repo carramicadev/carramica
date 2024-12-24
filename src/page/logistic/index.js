@@ -112,7 +112,7 @@ const Logistik = () => {
 
       }));
       // orders
-      const refOrd = query(collection(firestore, "orders"), where("createdAt", ">=", startTimestamp), where("createdAt", "<=", endTimestamp), orderBy('createdAt', 'desc'));
+      const refOrd = query(collection(firestore, "orders"), where("createdAt", ">=", startTimestamp), where("createdAt", "<=", endTimestamp), orderBy('createdAt', 'asc'));
       const querySnapshotOrd = await getDocs(refOrd);
       const documentsOrd = querySnapshotOrd.docs.map(doc => ({
         id: doc.id,
@@ -155,7 +155,7 @@ const Logistik = () => {
       // const userData = user.find(itm => itm.userId === item.userId)
       mapData.push({
         // quantity: ord?.products?.map(prod => `${prod?.quantity}, `),
-        createdAt: item?.createdAt,
+        shippingDate: item?.shippingDate ? item?.shippingDate : item?.createdAt,
         kurir: ord?.kurir === "Biteship" ? ord?.kurirService?.courier_name : ord?.kurir === "Manual" ? 'Dedicated' : ord?.kurir,
         ongkir: ord?.ongkir || 0,
         harga: allGross,
@@ -166,10 +166,11 @@ const Logistik = () => {
       })
 
     })
-  })
-  const formattedOrders = mapData.map((all) => {
+  });
+  const sortedDate = mapData.sort((a, b) => new Date(a.shippingDate?.toDate?.()) - new Date(b.shippingDate?.toDate?.()));
+  const formattedOrders = sortedDate.map((all) => {
 
-    return { ...all, tgl: formatToDate(all.shippingDate ? all.shippingDate?.toDate() : all?.createdAt.toDate()), month: all?.createdAt.toDate().toLocaleString('default', { month: 'long', year: 'numeric' }) }
+    return { ...all, tgl: formatToDate(all?.shippingDate?.toDate?.()), month: all?.shippingDate?.toDate?.().toLocaleString('default', { month: 'long', year: 'numeric' }) }
   })
 
   const groupedDataAll = formattedOrders.reduce((acc, item) => {
@@ -251,6 +252,7 @@ const Logistik = () => {
     }
   };
   let renderedMonths = {};
+  console.log(sortedDate)
   return (
     <div className="container">
       <Header />
@@ -386,7 +388,7 @@ const Logistik = () => {
           // sap
           const findByCourierSAP = row.item.filter(item => item?.kurir === "SAP")
           const sapSent = findByCourierSAP?.filter(item => item?.resi && item?.resi)
-          const ongkirSap = findByCourierSAP?.map((pax) => pax?.ongkir)
+          const ongkirSap = findByCourierSAP?.map((pax) => parseInt(pax?.ongkir))
           const totOngSap = ongkirSap?.reduce((val, nilaiSekarang) => {
             return val + nilaiSekarang
           }, 0);
@@ -394,7 +396,7 @@ const Logistik = () => {
           // paxel
           const findByCourierPaxel = row.item.filter(item => item?.kurir === "Paxel")
           const paxelSent = findByCourierPaxel?.filter(item => item?.resi && item?.resi)
-          const ongkirPaxel = findByCourierPaxel?.map((pax) => pax?.ongkir)
+          const ongkirPaxel = findByCourierPaxel?.map((pax) => parseInt(pax?.ongkir))
           const totOngPax = ongkirPaxel?.reduce((val, nilaiSekarang) => {
             return val + nilaiSekarang
           }, 0);
@@ -402,7 +404,7 @@ const Logistik = () => {
           // lalamove
           const findByCourierLalamove = row.item.filter(item => item?.kurir === "Lalamove")
           const lalamoveSent = findByCourierLalamove?.filter(item => item?.resi && item?.resi)
-          const ongkirLa = findByCourierLalamove?.map((pax) => pax?.ongkir)
+          const ongkirLa = findByCourierLalamove?.map((pax) => parseInt(pax?.ongkir))
           const totOngLa = ongkirLa?.reduce((val, nilaiSekarang) => {
             return val + nilaiSekarang
           }, 0);

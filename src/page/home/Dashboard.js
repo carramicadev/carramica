@@ -109,7 +109,7 @@ const Dashboard = ({ profile }) => {
 
 
   const ordersFilterd = allOrders.filter((all) => {
-    return all?.totalHargaProduk && all?.totalHargaProduk && all?.paymentStatus === 'settlement'
+    return all?.totalHargaProduk && all?.totalHargaProduk
   });
   const orderSettlement = ordersFilterd?.filter?.((ord) => ord.paymentStatus === 'settlement');
   const orderPending = ordersFilterd?.filter?.((ord) => ord.paymentStatus === 'pending');

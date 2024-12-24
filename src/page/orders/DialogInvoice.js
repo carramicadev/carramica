@@ -101,7 +101,7 @@ export default function DownloadInvoiceDialog(props) {
     const allOngkir = ongkir?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang
     }, 0);
-    // console.log(allProduct);
+    console.log(item);
 
     return (
         <div
@@ -265,9 +265,10 @@ export default function DownloadInvoiceDialog(props) {
 
 
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                                        <div>
-
+                                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                        <div style={styles.footerNotes}>
+                                            <p style={styles.notes}>Notes</p>
+                                            <p style={{ marginTop: '0px', fontWeight: 'lighter' }}>{itm?.notes ?? '__'}</p>
                                         </div>
                                         <div style={styles.footer}>
                                             <p><FormatFirestoreTimestamp timestamp={itm?.createdAt} /></p>
@@ -366,10 +367,24 @@ const styles = {
         fontWeight: 'bold',
         marginBottom: '0px'
     },
+    notes: {
+        borderBottom: '2px solid #ccc',
+        fontWeight: 'bold',
+        paddingBottom: '5px',
+        marginBottom: '3px'
+    },
     footer: {
         textAlign: 'center',
         marginTop: '40px',
         fontSize: '14px',
+        width: '30%',
         // marginRight: '100px'
     },
+    footerNotes: {
+        width: '70%',
+        textAlign: 'left',
+        marginTop: '40px',
+        fontSize: '14px',
+        // borderBottom: '2px solid #ccc'
+    }
 };

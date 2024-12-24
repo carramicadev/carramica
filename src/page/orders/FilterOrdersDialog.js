@@ -7,7 +7,7 @@ import DatePicker from 'react-datepicker';
 import { firestore } from '../../FirebaseFrovider';
 // import { firestore } from './FirebaseFrovider';
 
-export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders }) => {
+export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders, setAllFilters }) => {
     const [user, setUser] = useState([])
     const [checkedItems, setCheckedItems] = useState('');
     const [value, setValue] = useState('');
@@ -103,6 +103,7 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
                 filters.push(where("shippingDate", ">=", shippingTimestamp), where("shippingDate", "<=", endShippingTimestamp))
 
             }
+            setAllFilters(filters)
             const ref = query(collection(firestore, "orders"), ...filters, orderBy('createdAt', 'desc')
                 // where("createdAt", ">=", startTimestamp),
                 // where("createdAt", "<=", endTimestamp)

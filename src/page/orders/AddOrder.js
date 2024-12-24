@@ -80,10 +80,9 @@ const AddOrder = () => {
 
   const bulan = new Date(now).getMonth() + 1;
   const tahun = new Date(now).getFullYear();
-  console.log(tomorrowDay);
+  // console.log(hour);
   const shippingDate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDay.toString().padStart(2, '0')}`
   const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
-
 
   const [formData, setFormData] = useState({
     email: '',
@@ -95,21 +94,29 @@ const AddOrder = () => {
     day: tomorrowDay,
     month: bulan.toString().padStart(2, '0'),
     year: tahun.toString(),
-    shippingDate: shippingDateTimestamp
+    shippingDate: shippingDateTimestamp,
+    notes: ''
   });
-  useEffect(() => {
-    if (hour > 14) {
-      tomorrow.setDate(now.getDate() + 1);
-      const tomorrowDayUpdate = tomorrow.getDate();
-      const shippingDateUpdate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDayUpdate.toString().padStart(2, '0')}`
-      const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
-      setFormData({
-        ...formData,
-        day: tomorrowDayUpdate,
-        shippingDate: shippingDateTimestampUpdate
-      })
+  console.log(shippingDateTimestamp)
 
-    }
+  useEffect(() => {
+    setTimeout(() => {
+      if (hour > 14) {
+        const nowN = new Date();
+        const tomorrowUpdate = new Date(nowN);
+        tomorrowUpdate.setDate(now.getDate() + 1);
+        const tomorrowDayUpdate = tomorrowUpdate?.getDate();
+        const shippingDateUpdate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDayUpdate?.toString().padStart(2, '0')}`
+        const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
+        // console.log('newdate', tomorrowDayUpdate)
+        setFormData({
+          ...formData,
+          day: tomorrowDayUpdate,
+          shippingDate: shippingDateTimestampUpdate
+        })
+
+      }
+    }, 500)
   }, [hour])
   const [formError, setFormError] = useState({
     email: '',
@@ -290,7 +297,7 @@ const AddOrder = () => {
 
   const handleChange = async (e, orderIndex, productIndex, prod) => {
     setIndexOrder(orderIndex)
-    console.log(typeof e === 'object', !Array.isArray(e))
+    // console.log(typeof e === 'object', !Array.isArray(e))
 
     const { name, value } = !Array.isArray(e) && typeof e === 'object' && e.target;
 
@@ -323,16 +330,16 @@ const AddOrder = () => {
             const hargaProd = product?.price;
             let hargaAmountAfterDiscon = parseInt(product?.price) * parseInt(product?.quantity);
             if (typeof e === 'object' && name === 'discount_type' && value === '%' && product?.discount) {
-              console.log('%')
+              // console.log('%')
               hargaAmountAfterDiscon = (1 - (parseInt(product?.discount ? product?.discount : 0) / 100)) * hargaAmountAfterDiscon
 
             } else if (typeof e === 'object' && name === 'discount_type' && value === 'Rp' && product?.discount) {
-              console.log('Rp')
+              // console.log('Rp')
               hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(product?.discount ? product?.discount : 0)
             } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === '%') {
               hargaAmountAfterDiscon = (1 - (parseInt(value ? value : 0) / 100)) * hargaAmountAfterDiscon
             } else if (typeof e === 'object' && name === 'discount' && product?.discount_type === 'Rp') {
-              console.log('Rp')
+              // console.log('Rp')
               hargaAmountAfterDiscon = hargaAmountAfterDiscon - parseInt(value ? value : 0)
             }
             // console.log(hargaAmountAfterDiscon)
@@ -590,7 +597,7 @@ const AddOrder = () => {
   const totalAmountAfterReduce = hargaTotalAmount.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang
   }, 0)
-  console.log(totalAmountAfterReduce)
+  // console.log(totalAmountAfterReduce)
 
 
   // diskon
@@ -699,7 +706,7 @@ const AddOrder = () => {
   };
 
   const undefinedOrEmptyFields = orders?.flatMap(item => findUndefinedOrEmptyFields(item));
-  console.log(formData)
+  // console.log(formData)
   const [loading, setLoading] = useState(false)
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -828,17 +835,13 @@ const AddOrder = () => {
 
         if (undefinedOrEmptyFields.length < 1) {
           orderRef = doc(firestore, "orders", newOrderId)
+          // update shipping date
+          const shippingDate = `${formData?.year.toString()}-${formData?.month.toString().padStart(2, '0')}-${formData?.day.toString().padStart(2, '0')}`
+          const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
 
           // const orderDoc = await getDoc(orderRef);
           await setDoc(orderRef, {
             ...formData,
-            // email: formData?.email ?? '',
-            // warehouse: formData?.warehouse ?? '',
-            // senderName: formData?.senderName ?? '',
-            // senderPhone: formData?.senderPhone ?? '62',
-            // additionalDiscount: formData?.additionalDiscount ?? 0,
-            // deliveryFee: formData?.deliveryFee ?? '',
-            // shippingDate: formData?.shippingDate,
             orders: updateOrder ?? [],
             totalOngkir: totalOngkir ?? 0,
             createdAt: serverTimestamp(),
@@ -847,8 +850,8 @@ const AddOrder = () => {
             totalHargaProduk: totalAfterReduce ?? 0,
             userId: currentUser?.uid ?? '',
             invoice_id: newOrderId ?? '',
+            shippingDate: shippingDateTimestamp,
             totalAfterDiskonDanOngkir: totalAfterDiskonDanOngkir ?? 0
-            // firstOrdId: newOrderCount
           }, { merge: true });
 
           const payment = httpsCallable(functions, 'createOrder');
@@ -876,11 +879,6 @@ const AddOrder = () => {
             isInvWASent: true
 
           }, { merge: true });
-          // await setDoc(doc(firestore, 'orders', newOrderId), {
-          // }, { merge: true });
-          // // props?.onHide()
-
-
           const contactRef = await setDoc(doc(firestore, "contact", formData?.senderPhone), { createdAt: serverTimestamp(), nama: formData.senderName, phone: formData.senderPhone, email: formData?.email || '', type: 'sender' });
 
           await Promise.all(orders?.map?.(async (data) => {
@@ -1000,81 +998,6 @@ const AddOrder = () => {
 
   }, [selected, orders?.[indexOrder]?.products, koordinateReceiver?.lat, koordinateReceiver?.lng, koordinateOrigin?.lat, koordinateOrigin?.lng]);
 
-  // // call getPrice SAP
-  // useEffect(() => {
-  //   console.log('run')
-
-  //   if (selectedService && selected.district_code) {
-  //     console.log('run')
-  //     async function getPrice() {
-  //       const helloWorld = httpsCallable(functions, 'getPrice');
-  //       try {
-  //         const result = await helloWorld({
-  //           destination_district_code: selected?.district_code,
-  //           service_type_code: selectedService,
-
-  //         });
-  //         console.log(result.data?.items?.data)
-  //         setOngkir({ ...ongkir, [indexOrder]: result.data?.items?.data?.services?.[0]?.total_cost });
-  //         setOngkirError({ ...ongkirError, [indexOrder]: '' })
-  //         // setAllOngkir()
-  //       } catch (error) {
-  //         console.error("Error calling function:", error);
-  //         // setListService([]);
-  //       }
-  //     }
-  //     getPrice()
-
-  //   }
-
-  // }, [selectedService, selected.district_code]);
-
-  // // getQuotation LAlamove
-  // useEffect(() => {
-  //   console.log('run')
-
-  //   if (selectedService && kurirAktif === 'LALAMOVE' && addressAktif && koordinateReceiver) {
-  //     console.log('run')
-  //     async function getQuota() {
-  //       const quotation = httpsCallable(functions, 'getQuotation');
-  //       const coordinates = [
-  //         {
-  //           coordinates: { lat: '-6.197150', lng: '106.699000', },
-  //           address: 'pagar warna hijau, sebelah kanan dari arah tol, Jl. H. Mansyur No.33, RT.002/RW.005, Gondrong, Kec. Karang Tengah, Kota Tangerang, Banten 15147'
-  //         },
-  //         {
-  //           coordinates: { lat: koordinateReceiver.lat.toString(), lng: koordinateReceiver.lng.toString(), },
-  //           address: addressAktif
-  //         },
-  //         // {
-  //         //   "coordinates": {
-  //         //     "lat": "22.33547351186244",
-  //         //     "lng": "114.17615807116502"
-  //         //   },
-  //         //   "address": "Innocentre, 72 Tat Chee Ave, Kowloon Tong"
-  //         // },
-  //       ];
-  //       try {
-  //         const result = await quotation({
-  //           coordinates: coordinates,
-  //           serviceType: selectedService,
-  //           language: 'en_ID'
-
-  //         });
-  //         console.log(result.data?.items)
-  //         setOngkir({ ...ongkir, [indexOrder]: parseInt(result.data?.items?.data?.priceBreakdown?.total) });
-  //         setOngkirError({ ...ongkirError, [indexOrder]: '' })
-  //         // setOngkir(result.data?.items?.data);
-  //       } catch (error) {
-  //         console.error("Error calling function:", error);
-  //         // setListService([]);
-  //       }
-  //     }
-  //     getQuota()
-
-  //   }
-
-  // }, [selectedService, kurirAktif, addressAktif, koordinateReceiver]);
   const [typeahead, setTypehed] = useState([]);
 
   // check no hp
@@ -1116,8 +1039,8 @@ const AddOrder = () => {
       console.log(e.message)
     }
   }
-  console.log(koordinateOrigin)
-  console.log(orders)
+  // console.log(koordinateOrigin)
+  // console.log(orders)
   // if (loadingProd) {
   //   return 'loading...'
   // }
@@ -1215,7 +1138,7 @@ const AddOrder = () => {
               <div className="orderField">
                 <div className="form-group">
                   <Form.Label className="label">Nama Penerima</Form.Label>
-                  <Form.Control isInvalid={ordersErr?.[orderIndex]?.receiverName ? true : false} className="input" type="text" name="receiverName" placeholder="Nashir" value={order.receiverName} onChange={(e) => handleChange(e, orderIndex)} />
+                  <Form.Control isInvalid={ordersErr?.[orderIndex]?.receiverName ? true : false} className="input" type="text" name="receiverName" placeholder="Tulis Nama Penerima" value={order.receiverName} onChange={(e) => handleChange(e, orderIndex)} />
                   {
                     ordersErr?.[orderIndex]?.receiverName && <div class="invalid-feedback">
                       {ordersErr?.[orderIndex]?.receiverName}
@@ -1417,6 +1340,10 @@ const AddOrder = () => {
             {orders.length > 1 && (
               <button className="button button-red" onClick={deleteLastOrderField}>Delete Order</button>
             )}
+          </div>
+          <div className="form-group">
+            <Form.Label className="label">Notes</Form.Label>
+            <textarea className="textarea" type="text" name="notes" placeholder="Tulis disini" value={formData.notes} onChange={handleFormChange} />
           </div>
         </div>
 

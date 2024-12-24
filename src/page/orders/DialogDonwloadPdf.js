@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
         // marginBottom: 10,
     },
     imageLogo: {
-        width: 80,
+        width: 60,
         marginTop: -40,
     },
     imageKurirLeft: {
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     imageKurirSAP: {
         width: 35,
         marginTop: -20,
-        marginLeft: 20
+        marginLeft: 10
 
     },
     logo: {
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     subItem1: {
-        width: '15%',
+        width: '18%',
         marginBottom: 5,
     },
     subItem2: {
@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
     subItem3: {
         width: '25%',
         marginBottom: 5,
+        marginRight: 20
     },
     subItem4: {
         width: '85%',
@@ -127,56 +128,7 @@ function MyDoc({ item, setLoading }) {
                         return <View key={data?.unixId} style={styles.page}>
                             {/* Left Section */}
                             <View style={styles.leftSection}>
-                                <View style={styles.subItem}>
 
-                                    <View style={styles.subItem1}>
-                                        <Text style={styles.header}>To:</Text>
-                                    </View>
-                                    <View style={styles.subItem4}>
-                                        <Text style={styles.text}>{data?.receiverName}</Text>
-                                        <Text style={styles.text}>{data?.receiverPhone}</Text>
-                                        <Text style={styles.text}>
-                                            {data?.original?.address}                                    </Text>
-                                    </View>
-                                </View>
-                                <View style={styles.subItem}>
-                                    <View style={styles.subItem1}>
-                                        <Text style={styles.header}>From:</Text>
-                                    </View>
-                                    <View style={styles.subItem4}>
-                                        <Text style={styles.text}>{data?.senderName}</Text>
-                                        <Text style={styles.text}>{data?.senderPhone}</Text>
-                                    </View>
-                                </View>
-                                <View style={styles.subItem}>
-                                    <View style={styles.subItem1}>
-                                        <Text style={styles.header}>Order:</Text>
-
-                                    </View>
-                                    <View style={styles.subItem2}>
-                                        <Text style={styles.text}>{data?.unixId}</Text>
-                                        <Text style={styles.text}>{data.nama.map((nama, i) => {
-                                            return <Text key={i}>{nama} <br /></Text>
-                                        })}</Text>
-                                    </View>
-                                    <View style={styles.subItem3}>
-                                        <Image
-                                            style={styles.imageLogo}
-                                            src={logoFull}
-                                        />
-                                        {
-                                            data?.kurir !== 'Dedicated' &&
-                                            <Image
-                                                style={data?.kurir === 'SAP' ? styles.imageKurirSAP : styles.imageKurirLeft}
-                                                src={urlImage}
-                                            />
-                                        }
-                                    </View>
-                                </View>
-                            </View>
-
-                            {/* Right Section */}
-                            <View style={styles.rightSection}>
                                 <Text style={styles.header}>Gift Card:</Text>
                                 <Text style={styles.text}>
                                     {data?.giftCard}
@@ -218,6 +170,57 @@ function MyDoc({ item, setLoading }) {
                                     }
                                 </View>
 
+                            </View>
+
+                            {/* Right Section */}
+                            <View style={styles.rightSection}>
+                                <View style={styles.subItem}>
+
+                                    <View style={styles.subItem1}>
+                                        <Text style={styles.header}>To:</Text>
+                                    </View>
+                                    <View style={styles.subItem4}>
+                                        <Text style={styles.text}>{data?.receiverName}</Text>
+                                        <Text style={styles.text}>{data?.receiverPhone}</Text>
+                                        <Text style={styles.text}>
+                                            {data?.original?.address}                                    </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.subItem}>
+                                    <View style={styles.subItem1}>
+                                        <Text style={styles.header}>From:</Text>
+                                    </View>
+                                    <View style={styles.subItem4}>
+                                        <Text style={styles.text}>{data?.senderName}</Text>
+                                        <Text style={styles.text}>{data?.senderPhone}</Text>
+                                    </View>
+                                </View>
+                                <View style={styles.subItem}>
+                                    <View style={styles.subItem1}>
+                                        <Text style={styles.header}>Order:</Text>
+
+                                    </View>
+                                    <View style={styles.subItem2}>
+                                        <Text style={styles.text}>{data?.unixId}/{data?.ordId}</Text>
+                                        <Text style={styles.text}>{data.nama.map((nama, i) => {
+                                            return <Text key={i}>{nama} <br /></Text>
+                                        })}</Text>
+                                    </View>
+                                    <View style={styles.subItem3}>
+                                        <Image
+                                            style={styles.imageLogo}
+                                            src={logoFull}
+                                        />
+                                        {
+                                            data?.kurir !== 'Dedicated' &&
+                                            <Image
+                                                style={data?.kurir === 'SAP' ? styles.imageKurirSAP : styles.imageKurirLeft}
+                                                src={urlImage}
+                                            />
+                                        }
+                                    </View>
+                                </View>
+
 
                             </View>
                         </View>
@@ -254,7 +257,7 @@ export default function DownloadPdfDialog(props) {
 
                         // Update only if the array element is not already marked as downloaded
                         if (!arrayField[indexOrder]?.isDownloaded) {
-                            arrayField[indexOrder] = { ...arrayField[indexOrder], isDownloaded: true, downloadedBy: props?.show?.userId };
+                            arrayField[indexOrder] = { ...arrayField[indexOrder], isDownloaded: true, downloadedBy: props?.show?.userId ?? '' };
 
                             // console.log('Updated orders array:', arrayField);
 
@@ -329,6 +332,18 @@ export default function DownloadPdfDialog(props) {
                                                     <tbody>
                                                         <tr>
                                                             <td className="left-section">
+                                                                <p><strong>Gift Card:</strong><br />{data?.giftCard}</p>
+                                                                <p><strong>To:</strong>{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
+                                                                <p><strong>From:</strong><br />{data?.senderName}<br /></p>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '50px' }}>
+                                                                    <p>Paid at: {data?.paidAt}</p>
+                                                                    <div className="logoKurir">
+
+                                                                        <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="right-section">
                                                                 <p><strong>To:</strong><br />{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
                                                                 <p><strong>From:</strong><br />{data?.senderName}<br />{data?.senderPhone}</p>
 
@@ -350,18 +365,7 @@ export default function DownloadPdfDialog(props) {
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </td>
-                                                            <td className="right-section">
-                                                                <p><strong>Gift Card:</strong><br />{data?.giftCard}</p>
-                                                                <p><strong>To:</strong>{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
-                                                                <p><strong>From:</strong><br />{data?.senderName}<br /></p>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '50px' }}>
-                                                                    <p>Paid at: {data?.paidAt}</p>
-                                                                    <div className="logoKurir">
 
-                                                                        <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
-                                                                    </div>
-                                                                </div>
                                                             </td>
                                                         </tr>
                                                     </tbody>

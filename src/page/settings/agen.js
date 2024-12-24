@@ -1,18 +1,20 @@
-import { collection, deleteDoc, doc, getDocs, limit, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap"
 import { PencilSquare, PersonSquare, TrashFill } from "react-bootstrap-icons"
 import DialogAddUsers from "./DialogAddUsers"
 import DialogAddWarehouse from "./DialogAddWarehouse";
-import { firestore } from "../../FirebaseFrovider";
+import { firestore, functions } from "../../FirebaseFrovider";
+import DialogAddAgen from "./DialogAddAgen";
+import { httpsCallable } from "firebase/functions";
 
-export default function Warehouse() {
+export default function Agen() {
     const [list, setList] = useState([]);
     const [page, setPage] = useState(1);
-    const [openAddDialog, setOpenAddDialog] = useState({ open: false, item: {}, mode: 'add' });
+    const [openAddDialog, setOpenAddDialog] = useState(false);
     useEffect(() => {
-        const getDoc = query(collection(firestore, "warehouse"), orderBy("createdAt", "desc"), limit(20));
+        const getDoc = query(collection(firestore, "users"), where("rules", "==", "agen"), orderBy("createdAt", "desc"), limit(20));
         const unsubscribe = onSnapshot(getDoc, (snapshot) => {
             const updatedData = snapshot.docs.map((doc) => ({
                 id: doc.id,
@@ -64,14 +66,14 @@ export default function Warehouse() {
         if (window.confirm(' apakah anda yakin ingin menghapus warehouse ini?')) {
             try {
                 // console.log(id)
-                // const deleteUser = httpsCallable(functions, 'deleteUser');
-                // await deleteUser({
-                //     id: id,
-                // });
-                const docRef = doc(firestore, 'warehouse', id);
+                const deleteUser = httpsCallable(functions, 'deleteUser');
+                await deleteUser({
+                    id: id,
+                });
+                const docRef = doc(firestore, 'users', id);
                 await deleteDoc(docRef);
                 // setUpdate((prevValue) => !prevValue)
-                enqueueSnackbar(`berhasil menghapus warehouse`, { variant: 'success' })
+                enqueueSnackbar(`berhasil menghapus sales`, { variant: 'success' })
                 // setData(data.filter((row) => row.id !== id));
             } catch (e) {
                 // enqueueSnackbar(`gagal menghapus sales, ${e.message}`, { variant: 'error' })
@@ -92,16 +94,16 @@ export default function Warehouse() {
     return <div className="table-responsive">
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex' }}>
-                <button style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none', marginLeft: '10px' }} className="btn btn-primary" onClick={() => setOpenAddDialog({ open: true, item: {}, mode: 'add' })}>+Add Warehouse</button>
+                <button style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none', marginLeft: '10px' }} className="btn btn-primary" onClick={() => setOpenAddDialog(true)}>+Add Agen</button>
             </div>
         </div>
         <table className="table table-bordered">
             <thead>
                 <tr>
                     <th>NAME</th>
-
-                    <th>ADRESS</th>
-                    <th>COORDINATES</th>
+                    <th>EMAIL</th>
+                    <th>PHONE</th>
+                    <th>RULES</th>
                     <th>ACTIONS</th>
                 </tr>
             </thead>
@@ -109,22 +111,21 @@ export default function Warehouse() {
 
                 {
                     list?.map((user) => {
-                        return <tr style={{ whiteSpace: 'nowrap' }}>
+                        return <tr>
                             <td>
-                                {user?.name}
-                                {/* <div className="d-flex align-items-center">
+                                <div className="d-flex align-items-center">
                                     <span className="me-2">
                                         <PersonSquare color='#3D5E54' />
                                     </span>
                                     {user?.firstName} {user?.lastName}
-                                </div> */}
+                                </div>
                             </td>
+                            <td>{user?.email}</td>
+                            <td>{user?.phone}</td>
+                            <td>{user?.rules}</td>
 
-                            <td><TruncatedText text={user?.address} maxLength={40} /></td>
-                            <td>{user?.coordinates?.lat},{user?.coordinates?.lng}</td>
                             <td>
-                                <button onClick={() => setOpenAddDialog({ open: true, mode: 'edit', item: user })} style={{ backgroundColor: '#998970' }} className="button button-primary"><PencilSquare /></button>
-                                <button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(user?.id)}>
+                                <button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(user?.userId)}>
                                     <TrashFill />
                                 </button>
                             </td>
@@ -148,9 +149,9 @@ export default function Warehouse() {
             {/* //show next button only when we have items */}
             <Button disabled={list.length < 20} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={() => showNext({ item: list[list.length - 1] })}>{'Next->'}</Button>
         </ButtonGroup>
-        <DialogAddWarehouse
+        <DialogAddAgen
             show={openAddDialog}
-            handleClose={() => setOpenAddDialog({ open: false, item: {}, mode: '' })}
+            handleClose={() => setOpenAddDialog(false)}
         // setUpdate={setUpdate}
         />
     </div>
