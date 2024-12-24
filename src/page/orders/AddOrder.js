@@ -84,7 +84,6 @@ const AddOrder = () => {
   const shippingDate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDay.toString().padStart(2, '0')}`
   const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
 
-
   const [formData, setFormData] = useState({
     email: '',
     warehouse: '',
@@ -97,6 +96,8 @@ const AddOrder = () => {
     year: tahun.toString(),
     shippingDate: shippingDateTimestamp
   });
+  console.log(shippingDateTimestamp)
+
   useEffect(() => {
     setTimeout(() => {
       if (hour > 14) {
@@ -833,17 +834,13 @@ const AddOrder = () => {
 
         if (undefinedOrEmptyFields.length < 1) {
           orderRef = doc(firestore, "orders", newOrderId)
+          // update shipping date
+          const shippingDate = `${formData?.year.toString()}-${formData?.month.toString().padStart(2, '0')}-${formData?.day.toString().padStart(2, '0')}`
+          const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
 
           // const orderDoc = await getDoc(orderRef);
           await setDoc(orderRef, {
             ...formData,
-            // email: formData?.email ?? '',
-            // warehouse: formData?.warehouse ?? '',
-            // senderName: formData?.senderName ?? '',
-            // senderPhone: formData?.senderPhone ?? '62',
-            // additionalDiscount: formData?.additionalDiscount ?? 0,
-            // deliveryFee: formData?.deliveryFee ?? '',
-            // shippingDate: formData?.shippingDate,
             orders: updateOrder ?? [],
             totalOngkir: totalOngkir ?? 0,
             createdAt: serverTimestamp(),
@@ -852,8 +849,8 @@ const AddOrder = () => {
             totalHargaProduk: totalAfterReduce ?? 0,
             userId: currentUser?.uid ?? '',
             invoice_id: newOrderId ?? '',
+            shippingDate: shippingDateTimestamp,
             totalAfterDiskonDanOngkir: totalAfterDiskonDanOngkir ?? 0
-            // firstOrdId: newOrderCount
           }, { merge: true });
 
           const payment = httpsCallable(functions, 'createOrder');
@@ -881,11 +878,6 @@ const AddOrder = () => {
             isInvWASent: true
 
           }, { merge: true });
-          // await setDoc(doc(firestore, 'orders', newOrderId), {
-          // }, { merge: true });
-          // // props?.onHide()
-
-
           const contactRef = await setDoc(doc(firestore, "contact", formData?.senderPhone), { createdAt: serverTimestamp(), nama: formData.senderName, phone: formData.senderPhone, email: formData?.email || '', type: 'sender' });
 
           await Promise.all(orders?.map?.(async (data) => {
@@ -1005,81 +997,6 @@ const AddOrder = () => {
 
   }, [selected, orders?.[indexOrder]?.products, koordinateReceiver?.lat, koordinateReceiver?.lng, koordinateOrigin?.lat, koordinateOrigin?.lng]);
 
-  // // call getPrice SAP
-  // useEffect(() => {
-  //   console.log('run')
-
-  //   if (selectedService && selected.district_code) {
-  //     console.log('run')
-  //     async function getPrice() {
-  //       const helloWorld = httpsCallable(functions, 'getPrice');
-  //       try {
-  //         const result = await helloWorld({
-  //           destination_district_code: selected?.district_code,
-  //           service_type_code: selectedService,
-
-  //         });
-  //         console.log(result.data?.items?.data)
-  //         setOngkir({ ...ongkir, [indexOrder]: result.data?.items?.data?.services?.[0]?.total_cost });
-  //         setOngkirError({ ...ongkirError, [indexOrder]: '' })
-  //         // setAllOngkir()
-  //       } catch (error) {
-  //         console.error("Error calling function:", error);
-  //         // setListService([]);
-  //       }
-  //     }
-  //     getPrice()
-
-  //   }
-
-  // }, [selectedService, selected.district_code]);
-
-  // // getQuotation LAlamove
-  // useEffect(() => {
-  //   console.log('run')
-
-  //   if (selectedService && kurirAktif === 'LALAMOVE' && addressAktif && koordinateReceiver) {
-  //     console.log('run')
-  //     async function getQuota() {
-  //       const quotation = httpsCallable(functions, 'getQuotation');
-  //       const coordinates = [
-  //         {
-  //           coordinates: { lat: '-6.197150', lng: '106.699000', },
-  //           address: 'pagar warna hijau, sebelah kanan dari arah tol, Jl. H. Mansyur No.33, RT.002/RW.005, Gondrong, Kec. Karang Tengah, Kota Tangerang, Banten 15147'
-  //         },
-  //         {
-  //           coordinates: { lat: koordinateReceiver.lat.toString(), lng: koordinateReceiver.lng.toString(), },
-  //           address: addressAktif
-  //         },
-  //         // {
-  //         //   "coordinates": {
-  //         //     "lat": "22.33547351186244",
-  //         //     "lng": "114.17615807116502"
-  //         //   },
-  //         //   "address": "Innocentre, 72 Tat Chee Ave, Kowloon Tong"
-  //         // },
-  //       ];
-  //       try {
-  //         const result = await quotation({
-  //           coordinates: coordinates,
-  //           serviceType: selectedService,
-  //           language: 'en_ID'
-
-  //         });
-  //         console.log(result.data?.items)
-  //         setOngkir({ ...ongkir, [indexOrder]: parseInt(result.data?.items?.data?.priceBreakdown?.total) });
-  //         setOngkirError({ ...ongkirError, [indexOrder]: '' })
-  //         // setOngkir(result.data?.items?.data);
-  //       } catch (error) {
-  //         console.error("Error calling function:", error);
-  //         // setListService([]);
-  //       }
-  //     }
-  //     getQuota()
-
-  //   }
-
-  // }, [selectedService, kurirAktif, addressAktif, koordinateReceiver]);
   const [typeahead, setTypehed] = useState([]);
 
   // check no hp
@@ -1220,7 +1137,7 @@ const AddOrder = () => {
               <div className="orderField">
                 <div className="form-group">
                   <Form.Label className="label">Nama Penerima</Form.Label>
-                  <Form.Control isInvalid={ordersErr?.[orderIndex]?.receiverName ? true : false} className="input" type="text" name="receiverName" placeholder="Nashir" value={order.receiverName} onChange={(e) => handleChange(e, orderIndex)} />
+                  <Form.Control isInvalid={ordersErr?.[orderIndex]?.receiverName ? true : false} className="input" type="text" name="receiverName" placeholder="Tulis Nama Penerima" value={order.receiverName} onChange={(e) => handleChange(e, orderIndex)} />
                   {
                     ordersErr?.[orderIndex]?.receiverName && <div class="invalid-feedback">
                       {ordersErr?.[orderIndex]?.receiverName}
