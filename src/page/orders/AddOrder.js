@@ -279,7 +279,8 @@ const AddOrder = () => {
       const salesSnapshot = await getDocs(collection(firestore, "warehouse"));
       const salesList = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setWarehouseOptions(salesList);
-      const findDefaultWH = salesList.find(sal => sal?.id === 'SSUWQwC374ZY3pg4gPEt');
+      const idWH = process.env.REACT_APP_ENVIRONMENT === 'production' ? 'wThhs7RSqV3JOBClZFzs' : 'SSUWQwC374ZY3pg4gPEt'
+      const findDefaultWH = salesList.find(sal => sal?.id === idWH);
       if (findDefaultWH?.name) {
         setFormData({
           ...formData,
@@ -1343,7 +1344,7 @@ const AddOrder = () => {
           </div>
           <div className="form-group">
             <Form.Label className="label">Notes</Form.Label>
-            <textarea className="textarea" type="text" name="notes" placeholder="Tulis disini" value={formData.notes} onChange={handleFormChange} />
+            <textarea className="textarea" maxLength={800} type="text" name="notes" placeholder="Tulis disini" value={formData.notes} onChange={handleFormChange} />
           </div>
         </div>
 

@@ -211,11 +211,14 @@ export default function DownloadInvoiceDialog(props) {
                                                     <span style={styles.bold}>Sub Total</span>
                                                 </p>
                                                 <p>
-                                                    <span style={styles.bold}>Ongkir</span>
+                                                    <span style={styles.bold}>Delivery Fee</span>
                                                 </p>
                                                 <p>
                                                     <span style={styles.bold}>Additional Discount</span>
                                                 </p>
+                                                {/* <p>
+                                                    <span style={styles.bold}>Total Discount</span>
+                                                </p> */}
                                                 <p>
                                                     <span style={styles.bold}>Total</span>
                                                 </p>
@@ -232,6 +235,9 @@ export default function DownloadInvoiceDialog(props) {
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
                                                 </p>
+                                                {/* <p>
+                                                    <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
+                                                </p> */}
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(parseInt(allGross) + parseInt(allOngkir) - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>
@@ -268,7 +274,7 @@ export default function DownloadInvoiceDialog(props) {
                                     <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                                         <div style={styles.footerNotes}>
                                             <p style={styles.notes}>Notes</p>
-                                            <p style={{ marginTop: '0px', fontWeight: 'lighter' }}>{itm?.notes ?? '__'}</p>
+                                            <p style={{ marginTop: '0px', fontWeight: 'lighter', textAlign: 'justify' }}>{itm?.notes ?? '__'}</p>
                                         </div>
                                         <div style={styles.footer}>
                                             <p><FormatFirestoreTimestamp timestamp={itm?.createdAt} /></p>
