@@ -532,12 +532,7 @@ const OrderList = () => {
   const handleRefundOrder = async (id) => {
     if (window.confirm(` apakah anda yakin ingin refund order ${id}?`)) {
       try {
-        // const cancelOrder = httpsCallable(functions, 'cancelOrder');
-        // const result = await cancelOrder({
 
-        //   id: id,
-
-        // });
         await setDoc(doc(firestore, 'orders', id), {
           paymentStatus: 'refund',
           orderStatus: 'refund'
