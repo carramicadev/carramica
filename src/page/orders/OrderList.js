@@ -276,7 +276,12 @@ const OrderList = () => {
     setPage(1)
   };
 
+  const TruncatedText = ({ text, maxLength }) => {
+    // If the text is longer than maxLength, truncate it and add ellipsis
+    const truncated = text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
 
+    return truncated;
+  };
   let mapData = []
   const reBuildData = list?.map?.((item, idx) => {
     // console.log(JSON.stringify(item?.invoices))
@@ -296,20 +301,15 @@ const OrderList = () => {
       const userData = user.find(itm => itm.userId === item.userId);
       const resiCreatedBy = user.find(itm => itm.userId === ord.resiCreatedBy);
       const downloadedBy = user.find(itm => itm.userId === ord.downloadedBy);
-      const TruncatedText = ({ text, maxLength }) => {
-        // If the text is longer than maxLength, truncate it and add ellipsis
-        const truncated = text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
 
-        return truncated;
-      };
       const ordId = String(settings?.orderId - (i + idx)).padStart(4, '0');
 
       mapData.push({
         invoice_id: item?.invoice_id,
         id: item?.id,
-        senderName: item?.senderName,
+        senderName: <TruncatedText text={item?.senderName} maxLength={30} />,
         senderPhone: item?.senderPhone,
-        receiverName: ord?.receiverName,
+        receiverName: <TruncatedText text={ord?.receiverName} maxLength={30} />,
         receiverPhone: ord?.receiverPhone,
         nama: ord?.products?.map((prod, i) => `${prod?.nama}X${ord?.products?.[i]?.quantity}, `),
         // quantity: ord?.products?.map(prod => `${prod?.quantity}, `),
@@ -599,7 +599,7 @@ const OrderList = () => {
     { label: "Shipping Cost", key: (item) => currency(item?.shippingCost), style: {} },
     {
       label: "Resi", key: (item, i, idOrder, style, edit) => item.resi && edit !== i ? <div style={{ display: 'flex', justifyContent: 'space-between' }}><button disabled={item?.isResiSentToWASender} className='btn btn-outline-secondary' onClick={() => setSendWADialog({ open: true, data: item, type: 'resi_to_sender', message: 'Kirim resi ke pengirim?' })
-      } style={item?.isResiSentToWASender ? { padding: '0px', width: '20px', margin: '0px 2px 0px 0px', backgroundColor: 'lightgray' } : { padding: '0px', width: '20px', margin: '0px 2px 0px 0px' }} size='sm'><Whatsapp size={12} color={item?.isResiSentToWASender ? 'gray' : 'green'} /></button>{item.resi} <Button onClick={() => setEdit(i)} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button> </div> : edit === i ? <input style={{ whiteSpace: 'nowrap', width: '60px', fontSize: '8px', padding: '3px' }} className='input'
+      } style={item?.isResiSentToWASender ? { padding: '0px', width: '20px', margin: '0px 2px 0px 0px', backgroundColor: 'lightgray' } : { padding: '0px', width: '20px', margin: '0px 2px 0px 0px' }} size='sm'><Whatsapp size={12} color={item?.isResiSentToWASender ? 'gray' : 'green'} /></button>{<TruncatedText text={item?.resi} maxLength={20} />} <Button onClick={() => setEdit(i)} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button> </div> : edit === i ? <input style={{ whiteSpace: 'nowrap', width: '60px', fontSize: '8px', padding: '3px' }} className='input'
         // value={item?.resi || ''}
         placeholder="Input Resi"
         defaultValue={item?.resi}
