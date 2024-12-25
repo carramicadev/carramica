@@ -271,14 +271,14 @@ export default function DownloadInvoiceDialog(props) {
 
 
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={styles.footerNotes}>
                                             <p style={styles.notes}>Notes</p>
                                             <p style={{ marginTop: '0px', fontWeight: 'lighter', textAlign: 'justify' }}>{itm?.notes ?? '__'}</p>
                                         </div>
                                         <div style={styles.footer}>
                                             <p><FormatFirestoreTimestamp timestamp={itm?.createdAt} /></p>
-                                            <p style={{ marginTop: '50px', fontWeight: 'bold' }}>Finance</p>
+                                            <p style={{ marginTop: '80px', fontWeight: 'bold' }}>PT CARRAMICA KREASI INDONESIA</p>
                                         </div>
                                     </div>
                                 </div>
@@ -384,6 +384,7 @@ const styles = {
         marginTop: '40px',
         fontSize: '14px',
         width: '30%',
+        // marginLeft: '10px'
         // marginRight: '100px'
     },
     footerNotes: {

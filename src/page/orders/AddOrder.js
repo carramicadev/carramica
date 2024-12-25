@@ -1344,7 +1344,7 @@ const AddOrder = () => {
           </div>
           <div className="form-group">
             <Form.Label className="label">Notes</Form.Label>
-            <textarea className="textarea" maxLength={800} type="text" name="notes" placeholder="Tulis disini" value={formData.notes} onChange={handleFormChange} />
+            <textarea className="textarea" maxLength={700} type="text" name="notes" placeholder="Tulis disini" value={formData.notes} onChange={handleFormChange} />
           </div>
         </div>
 
