@@ -44,7 +44,7 @@ import DialogSendWA from './DialogSendWA';
 import EditOrders from './DialogEditOrder';
 import Header from '../../components/Header';
 import DialogEditShipDate from './DialogEditShippingDate';
-import { typesense } from '../../typesense';
+import TypesenseSearchNew, { typesense } from '../../typesense';
 import TypesenseSearch from '../../SearchComponent';
 
 const OrderList = () => {
@@ -843,7 +843,7 @@ const OrderList = () => {
               value={searchTerm}
               onChange={handleSearch}
             /> */}
-            <TypesenseSearch />
+            <TypesenseSearchNew />
           </div>
           <div style={{ display: 'flex', }}>
             <OverlayTrigger

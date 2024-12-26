@@ -1,5 +1,12 @@
 // typesenseAdapter.js
 import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter';
+import {
+    InstantSearch,
+    SearchBox,
+    Hits,
+    Highlight,
+    Pagination,
+} from 'react-instantsearch-dom';
 
 const typesenseAdapter = new TypesenseInstantSearchAdapter({
     server: {
@@ -13,13 +20,36 @@ const typesenseAdapter = new TypesenseInstantSearchAdapter({
         ],
     },
     additionalSearchParameters: {
-        queryBy: 'senderName,invoice_id', // Fields to query
+        query_by: 'senderName,invoice_id', // Fields to query
     },
 });
 
 const searchClient = typesenseAdapter.searchClient;
+const HitComponent = ({ hit }) => {
+    console.log('hit', hit)
+    return (
+        <div>
+            <h3>
+                <Highlight attribute="senderName" hit={hit} />
+            </h3>
+            <p>
+                <Highlight attribute="invoice_id" hit={hit} />
+            </p>
+        </div>
+    )
+};
 
-export default searchClient;
+const TypesenseSearchNew = () => {
+    return (
+        <InstantSearch indexName="orders" searchClient={searchClient}>
+            <SearchBox />
+            <Hits hitComponent={HitComponent} />
+            <Pagination />
+        </InstantSearch>
+    );
+};
+
+export default TypesenseSearchNew;
 
 // import Typesense from "typesense";
 
