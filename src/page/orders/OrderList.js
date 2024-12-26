@@ -44,6 +44,8 @@ import DialogSendWA from './DialogSendWA';
 import EditOrders from './DialogEditOrder';
 import Header from '../../components/Header';
 import DialogEditShipDate from './DialogEditShippingDate';
+import TypesenseSearchNew, { typesense } from '../../typesense';
+import TypesenseSearch from '../../SearchComponent';
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -275,7 +277,29 @@ const OrderList = () => {
     setSearchTerm(e.target.value);
     setPage(1)
   };
+  // useEffect(() => {
+  //   let timeoutId;
 
+  //   const searchOrders = async () => {
+  //     try {
+  //       const response = await typesense.collections('orders').documents().search({
+  //         q: searchTerm,
+  //         query_by: 'senderName,senderPhone',
+  //       });
+  //       console.log(response);
+  //     } catch (e) {
+  //       console.error('Error with Typesense search:', e.message);
+  //     }
+  //   };
+
+  //   if (searchTerm) {
+  //     timeoutId = setTimeout(() => {
+  //       searchOrders();
+  //     }, 500);
+  //   }
+
+  //   return () => clearTimeout(timeoutId); // Cleanup timeout
+  // }, [searchTerm]);
   const TruncatedText = ({ text, maxLength }) => {
     // If the text is longer than maxLength, truncate it and add ellipsis
     const truncated = text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
@@ -808,19 +832,20 @@ const OrderList = () => {
           </Card>
         </Col>
       </Row>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '10px', height: '41px' }}>
         <div style={{ display: 'flex' }}>
-          <div>
-            <input
+          <div >
+            {/* <input
               className="input"
               style={{ width: '300px', borderRadius: '5px', padding: '9px ', marginTop: '10px' }}
               type="text"
               placeholder="Search by name, phone, or product"
               value={searchTerm}
               onChange={handleSearch}
-            />
+            /> */}
+            <TypesenseSearchNew />
           </div>
-          <div style={{ display: 'flex', marginTop: '10px' }}>
+          <div style={{ display: 'flex', }}>
             <OverlayTrigger
               delay={{ hide: 450, show: 300 }}
               overlay={(props) => (

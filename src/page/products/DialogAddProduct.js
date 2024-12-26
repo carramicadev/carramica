@@ -113,7 +113,7 @@ export default function DialogAddProduct(props) {
                     const tambahProduk = await addDoc(collection(firestore, "product"), { ...formData, createdAt: serverTimestamp() });
                     // console.log("Document written with ID: ",);
                     enqueueSnackbar(`sukses menambahkan product ${formData?.nama}`, { variant: 'success' })
-                    navigate(`/products/detailProduct/${tambahProduk?.id}`)
+                    // navigate(`/products/detailProduct/${tambahProduk?.id}`)
 
                     props.onHide()
                 }

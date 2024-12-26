@@ -17,7 +17,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         padding: 5,
         fontSize: 8,
-        maxHeight: '206px'
+        maxHeight: '206px',
+        height: '206px'
     },
     leftSection: {
         width: '65%',
@@ -65,8 +66,8 @@ const styles = StyleSheet.create({
         marginTop: -40,
     },
     imageKurirLeft: {
-        width: 80,
-        marginTop: -20,
+        width: 60,
+        marginTop: -15,
     },
     imageKurirSAP: {
         width: 35,
