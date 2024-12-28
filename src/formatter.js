@@ -6,7 +6,12 @@ export default function formatDate(date) {
 
     return format(date || new Date(), 'dd/MM/yyyy kk:mm');
 }
+export const TimestampToDate = ({ timestamp }) => {
+    // Convert the timestamp to milliseconds and format it
+    const formattedDate = format(new Date(timestamp * 1000), "dd/MM/yyyy HH:mm");
 
+    return formattedDate;
+};
 export function formatToDate(date) {
 
     return format(date || new Date(), 'dd/MM/yyyy ');

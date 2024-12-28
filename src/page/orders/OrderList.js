@@ -27,7 +27,7 @@ import {
 } from "firebase/firestore";
 import { firestore, functions } from '../../FirebaseFrovider';
 import DownloadPdfDialog from './DialogDonwloadPdf';
-import formatDate, { currency } from '../../formatter';
+import formatDate, { currency, TimestampToDate } from '../../formatter';
 import { BoxFill, CloudArrowDown, Filter, FilterSquare, GraphUp, PencilSquare, PeopleFill, TrashFill, Whatsapp, XCircleFill } from 'react-bootstrap-icons';
 import DatePicker from 'react-datepicker';
 import { set } from 'date-fns';
@@ -44,8 +44,7 @@ import DialogSendWA from './DialogSendWA';
 import EditOrders from './DialogEditOrder';
 import Header from '../../components/Header';
 import DialogEditShipDate from './DialogEditShippingDate';
-import TypesenseSearchNew, { typesense } from '../../typesense';
-import TypesenseSearch from '../../SearchComponent';
+import { typesense } from '../../typesense';
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -142,7 +141,7 @@ const OrderList = () => {
     // };
     // fetchData();
   }, [allFilters]);
-  console.log(allOrders)
+  // console.log(allOrders)
   // getUserColl
   useEffect(() => {
     const fetchData = async () => {
@@ -178,7 +177,7 @@ const OrderList = () => {
     });
     return () => unsubscribe();
   }, [length, allFilters]);
-  console.log(allFilters)
+  // console.log(list)
   const showNext = ({ item }) => {
     if (list.length === 0) {
       alert("Thats all we have for now !")
@@ -277,29 +276,34 @@ const OrderList = () => {
     setSearchTerm(e.target.value);
     setPage(1)
   };
-  // useEffect(() => {
-  //   let timeoutId;
+  useEffect(() => {
+    let timeoutId;
 
-  //   const searchOrders = async () => {
-  //     try {
-  //       const response = await typesense.collections('orders').documents().search({
-  //         q: searchTerm,
-  //         query_by: 'senderName,senderPhone',
-  //       });
-  //       console.log(response);
-  //     } catch (e) {
-  //       console.error('Error with Typesense search:', e.message);
-  //     }
-  //   };
+    const searchOrders = async () => {
+      try {
+        console.log('run-types')
+        const colltyps = process.env.REACT_APP_ENVIRONMENT === 'production' ? 'orders-prod' : 'orders'
+        const response = await typesense.collections(colltyps).documents().search({
+          q: searchTerm,
+          query_by: 'senderName,invoice_id,email',
+        });
+        console.log(response?.hits?.map((hit) => hit?.document));
 
-  //   if (searchTerm) {
-  //     timeoutId = setTimeout(() => {
-  //       searchOrders();
-  //     }, 500);
-  //   }
+        const hitResult = response?.hits?.map((hit) => hit?.document)
+        setList(hitResult)
+      } catch (e) {
+        console.error('Error with Typesense search:', e.message);
+      }
+    };
 
-  //   return () => clearTimeout(timeoutId); // Cleanup timeout
-  // }, [searchTerm]);
+    if (searchTerm !== '') {
+      timeoutId = setTimeout(() => {
+        searchOrders();
+      }, 500);
+    }
+
+    return () => clearTimeout(timeoutId); // Cleanup timeout
+  }, [searchTerm]);
   const TruncatedText = ({ text, maxLength }) => {
     // If the text is longer than maxLength, truncate it and add ellipsis
     const truncated = text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
@@ -308,7 +312,7 @@ const OrderList = () => {
   };
   let mapData = []
   const reBuildData = list?.map?.((item, idx) => {
-    // console.log(JSON.stringify(item?.invoices))
+    // console.log('hduaisdhsa', item)
 
     return item?.orders?.map((ord, i) => {
       const discount = ord?.products?.map(prod => prod?.discount > 0 ? parseInt(prod?.discount) : 0);
@@ -349,7 +353,7 @@ const OrderList = () => {
         address: <TruncatedText text={ord?.address} maxLength={20} />,
         giftCard: ord?.giftCard,
         unixId: `${item.id}_${i}`,
-        original: { ...ord, id: `${item.id}_${i}` },
+        original: { ...ord, id: `${item.id}_${i}`, senderName: item?.senderName },
         isDownloaded: ord?.isDownloaded,
         pdf: item?.invoice?.pdf_url,
         isInvWASent: item?.isInvWASent,
@@ -372,15 +376,15 @@ const OrderList = () => {
     })
   });
 
-  const filteredData = mapData?.filter?.(
-    item =>
-      item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
-      item.senderPhone?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
-      item.nama?.toString()?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
-      item.receiverName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
-      item.receiverPhone?.toLowerCase?.().includes?.(searchTerm.toLowerCase())
+  // const mapData = mapData?.filter?.(
+  //   item =>
+  //     item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
+  //     item.senderPhone?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
+  //     item.nama?.toString()?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
+  //     item.receiverName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
+  //     item.receiverPhone?.toLowerCase?.().includes?.(searchTerm.toLowerCase())
 
-  );
+  // );
 
   const paidOrd = allOrders?.filter(ord => ord?.paymentStatus === 'settlement')
   const arrayHarga = paidOrd.map((data) => data.totalHargaProduk)
@@ -434,7 +438,7 @@ const OrderList = () => {
     return {
       ...data,
       address: data?.address?.props?.text,
-      createdAt: data?.createdAt?.toDate()?.toString(),
+      // createdAt: data?.createdAt?.toDate()?.toString(),
       receiverPhone: parseInt(data?.receiverPhone),
       senderPhone: parseInt(data?.senderPhone),
       resiUpdate: data?.resiUpdate?.toDate()?.toString(),
@@ -444,7 +448,7 @@ const OrderList = () => {
     return {
       ...data,
       address: data?.address?.props?.text,
-      createdAt: data?.createdAt?.toDate()?.toString(),
+      // createdAt: data?.createdAt?.toDate()?.toString(),
       receiverPhone: parseInt(data?.receiverPhone),
       senderPhone: parseInt(data?.senderPhone)
     }
@@ -574,7 +578,7 @@ const OrderList = () => {
 
   }
   // header 
-  // console.log(selectedExcel)
+  // console.log(mapData)
   const [column, setColumn] = useState([
     {
       label: 'Invoice Id', key: (item, i, idOrder) => idOrder === 0 && <a href='#'
@@ -596,7 +600,7 @@ const OrderList = () => {
         <div key={index}>{line}</div>
       )), style: {}
     },
-    { label: "Date Order", key: (item) => formatDate(item?.createdAt?.toDate()), style: {} },
+    { label: "Date Order", key: (item) => typeof item?.createdAt === 'number' ? <TimestampToDate timestamp={item?.createdAt} /> : formatDate(item?.createdAt?.toDate()), style: {} },
     { label: "Payment Status", key: (item, i, idOrder, style) => <li style={style}>{item?.paymentStatus || 'Unpaid'}</li>, style: {} },
     {
       label: "Order Status", key: (item, i, idOrder, style) => <div style={{ display: 'flex', justifyContent: 'space-between' }}><li style={style}>{item?.orderStatus} </li><Button disabled={item?.paymentStatus === 'cancel' || item?.paymentStatus === 'refund' || item?.resi} style={{ backgroundColor: item?.paymentStatus !== 'settlement' ? 'red' : '#998970', padding: '0px 5px 0px 5px', marginLeft: '5px', fontSize: '8px', border: 'none' }} className="button button-primary" onClick={() => {
@@ -615,8 +619,8 @@ const OrderList = () => {
     { label: "Discount", key: (item) => item?.discount, style: {} },
     { label: "Gross Revenue", key: (item) => currency(item?.grossRevenue), style: {} },
     {
-      label: "Shipping Date", key: (item) => <div>{formatDate(item?.shippingDate?.toDate?.())}
-        <Button disabled={item?.orderStatus === 'sent'} onClick={() => setEditShipDateDialog({ open: true, id: item?.id })} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button>
+      label: "Shipping Date", key: (item) => <div>{typeof item?.shippingDate === 'number' ? <TimestampToDate timestamp={item?.shippingDate} /> : formatDate(item?.shippingDate?.toDate?.())}
+        <Button disabled={item?.orderStatus === 'sent' || item?.isDownloaded} onClick={() => setEditShipDateDialog({ open: true, id: item?.id })} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button>
       </div>, style: {}
     },
     { label: "Shipping Info", key: (item) => item?.kurir, style: {} },
@@ -646,7 +650,7 @@ const OrderList = () => {
         }}
       />, style: {}
     },
-    { label: "Resi Update", key: (item) => item.resiUpdate ? formatDate(item?.resiUpdate?.toDate()) : '', style: {} },
+    { label: "Resi Update", key: (item) => item.resiUpdate ? typeof item?.resiUpdate === 'number' ? <TimestampToDate timestamp={item?.resiUpdate} /> : formatDate(item?.resiUpdate?.toDate()) : '', style: {} },
     { label: "Resi Crated By", key: (item) => item.resiCreatedBy, style: {} },
     {
       label: "Download ", key: (item, i) => <button style={item.isDownloaded ? { backgroundColor: 'lightgray', padding: '5px' } : item?.paymentStatus === 'settlement' ? { padding: '5px' } : { backgroundColor: 'red', padding: '5px' }} disabled={item?.isDownloaded || item?.paymentStatus !== 'settlement'} onClick={() => {
@@ -832,20 +836,19 @@ const OrderList = () => {
           </Card>
         </Col>
       </Row>
-      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '10px', height: '41px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex' }}>
-          <div >
-            {/* <input
+          <div>
+            <input
               className="input"
               style={{ width: '300px', borderRadius: '5px', padding: '9px ', marginTop: '10px' }}
               type="text"
-              placeholder="Search by name, phone, or product"
+              placeholder="Search here"
               value={searchTerm}
               onChange={handleSearch}
-            /> */}
-            <TypesenseSearchNew />
+            />
           </div>
-          <div style={{ display: 'flex', }}>
+          <div style={{ display: 'flex', marginTop: '10px' }}>
             <OverlayTrigger
               delay={{ hide: 450, show: 300 }}
               overlay={(props) => (
@@ -906,7 +909,7 @@ const OrderList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData?.map?.((item, i) => {
+                  {mapData?.map?.((item, i) => {
                     // console.log(i === edit)
                     const idOrder = parseInt(item.unixId.split('_')?.[1]);
                     let style = {
@@ -985,7 +988,7 @@ const OrderList = () => {
           marginTop: '8px'
         }} />
         {/* //show next button only when we have items */}
-        <Button disabled={list.length < 20} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={() => showNext({ item: filteredData[filteredData.length - 1] })}>{'Next->'}</Button>
+        <Button disabled={list.length < 20} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={() => showNext({ item: mapData[mapData.length - 1] })}>{'Next->'}</Button>
       </ButtonGroup>
 
       <DownloadPdfDialog
