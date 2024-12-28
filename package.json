@@ -48,7 +48,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:production": "env-cmd -f .env.production react-app-rewired build",
-    "start:production": "env-cmd -f .env.production set HTTPS=true&&react-app-rewired start"
+    "start:production": "env-cmd -f .env.production react-app-rewired start"
   },
   "eslintConfig": {
     "extends": [

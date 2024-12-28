@@ -282,9 +282,10 @@ const OrderList = () => {
     const searchOrders = async () => {
       try {
         console.log('run-types')
-        const response = await typesense.collections('orders').documents().search({
+        const colltyps = process.env.REACT_APP_ENVIRONMENT === 'production' ? 'orders-prod' : 'orders'
+        const response = await typesense.collections(colltyps).documents().search({
           q: searchTerm,
-          query_by: 'senderName,senderPhone',
+          query_by: 'senderName,invoice_id,email',
         });
         console.log(response?.hits?.map((hit) => hit?.document));
 

@@ -239,7 +239,7 @@ export default function DownloadPdfDialog(props) {
     const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
     const item = props?.show?.data;
     // console.log(props?.show?.userId)
-    console.log(item)
+    // console.log(item)
     const downloadPdf = async () => {
         try {
             await Promise.all(
@@ -333,7 +333,7 @@ export default function DownloadPdfDialog(props) {
                                                 <table key={index} className="gift-card-table" >
                                                     <tbody>
                                                         <tr>
-                                                            <td className="left-section" style={{ width: '70%', whiteSpace: '' }}>
+                                                            <td className="left-section" style={{ width: '70%', whiteSpace: 'normal' }}>
                                                                 <p ><strong>Gift Card:</strong><br />{data?.giftCard}</p>
                                                                 <p><strong>To:</strong>{data?.original?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
                                                                 <p><strong>From:</strong><br />{data?.original?.senderName}<br /></p>
@@ -345,7 +345,7 @@ export default function DownloadPdfDialog(props) {
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="right-section" style={{ width: '30%' }}>
+                                                            <td className="right-section" style={{ width: '30%', whiteSpace: 'normal' }}>
                                                                 <p><strong>To:</strong><br />{data?.original?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
                                                                 <p><strong>From:</strong><br />{data?.original?.senderName}<br />{data?.senderPhone}</p>
 
