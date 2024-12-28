@@ -141,7 +141,7 @@ const OrderList = () => {
     // };
     // fetchData();
   }, [allFilters]);
-  console.log(allOrders)
+  // console.log(allOrders)
   // getUserColl
   useEffect(() => {
     const fetchData = async () => {
@@ -177,7 +177,7 @@ const OrderList = () => {
     });
     return () => unsubscribe();
   }, [length, allFilters]);
-  console.log(list)
+  // console.log(list)
   const showNext = ({ item }) => {
     if (list.length === 0) {
       alert("Thats all we have for now !")
@@ -281,6 +281,7 @@ const OrderList = () => {
 
     const searchOrders = async () => {
       try {
+        console.log('run-types')
         const response = await typesense.collections('orders').documents().search({
           q: searchTerm,
           query_by: 'senderName,senderPhone',
@@ -294,7 +295,7 @@ const OrderList = () => {
       }
     };
 
-    if (searchTerm) {
+    if (searchTerm !== '') {
       timeoutId = setTimeout(() => {
         searchOrders();
       }, 500);
@@ -310,7 +311,7 @@ const OrderList = () => {
   };
   let mapData = []
   const reBuildData = list?.map?.((item, idx) => {
-    console.log('hduaisdhsa', item)
+    // console.log('hduaisdhsa', item)
 
     return item?.orders?.map((ord, i) => {
       const discount = ord?.products?.map(prod => prod?.discount > 0 ? parseInt(prod?.discount) : 0);
@@ -351,7 +352,7 @@ const OrderList = () => {
         address: <TruncatedText text={ord?.address} maxLength={20} />,
         giftCard: ord?.giftCard,
         unixId: `${item.id}_${i}`,
-        original: { ...ord, id: `${item.id}_${i}` },
+        original: { ...ord, id: `${item.id}_${i}`, senderName: item?.senderName },
         isDownloaded: ord?.isDownloaded,
         pdf: item?.invoice?.pdf_url,
         isInvWASent: item?.isInvWASent,
@@ -576,7 +577,7 @@ const OrderList = () => {
 
   }
   // header 
-  console.log(mapData)
+  // console.log(mapData)
   const [column, setColumn] = useState([
     {
       label: 'Invoice Id', key: (item, i, idOrder) => idOrder === 0 && <a href='#'
@@ -618,7 +619,7 @@ const OrderList = () => {
     { label: "Gross Revenue", key: (item) => currency(item?.grossRevenue), style: {} },
     {
       label: "Shipping Date", key: (item) => <div>{typeof item?.shippingDate === 'number' ? <TimestampToDate timestamp={item?.shippingDate} /> : formatDate(item?.shippingDate?.toDate?.())}
-        <Button disabled={item?.orderStatus === 'sent'} onClick={() => setEditShipDateDialog({ open: true, id: item?.id })} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button>
+        <Button disabled={item?.orderStatus === 'sent' || item?.isDownloaded} onClick={() => setEditShipDateDialog({ open: true, id: item?.id })} style={{ padding: '0px', width: '20px', margin: '0px 0px 0px 2px' }} size='sm'><PencilSquare size={12} /></Button>
       </div>, style: {}
     },
     { label: "Shipping Info", key: (item) => item?.kurir, style: {} },

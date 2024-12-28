@@ -11,6 +11,7 @@ import { arrayUnion, doc, getDoc, onSnapshot, runTransaction, setDoc, updateDoc 
 import { Document, Image, Page, PDFDownloadLink, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { useEffect, useState } from 'react';
 import { firestore } from '../../FirebaseFrovider';
+import formatDate, { TimestampToDate } from '../../formatter';
 
 const styles = StyleSheet.create({
     page: {
@@ -140,7 +141,7 @@ function MyDoc({ item, setLoading }) {
                                         <Text style={styles.subHeader}>To:</Text>
                                     </View>
                                     <View style={styles.subItem4}>
-                                        <Text style={styles.text}>{data?.receiverName}</Text>
+                                        <Text style={styles.text}>{data?.original?.receiverName}</Text>
                                         <Text style={styles.text}>{data?.receiverPhone}</Text>
                                         <Text style={styles.text}>
                                             {data?.original?.address}
@@ -153,7 +154,7 @@ function MyDoc({ item, setLoading }) {
                                         <Text style={styles.subHeader}>From:</Text>
                                     </View>
                                     <View style={styles.subItem4}>
-                                        <Text style={styles.text}>{data?.senderName}</Text>
+                                        <Text style={styles.text}>{data?.original?.senderName}</Text>
                                     </View>
                                 </View>
                                 <View style={styles.logo}>
@@ -161,7 +162,7 @@ function MyDoc({ item, setLoading }) {
                                     style={styles.image}
                                     src={logoFull}
                                 /> */}
-                                    <Text style={styles.text}>Paid At :{data?.paidAt}</Text>
+                                    <Text style={styles.text}>Shipping Date :{typeof data?.shippingDate === 'number' ? <TimestampToDate timestamp={data?.shippingDate} /> : formatDate(data?.shippingDate?.toDate?.())}</Text>
                                     {
                                         data?.kurir !== 'Dedicated' &&
                                         <Image
@@ -181,7 +182,7 @@ function MyDoc({ item, setLoading }) {
                                         <Text style={styles.header}>To:</Text>
                                     </View>
                                     <View style={styles.subItem4}>
-                                        <Text style={styles.text}>{data?.receiverName}</Text>
+                                        <Text style={styles.text}>{data?.original?.receiverName}</Text>
                                         <Text style={styles.text}>{data?.receiverPhone}</Text>
                                         <Text style={styles.text}>
                                             {data?.original?.address}                                    </Text>
@@ -192,7 +193,7 @@ function MyDoc({ item, setLoading }) {
                                         <Text style={styles.header}>From:</Text>
                                     </View>
                                     <View style={styles.subItem4}>
-                                        <Text style={styles.text}>{data?.senderName}</Text>
+                                        <Text style={styles.text}>{data?.original?.senderName}</Text>
                                         <Text style={styles.text}>{data?.senderPhone}</Text>
                                     </View>
                                 </View>
@@ -238,7 +239,7 @@ export default function DownloadPdfDialog(props) {
     const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
     const item = props?.show?.data;
     // console.log(props?.show?.userId)
-    console.log(props?.loading)
+    console.log(item)
     const downloadPdf = async () => {
         try {
             await Promise.all(
@@ -329,24 +330,24 @@ export default function DownloadPdfDialog(props) {
                                         item?.map?.((data, index) => {
                                             // console.log(data?.nama)
                                             return <>
-                                                <table key={index} className="gift-card-table">
+                                                <table key={index} className="gift-card-table" >
                                                     <tbody>
                                                         <tr>
-                                                            <td className="left-section">
-                                                                <p><strong>Gift Card:</strong><br />{data?.giftCard}</p>
-                                                                <p><strong>To:</strong>{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
-                                                                <p><strong>From:</strong><br />{data?.senderName}<br /></p>
+                                                            <td className="left-section" style={{ width: '70%', whiteSpace: '' }}>
+                                                                <p ><strong>Gift Card:</strong><br />{data?.giftCard}</p>
+                                                                <p><strong>To:</strong>{data?.original?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
+                                                                <p><strong>From:</strong><br />{data?.original?.senderName}<br /></p>
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '50px' }}>
-                                                                    <p>Paid at: {data?.paidAt}</p>
+                                                                    <p>Shipping Date: {typeof data?.shippingDate === 'number' ? <TimestampToDate timestamp={data?.shippingDate} /> : formatDate(data?.shippingDate?.toDate?.())}</p>
                                                                     <div className="logoKurir">
 
                                                                         <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="right-section">
-                                                                <p><strong>To:</strong><br />{data?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
-                                                                <p><strong>From:</strong><br />{data?.senderName}<br />{data?.senderPhone}</p>
+                                                            <td className="right-section" style={{ width: '30%' }}>
+                                                                <p><strong>To:</strong><br />{data?.original?.receiverName}<br />{data?.receiverPhone}<br />{data?.original?.address}</p>
+                                                                <p><strong>From:</strong><br />{data?.original?.senderName}<br />{data?.senderPhone}</p>
 
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                     <p><strong>Order:</strong><br />{data?.id}<br />
