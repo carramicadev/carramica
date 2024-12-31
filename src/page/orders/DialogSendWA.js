@@ -10,7 +10,7 @@ import { firestore, functions } from '../../FirebaseFrovider';
 export default function DialogSendWA(props) {
     const item = props?.show?.data;
     // qontak
-    console.log(item)
+    // console.log(item)
     const sendWAToSender = async () => {
         try {
             // console.log(item?.senderName,
