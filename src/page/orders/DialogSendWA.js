@@ -10,6 +10,7 @@ import { firestore, functions } from '../../FirebaseFrovider';
 export default function DialogSendWA(props) {
     const item = props?.show?.data;
     // qontak
+    // console.log(item)
     const sendWAToSender = async () => {
         try {
             // console.log(item?.senderName,
@@ -57,8 +58,8 @@ export default function DialogSendWA(props) {
             } else if (props?.show?.type === 'resi_to_sender') {
                 const params = {
                     no: item?.senderPhone,
-                    name: item?.senderName,
-                    receiver: item?.receiverName,
+                    name: item?.original?.senderName,
+                    receiver: item?.original?.receiverName,
                     resi: item?.resi,
                     kurir: item?.kurir,
                     type: props?.show?.type
