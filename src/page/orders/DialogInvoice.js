@@ -95,7 +95,13 @@ export default function DownloadInvoiceDialog(props) {
     const allGross = gross?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang
     }, 0);
-
+    const allDisc = allProduct?.map((prod) => {
+        return prod?.discount > 0 ? prod?.discount_type === '%' ? (parseInt(prod?.discount) / 100) * prod?.price : parseInt(prod?.discount) : 0
+    });
+    const discreduce = allDisc?.reduce((val, nilaiSekarang) => {
+        return val + nilaiSekarang
+    }, 0);
+    console.log(discreduce)
     // all ongkir
     const ongkir = findOrder?.orders?.map(ord => parseInt(ord?.ongkir));
     const allOngkir = ongkir?.reduce((val, nilaiSekarang) => {
@@ -216,9 +222,9 @@ export default function DownloadInvoiceDialog(props) {
                                                 <p>
                                                     <span style={styles.bold}>Additional Discount</span>
                                                 </p>
-                                                {/* <p>
+                                                <p>
                                                     <span style={styles.bold}>Total Discount</span>
-                                                </p> */}
+                                                </p>
                                                 <p>
                                                     <span style={styles.bold}>Total</span>
                                                 </p>
@@ -235,9 +241,9 @@ export default function DownloadInvoiceDialog(props) {
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
                                                 </p>
-                                                {/* <p>
-                                                    <span style={styles.bold}></span> {currency(findOrder?.additionalDiscount)}
-                                                </p> */}
+                                                <p style={{ color: 'red' }}>
+                                                    <span style={styles.bold}></span> -{currency(discreduce + findOrder?.additionalDiscount)}
+                                                </p>
                                                 <p>
                                                     <span style={styles.bold}></span> {currency(parseInt(allGross) + parseInt(allOngkir) - (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0))}
                                                 </p>

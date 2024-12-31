@@ -604,7 +604,7 @@ const AddOrder = () => {
   // diskon
   const diskon = orders?.map((ord) => {
     return ord?.products?.map((prod) => {
-      return prod?.discount > 0 ? parseInt(prod?.discount) : 0
+      return prod?.discount > 0 ? prod?.discount_type === '%' ? (parseInt(prod?.discount) / 100) * prod?.price : parseInt(prod?.discount) : 0
     })
   })
 
@@ -667,7 +667,14 @@ const AddOrder = () => {
         price: prod.price,
         quantity: prod.quantity
       })
-      if (prod.discount > 0) {
+      if (prod.discount > 0 && prod?.discount_type == '%') {
+        product.push({
+          name: `discount-${prod.nama}`,
+          id: prod?.sku,
+          price: -((prod.discount / 100) * prod.price),
+          quantity: 1
+        })
+      } else if (prod.discount > 0 && prod?.discount_type == 'Rp') {
         product.push({
           name: `discount-${prod.nama}`,
           id: prod?.sku,
