@@ -164,7 +164,7 @@ function MyDoc({ item, setLoading }) {
                                 /> */}
                                     <Text style={styles.text}>Shipping Date :{typeof data?.shippingDate === 'number' ? <TimestampToDate timestamp={data?.shippingDate} /> : formatDate(data?.shippingDate?.toDate?.())}</Text>
                                     {
-                                        data?.kurir !== 'Dedicated' &&
+                                        data?.kurirType !== 'Dedicated' &&
                                         <Image
                                             style={data?.kurir === 'SAP' ? styles.imageSAP : styles.image}
                                             src={urlImage}
@@ -214,7 +214,7 @@ function MyDoc({ item, setLoading }) {
                                             src={logoFull}
                                         />
                                         {
-                                            data?.kurir !== 'Dedicated' &&
+                                            data?.kurirType !== 'Dedicated' &&
                                             <Image
                                                 style={data?.kurir === 'SAP' ? styles.imageKurirSAP : styles.imageKurirLeft}
                                                 src={urlImage}
