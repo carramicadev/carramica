@@ -348,6 +348,7 @@ const OrderList = () => {
         discount: allDiscount,
         grossRevenue: calculate,
         kurir: ord?.kurirService?.courier_name ? ord?.kurirService?.courier_name : ord?.kurirService ? `Dedicated-${ord?.kurirService}` : ord?.kurir,
+        kurirType: ord?.kurir,
         resi: ord?.resi,
         resiUpdate: item?.[`resiUpdate${[i]}`],
         address: <TruncatedText text={ord?.address} maxLength={20} />,
