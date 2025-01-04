@@ -47,7 +47,8 @@ const AddOrder = () => {
   const { currentUser } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-
+  // dedicated courier
+  const dedicatedCourier = ['Lalamove', 'Paxel Regular', 'Paxel Big', 'SAP Regular', 'SAP Cargo']
   // get settings doc
   // const settingsRef = collection(firestore, "settings");
   const settingsRef = doc(firestore, 'settings', 'counter');
@@ -97,7 +98,7 @@ const AddOrder = () => {
     shippingDate: shippingDateTimestamp,
     notes: ''
   });
-  console.log(shippingDateTimestamp)
+  // console.log(orders)
 
   useEffect(() => {
     setTimeout(() => {
@@ -261,7 +262,7 @@ const AddOrder = () => {
   }
 
 
-  // console.log(formData)
+  console.log(orders)
   // query coll product
   const ref = query(collection(firestore, "product"),
     where("stok", ">", 0)
@@ -366,7 +367,7 @@ const AddOrder = () => {
       const selectedObj = listService?.[orderIndex]?.find?.(option => option?.courier_service_code === value);
 
       const updatedOrders = orders.map((order, i) =>
-        i === orderIndex ? typeof e !== 'object' ? { ...order, receiverPhone: e } : name === 'kurir' ? { ...order, [name]: value, ongkir: '' } : name === 'kurirService' ? { ...order, [name]: selectedObj, ongkir: selectedObj?.price } : { ...order, ordId: `OS-${invId}-${ordId}`, [name]: value } : order
+        i === orderIndex ? typeof e !== 'object' ? { ...order, receiverPhone: e } : name === 'kurir' ? { ...order, [name]: value, ongkir: '' } : name === 'kurirService' ? { ...order, [name]: selectedObj ?? value, ongkir: selectedObj?.price } : { ...order, ordId: `OS-${invId}-${ordId}`, [name]: value } : order
       );
       const updatedOrdersErr = ordersErr.map((err, i) =>
         i === orderIndex ? typeof e !== 'object' ? { ...err, receiverPhone: '' } : name === 'kurirService' ? { ...err, [name]: '', ongkir: '' } : { ...err, [name]: '' } : err
@@ -1314,7 +1315,28 @@ const AddOrder = () => {
                     </div>
 
                   </>
-                  : null
+                  : <>
+                    <div className="form-group">
+                      <Form.Label className="label">Jenis Service</Form.Label>
+
+                      <Form.Select className="select" name="kurirService"
+                        disabled={loadingRate}
+                        value={order?.kurirService}
+                        // value={`${order?.kurirService?.courier_name}, ${order?.kurirService?.courier_service_name}, ${order?.kurirService?.duration}, Rp.${order?.kurirService?.price}` || ''}
+                        onChange={(e, value) => {
+                          // console.log(value)
+                          handleChange(e, orderIndex,)
+
+                        }}>
+                        <option selected hidden >{loadingRate ? 'loading..' : 'Jenis Service'}</option>
+                        {dedicatedCourier?.map((kur) => {
+                          return <option key={kur} value={kur}><span>{kur}</span>
+
+                          </option>;
+                        })}
+                      </Form.Select>
+                    </div>
+                  </>
 
                 }
                 <div className="form-group">
