@@ -347,7 +347,7 @@ const OrderList = () => {
         dueDate: item?.midtransRes?.expiry_time,
         discount: allDiscount,
         grossRevenue: calculate,
-        kurir: ord?.kurirService ? ord?.kurirService?.courier_name : ord?.kurir,
+        kurir: ord?.kurirService?.courier_name ? ord?.kurirService?.courier_name : ord?.kurirService ? `Dedicated-${ord?.kurirService}` : ord?.kurir,
         resi: ord?.resi,
         resiUpdate: item?.[`resiUpdate${[i]}`],
         address: <TruncatedText text={ord?.address} maxLength={20} />,
@@ -369,7 +369,8 @@ const OrderList = () => {
         shippingCost: ord?.ongkir,
         orderStatus: ord?.orderStatus ? ord?.orderStatus : item?.paymentStatus === 'settlement' ? 'processing' : item?.paymentStatus,
         shippingDate: item?.shippingDate,
-        notes: item?.notes
+        notes: item?.notes,
+        userRules: findDataUser?.rules
 
       })
 
@@ -603,16 +604,18 @@ const OrderList = () => {
     { label: "Date Order", key: (item) => typeof item?.createdAt === 'number' ? <TimestampToDate timestamp={item?.createdAt} /> : formatDate(item?.createdAt?.toDate()), style: {} },
     { label: "Payment Status", key: (item, i, idOrder, style) => <li style={style}>{item?.paymentStatus || 'Unpaid'}</li>, style: {} },
     {
-      label: "Order Status", key: (item, i, idOrder, style) => <div style={{ display: 'flex', justifyContent: 'space-between' }}><li style={style}>{item?.orderStatus} </li><Button disabled={item?.paymentStatus === 'cancel' || item?.paymentStatus === 'refund' || item?.resi} style={{ backgroundColor: item?.paymentStatus !== 'settlement' ? 'red' : '#998970', padding: '0px 5px 0px 5px', marginLeft: '5px', fontSize: '8px', border: 'none' }} className="button button-primary" onClick={() => {
-        if (item?.paymentStatus !== 'settlement') {
-          handleCancelOrder(item?.id)
-        } else {
-          handleRefundOrder(item?.id)
-          // console.log('refund')
-        }
-      }}>
-        {item?.paymentStatus === 'settlement' ? 'Refund' : 'Cancel'}
-      </Button></div>, style: {}
+      label: "Order Status", key: (item, i, idOrder, style) => <div style={{ display: 'flex', justifyContent: 'space-between' }}><li style={style}>{item?.orderStatus} </li>{item?.userRules === 'admin' || item?.userRules === 'Head Of Sales' ?
+        <Button disabled={item?.paymentStatus === 'cancel' || item?.paymentStatus === 'refund' || item?.resi} style={{ backgroundColor: item?.paymentStatus !== 'settlement' ? 'red' : '#998970', padding: '0px 5px 0px 5px', marginLeft: '5px', fontSize: '8px', border: 'none' }} className="button button-primary" onClick={() => {
+          if (item?.paymentStatus !== 'settlement') {
+            handleCancelOrder(item?.id)
+          } else {
+            handleRefundOrder(item?.id)
+            // console.log('refund')
+          }
+        }}>
+          {item?.paymentStatus === 'settlement' ? 'Refund' : 'Cancel'}
+        </Button> : null
+      }</div>, style: {}
     },
     { label: "Paid At", key: (item) => item?.paidAt, style: {} },
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },

@@ -33,7 +33,7 @@ const Logistik = () => {
     setCurrentPage(1)
   }
   useEffect(() => {
-    if (!endDate) {
+    if (!endDate && year) {
       const fetchData = async () => {
         const startOfYear = Timestamp.fromDate(new Date(`${year}-01-01T00:00:00.000Z`)); // Millisecond precision
         const endOfYear = Timestamp.fromDate(new Date(`${parseInt(year) + 1}-01-01T00:00:00.000Z`));
