@@ -363,7 +363,7 @@ export default function EditOrders(props) {
                                             <option selected hidden >Type</option>
                                             {
                                                 ['%', 'Rp']?.map?.((prod) => {
-                                                    return <option value={prod} >{prod}</option>
+                                                    return <option key={prod} value={prod} >{prod}</option>
                                                 })
                                             }
                                         </Form.Select>
@@ -391,7 +391,7 @@ export default function EditOrders(props) {
 
                                 {
                                     ListKurir?.map((kur) => {
-                                        return <option value={kur}>{kur}</option>
+                                        return <option key={kur} value={kur}>{kur}</option>
                                     })
                                 }
                                 {/* <Form.Control placeholder='Tambah kurir baru' className='input' onBlur={handleAddOption} />    */}
