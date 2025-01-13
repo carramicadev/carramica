@@ -428,7 +428,8 @@ const OrderList = () => {
         orderStatus: ord?.orderStatus ? ord?.orderStatus : item?.paymentStatus === 'settlement' ? 'processing' : item?.paymentStatus,
         shippingDate: item?.shippingDate,
         notes: item?.notes,
-        userRules: findDataUser?.rules
+        userRules: findDataUser?.rules,
+        kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService
 
       })
 
