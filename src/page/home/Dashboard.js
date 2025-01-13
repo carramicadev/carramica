@@ -9,7 +9,8 @@ import Header from "../../components/Header";
 import "react-datepicker/dist/react-datepicker.css";
 import { currency } from "../../formatter";
 import { set } from "date-fns";
-import { BoxFill, GraphUp, PeopleFill, XCircleFill } from "react-bootstrap-icons";
+import { BoxFill, GraphUp, KanbanFill, PeopleFill, XCircleFill } from "react-bootstrap-icons";
+import Loading from "../../components/Loading";
 
 // bg random
 const generateColor = (index) => {
@@ -24,7 +25,7 @@ const Dashboard = ({ profile }) => {
   const [endDate, setEndDate] = useState(today);
   const [allOrders, setAllOrders] = useState([])
   const [user, setUser] = useState([])
-
+  const [loading, setLoading] = useState(false)
   useEffect(() => {
     const fetchData = async () => {
       const getDoc = query(collection(firestore, "users"), orderBy("createdAt", "desc"));
@@ -42,8 +43,24 @@ const Dashboard = ({ profile }) => {
   // query order
 
   // Provide the query to the hook
-  useEffect(() => {
-    const fetchData = async () => {
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "asc"));
+  //     const documentSnapshots = await getDocs(getDoc);
+  //     var items = [];
+
+  //     documentSnapshots.forEach((doc) => {
+  //       items.push({ id: doc.id, ...doc.data() });
+  //       // doc.data() is never undefined for query doc snapshots
+  //     });
+  //     setAllOrders(items);
+  //   };
+  //   fetchData();
+  // }, []);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true)
       const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "asc"));
       const documentSnapshots = await getDocs(getDoc);
       var items = [];
@@ -53,12 +70,18 @@ const Dashboard = ({ profile }) => {
         // doc.data() is never undefined for query doc snapshots
       });
       setAllOrders(items);
-    };
-    fetchData();
-  }, []);
+      setStartDate(null);
+      setEndDate(null);
+      setLoading(false)
+    } catch (e) {
+      setLoading(false);
+      console.log(e.message)
+    }
+  }
 
   const filterByDate = useCallback(async (start, end) => {
     try {
+      setLoading(true)
       const yearStart = start.getFullYear();
       const monthStart = String(start.getMonth() + 1).padStart(2, '0'); // Months are 0-based
       const dayStart = String(start.getDate()).padStart(2, '0');
@@ -84,8 +107,10 @@ const Dashboard = ({ profile }) => {
         ...doc.data()
       }));
       // console.log()
-      setAllOrders(documents)
+      setAllOrders(documents);
+      setLoading(false)
     } catch (e) {
+      setLoading(false)
       console.log(e.message)
     }
   }, [])
@@ -162,15 +187,18 @@ const Dashboard = ({ profile }) => {
       <h1 className="page-title">Dashboard</h1>
 
       <Container fluid>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px', whiteSpace: 'nowrap', }}>
+          <button onClick={fetchAllData} style={{ backgroundColor: '#998970' }} className="button button-primary"><KanbanFill /> Load All Orders</button>
+
           <DatePicker
-            style={{ borderRadius: '10px' }}
+            // style={{ bor }}
             selected={startDate}
             onChange={handleSelect}
             startDate={startDate}
             endDate={endDate}
             selectsRange
             showIcon
+
           // icon
           // inline
           />
@@ -191,7 +219,7 @@ const Dashboard = ({ profile }) => {
 
                   </Card.Title>
                   <Card.Text>
-                    <h3>{ordersFilterd?.length}</h3>
+                    <h3>{loading ? <Loading /> : ordersFilterd?.length}</h3>
                     {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
                   </Card.Text>
                 </Card.Body>
@@ -210,7 +238,7 @@ const Dashboard = ({ profile }) => {
 
                   </Card.Title>
                   <Card.Text>
-                    <h3>{orderSettlement?.length}</h3>
+                    <h3>{loading ? <Loading /> : orderSettlement?.length}</h3>
                     {/* <small className="text-success">↑ 1.3% Up from last month</small> */}
                   </Card.Text>
                 </Card.Body>
@@ -229,7 +257,7 @@ const Dashboard = ({ profile }) => {
 
                   </Card.Title>
                   <Card.Text>
-                    <h3>{currency(totalOmset)}</h3>
+                    <h3>{loading ? <Loading /> : currency(totalOmset)}</h3>
                     {/* <small className="text-danger">↓ 4.3% Down from last month</small> */}
                   </Card.Text>
                 </Card.Body>
@@ -248,7 +276,7 @@ const Dashboard = ({ profile }) => {
 
                   </Card.Title>
                   <Card.Text>
-                    <h3>{orderPending?.length}</h3>
+                    <h3>{loading ? <Loading /> : orderPending?.length}</h3>
                     {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
                   </Card.Text>
                 </Card.Body>
@@ -261,7 +289,7 @@ const Dashboard = ({ profile }) => {
                     <Card.Title>Transaction</Card.Title>
                     <div className="chart">
                       {/* Add a chart component here or use an image */}
-                      <TransactionChart allOrders={allOrders} />
+                      {loading ? <Loading /> : <TransactionChart allOrders={allOrders} />}
                     </div>
                   </Card.Body>
                 </Card>
@@ -272,7 +300,8 @@ const Dashboard = ({ profile }) => {
           <h1 className="page-title">Seles</h1>
         </div>
         <Row>
-          {
+          {loading ?
+            <Loading /> :
             mapData?.map((data, index) => {
               return <Col md={3} sm={6} xs={12} className="mb-3">
                 <Card style={{ backgroundColor: generateColor(index) }}>

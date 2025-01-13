@@ -7,7 +7,8 @@ import { firestore } from '../../FirebaseFrovider';
 import { format, set } from 'date-fns';
 import { formatOrders } from '../../LogisticFormatted';
 import { currency, formatToDate } from '../../formatter';
-import { BoxFill, GraphUp, PeopleFill, Truck } from 'react-bootstrap-icons';
+import { BoxFill, CaretDownFill, CaretRightFill, GraphUp, PeopleFill, Truck } from 'react-bootstrap-icons';
+import Loading from '../../components/Loading';
 
 
 
@@ -20,9 +21,14 @@ const Logistik = () => {
   const [allOrders, setAllOrders] = useState([])
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [year, setYear] = useState('2024')
+  const [year, setYear] = useState('2025')
   const [page, setPage] = useState(1);
   const [length, setLength] = useState(20);
+  const [ordersByMonth, setOrderByMont] = useState({});
+  const [mapDataByMonth, setMapDataByMont] = useState({});
+  const [totalOrdersCount, setTotalOrdersCount] = useState(0);
+  const [totalOrdersSentCount, setTotalOrdersSentCount] = useState(0);
+  const [totalFee, setTotalFee] = useState(0);
   const listLength = [5, 10, 20, 50];
   const handleChangeLength = (e) => {
     setLength(e.target.value)
@@ -32,30 +38,138 @@ const Logistik = () => {
     }
     setCurrentPage(1)
   }
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1;
+  const [monthActive, setMonthActive] = useState(currentMonth ?? 1);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (!endDate && year) {
       const fetchData = async () => {
+        setLoading(true)
         const startOfYear = Timestamp.fromDate(new Date(`${year}-01-01T00:00:00.000Z`)); // Millisecond precision
         const endOfYear = Timestamp.fromDate(new Date(`${parseInt(year) + 1}-01-01T00:00:00.000Z`));
         console.log(endOfYear.toDate())
         const getDoc = query(collection(firestore, "orders"),
-          where("createdAt", ">=", startOfYear),
-          where("createdAt", "<", endOfYear),
-          orderBy("createdAt", "asc"));
+          where("shippingDate", ">=", startOfYear),
+          where("shippingDate", "<", endOfYear),
+          where("paymentStatus", "==", 'settlement'),
+          orderBy("shippingDate", "asc"));
         const documentSnapshots = await getDocs(getDoc);
         var items = [];
-
+        let settlementDeliveryFeeSum = 0;
         documentSnapshots.forEach((doc) => {
+          doc.data()?.orders.forEach((order) => {
+            // settlementCount += 1;
+            // Handle delivery_fee as string or number
+            const deliveryFee =
+              typeof order.ongkir === "string"
+                ? parseFloat(order.ongkir) // Convert string to number
+                : order.ongkir;
+
+            if (!isNaN(deliveryFee)) {
+              settlementDeliveryFeeSum += deliveryFee;
+            }
+          });
           items.push({ id: doc.id, ...doc.data() });
           // doc.data() is never undefined for query doc snapshots
         });
-        // console.log('first item ', items[0])
-        setAllOrders(items);
+        const ordersPaidCount = items.reduce((acc, doc) => {
+          if (Array.isArray(doc.orders)) {
+            return acc + doc.orders.length;
+          }
+          return acc;
+        }, 0);
+
+        const ordersSentCount = items.reduce((acc, doc) => {
+          if (Array.isArray(doc.orders)) {
+            const filteredOrders = doc.orders.filter(order => order.resi);
+            return acc + filteredOrders.length;
+          }
+          return acc;
+        }, 0);
+        setTotalOrdersCount(ordersPaidCount);
+        setTotalOrdersSentCount(ordersSentCount);
+        setTotalFee(settlementDeliveryFeeSum)
+        console.log('first item ', ordersPaidCount, ordersSentCount, settlementDeliveryFeeSum)
+        // setAllOrders(items);
+        setLoading(false)
       };
       fetchData();
     }
-  }, [length, year]);
+  }, [year]);
+  useEffect(() => {
+    if (!endDate && year && monthActive) {
 
+      const currentMonthEnd = monthActive === 12 ? monthActive - 11 : monthActive + 1;
+      const monthFixed = String(monthActive)?.padStart(2, '0');
+      const monthFixedEnd = String(currentMonthEnd)?.padStart(2, '0');
+      const fetchData = async () => {
+        try {
+          setLoading(true)
+          const startOfYear = Timestamp.fromDate(new Date(`${year}-${monthFixed}-01T00:00:00.000Z`)); // Millisecond precision
+          const yearEnd = monthActive === 12 ? parseInt(year) + 1 : year
+          const endOfYear = Timestamp.fromDate(new Date(`${yearEnd}-${monthFixedEnd}-01T00:00:00.000Z`));
+          console.log(endOfYear.toDate())
+          const getDoc = query(collection(firestore, "orders"),
+            where("shippingDate", ">=", startOfYear),
+            where("shippingDate", "<", endOfYear),
+            where("paymentStatus", "==", 'settlement'),
+            orderBy("shippingDate", "asc"));
+          const documentSnapshots = await getDocs(getDoc);
+          var items = [];
+
+          documentSnapshots.forEach((doc) => {
+            items.push({ id: doc.id, ...doc.data() });
+            // doc.data() is never undefined for query doc snapshots
+          });
+          // console.log('first item ', items[0])
+          setAllOrders(items);
+          setLoading(false)
+        } catch (e) {
+          setLoading(false)
+          console.log(e.message)
+        }
+      };
+      fetchData();
+    }
+  }, [length, year, monthActive]);
+
+  // expand
+  const [expandedMonths, setExpandedMonths] = useState([]);
+
+  // Array of months with 'id' and 'name'
+  const months = [
+    { id: 1, name: "January" },
+    { id: 2, name: "February" },
+    { id: 3, name: "March" },
+    { id: 4, name: "April" },
+    { id: 5, name: "May" },
+    { id: 6, name: "June" },
+    { id: 7, name: "July" },
+    { id: 8, name: "August" },
+    { id: 9, name: "September" },
+    { id: 10, name: "October" },
+    { id: 11, name: "November" },
+    { id: 12, name: "December" },
+  ];
+
+  useEffect(() => {
+    // Open the current month by default
+    setExpandedMonths([currentMonth]);
+  }, [currentMonth]);
+
+  // Toggle expand/collapse for a month
+  const toggleMonth = (monthId) => {
+    setExpandedMonths((prev) => {
+      if (prev.includes(monthId)) {
+        // Collapse: remove the month ID
+        return prev.filter((id) => id !== monthId);
+      } else {
+        // Expand: add the month ID
+        return [...prev, monthId];
+      }
+    });
+  };
   const showNext = ({ item }) => {
     if (allOrders.length === 0) {
       alert("Thats all we have for now !")
@@ -252,7 +366,21 @@ const Logistik = () => {
     }
   };
   let renderedMonths = {};
-  console.log(sortedDate)
+
+  useEffect(() => {
+    if (allOrders) {
+      setOrderByMont({
+        ...ordersByMonth,
+        [monthActive]: allData
+      })
+      setMapDataByMont({
+        ...mapDataByMonth,
+        [monthActive]: mapData
+      })
+    }
+  }, [allOrders, monthActive]);
+  console.log(ordersByMonth)
+
   return (
     <div className="container">
       <Header />
@@ -274,7 +402,7 @@ const Logistik = () => {
             <Card.Body>
               <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  Total Order
+                  Paid Order
                 </div>
                 <div style={{ backgroundColor: 'rgb(229 228 255)', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <PeopleFill color="#8280FF" />
@@ -282,7 +410,7 @@ const Logistik = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{mapData?.length}</h3>
+                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : totalOrdersCount}</h3>
                 {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -301,7 +429,7 @@ const Logistik = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{totalSent?.length}</h3>
+                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : totalOrdersSentCount}</h3>
                 {/* <small className="text-success">↑ 1.3% Up from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -320,7 +448,7 @@ const Logistik = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{parseFloat(((totalSent.length / mapData.length) * 100).toFixed(2))}%</h3>
+                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : parseFloat(((totalOrdersSentCount / totalOrdersCount) * 100).toFixed(2))}%</h3>
                 {/* <small className="text-danger">↓ 4.3% Down from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -339,7 +467,7 @@ const Logistik = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{currency(totalOngkir)}</h3>
+                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : currency(totalFee)}</h3>
                 {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
               </Card.Text>
             </Card.Body>
@@ -376,8 +504,133 @@ const Logistik = () => {
 
           </tr>
         </thead>
+        {months.map(({ id, name }) => {
+          const arrayOngkirByMonth = mapDataByMonth[id]?.map(item => parseInt(item?.ongkir))
+          const totalOngkirByMonth = arrayOngkirByMonth?.reduce((val, nilaiSekarang) => {
+            return val + nilaiSekarang
+          }, 0);
+          return <React.Fragment key={id}>
+            {/* Month Header */}
+            <tbody>
+              <tr className="bg-success text-white">
+                <td className="bg-success text-white" colSpan={5} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? <CaretDownFill size={20} /> : <CaretRightFill size={20} />} {name} {year}  {
+                    loading && expandedMonths[id] &&
+                    <Loading />
+                  }
+                </td>
+                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  Paid Orders = {expandedMonths.includes(id) ? mapDataByMonth[id]?.length : 0}
+                </td>
 
-        {allData?.map((row, rowIdx) => {
+                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  Sent Orders = {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi)?.length : 0}
+                </td>
+                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  Sent Ratio = {expandedMonths.includes(id) ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi)?.length / mapDataByMonth[id]?.length) * 100).toFixed(2)) : 0}%
+                </td>
+                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  Shipping Cost = {expandedMonths.includes(id) ? currency(totalOngkirByMonth) : 'Rp.0'}
+                </td>
+              </tr>
+            </tbody>
+
+            {expandedMonths.includes(id) &&
+              ordersByMonth[id]?.map((row, rowIdx) => {
+                const findByCourierDed = row.item.filter(item => item?.kurir === "Dedicated")
+                const dedSent = findByCourierDed?.filter(item => item?.resi && item?.resi)
+                const ongkirDed = findByCourierDed?.map((pax) => parseInt(pax?.ongkir))
+                const totOngDed = ongkirDed?.reduce((val, nilaiSekarang) => {
+                  return val + nilaiSekarang
+                }, 0);
+                const rasioDed = parseFloat(((dedSent?.length / findByCourierDed?.length) * 100).toFixed(2))
+                // sap
+                const findByCourierSAP = row.item.filter(item => item?.kurir === "SAP")
+                const sapSent = findByCourierSAP?.filter(item => item?.resi && item?.resi)
+                const ongkirSap = findByCourierSAP?.map((pax) => parseInt(pax?.ongkir))
+                const totOngSap = ongkirSap?.reduce((val, nilaiSekarang) => {
+                  return val + nilaiSekarang
+                }, 0);
+                const rasioSap = parseFloat(((sapSent?.length / findByCourierSAP?.length) * 100).toFixed(2))
+                // paxel
+                const findByCourierPaxel = row.item.filter(item => item?.kurir === "Paxel")
+                const paxelSent = findByCourierPaxel?.filter(item => item?.resi && item?.resi)
+                const ongkirPaxel = findByCourierPaxel?.map((pax) => parseInt(pax?.ongkir))
+                const totOngPax = ongkirPaxel?.reduce((val, nilaiSekarang) => {
+                  return val + nilaiSekarang
+                }, 0);
+                const rasioPax = parseFloat(((paxelSent?.length / findByCourierPaxel?.length) * 100).toFixed(2))
+                // lalamove
+                const findByCourierLalamove = row.item.filter(item => item?.kurir === "Lalamove")
+                const lalamoveSent = findByCourierLalamove?.filter(item => item?.resi && item?.resi)
+                const ongkirLa = findByCourierLalamove?.map((pax) => parseInt(pax?.ongkir))
+                const totOngLa = ongkirLa?.reduce((val, nilaiSekarang) => {
+                  return val + nilaiSekarang
+                }, 0);
+                const rasioLa = parseFloat(((lalamoveSent?.length / findByCourierLalamove?.length) * 100).toFixed(2))
+                // console.log(findByCourier)
+                // render month one time
+                const shouldRenderMonth = !renderedMonths[row.month];
+                renderedMonths[row.month] = true;
+                return <tbody key={rowIdx}>
+                  {/* {shouldRenderMonth &&
+                    <tr className="bg-success text-white">
+                      <td className="bg-success text-white" colSpan="17">{row.month}</td>
+                    </tr>
+                  } */}
+                  <tr>
+                    <td>{row?.date}</td>
+                    <td>{findByCourierPaxel?.length}</td>
+                    <td>{paxelSent?.length || 0}</td>
+                    <td className={getRasioColor(rasioPax ? `${rasioPax}%` : '0%')}>{rasioPax ? `${rasioPax}%` : '0%'}</td>
+                    <td style={{ borderRight: '2px solid #1a8754' }}>{currency(totOngPax)}</td>
+                    <td>{findByCourierSAP?.length}</td>
+                    <td>{sapSent?.length}</td>
+                    <td className={getRasioColor(rasioSap ? `${rasioSap}%` : '0%')}>{rasioSap ? `${rasioSap}%` : '0%'}</td>
+                    <td style={{ borderRight: '2px solid #1a8754' }}>{currency(totOngSap)}</td>
+                    <td>{findByCourierLalamove?.length}</td>
+                    <td>{lalamoveSent?.length}</td>
+                    <td className={getRasioColor(rasioLa ? `${rasioLa}%` : '0%')}>{rasioLa ? `${rasioLa}%` : '0%'}</td>
+                    <td style={{ borderRight: '2px solid #1a8754' }}>{currency(totOngLa)}</td>
+                    <td>{findByCourierDed?.length}</td>
+                    <td>{dedSent?.length}</td>
+                    <td className={getRasioColor(rasioDed ? `${rasioDed}%` : '0%')}>{rasioDed ? `${rasioDed}%` : '0%'}</td>
+                    <td>{currency(totOngDed)}</td>
+
+
+                  </tr></tbody>
+
+              })}
+            {/* Data Rows (Shown if expanded) */}
+
+          </React.Fragment>
+        })}
+        {/* {allData?.map((row, rowIdx) => {
           const findByCourierDed = row.item.filter(item => item?.kurir === "Dedicated")
           const dedSent = findByCourierDed?.filter(item => item?.resi && item?.resi)
           const ongkirDed = findByCourierDed?.map((pax) => parseInt(pax?.ongkir))
@@ -441,7 +694,7 @@ const Logistik = () => {
 
             </tr></tbody>
 
-        })}
+        })} */}
 
       </Table>
       {/* <ButtonGroup style={{ textAlign: 'center', float: 'right' }}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup, Card, Col, Form, OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
 import { CSVLink } from 'react-csv';
 // import Header from './Header';
@@ -45,6 +45,7 @@ import EditOrders from './DialogEditOrder';
 import Header from '../../components/Header';
 import DialogEditShipDate from './DialogEditShippingDate';
 import { typesense } from '../../typesense';
+import Loading from '../../components/Loading';
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -53,7 +54,14 @@ const OrderList = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allFilters, setAllFilters] = useState([]);
-
+  const [loadingOrder, setLoadingOrder] = useState(false)
+  // filter
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [dateTimestamp, setDateTimestamp] = useState({
+    start: null,
+    end: null
+  })
   const [modalDownload, setModalDownload] = useState({
     open: false,
     data: [],
@@ -113,38 +121,75 @@ const OrderList = () => {
     }
     setPage(1)
   }
-  // filter
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [dateTimestamp, setDateTimestamp] = useState({
-    start: null,
-    end: null
-  })
+
   const [filterDialog, setFilterDialog] = useState(false);
   const [filterColomDialog, setFilterColomDialog] = useState(false)
   // get total order
   const [allOrders, setAllOrders] = useState([]);
   const lengthAll = allOrders.length
-
+  const [totalOrdersCount, setTotalOrdersCount] = useState(0);
+  const [totalOrdersPaidCount, setTotalOrdersPaidCount] = useState(0);
   const paidLength = allOrders.filter(ord => ord?.paymentStatus === 'settlement').length
-  useEffect(() => {
-    // const fetchData = async () => {
-    const getDoc = query(collection(firestore, "orders"), ...allFilters, where('totalHargaProduk', '!=', ''));
-    const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+
+  const fetchData = useCallback(async (dateTimestamp, all) => {
+    setLoadingOrder(true)
+    try {
+
+      let filter = []
+      if (dateTimestamp?.end && dateTimestamp?.start) {
+        // console.log('run')
+        filter.push(where("createdAt", ">=", dateTimestamp?.start), where("createdAt", "<=", dateTimestamp?.end))
+      }
+      const getDoc = query(collection(firestore, "orders"), ...all, ...filter,);
+      // Fetch the documents
+      const snapshot = await getDocs(getDoc);
+
+      // Map and process the data
       const updatedData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+
+      // Calculate total orders count
+      const ordersCount = updatedData.reduce((acc, doc) => {
+        if (Array.isArray(doc.orders)) {
+          return acc + doc.orders.length;
+        }
+        return acc;
+      }, 0);
+
+      // Calculate orders with paymentStatus === 'settlement'
+      const ordersPaidCount = updatedData.reduce((acc, doc) => {
+        if (doc.paymentStatus === "settlement" && Array.isArray(doc.orders)) {
+          return acc + doc.orders.length;
+        }
+        return acc;
+      }, 0);
+      setTotalOrdersCount(ordersCount);
+      setTotalOrdersPaidCount(ordersPaidCount)
+      // console.log(ordersPaidCount)
       setAllOrders(updatedData); // Update the state with the new data
-    });
-    return () => unsubscribe();
+      // setLoadingOrder(false)
+      // return () => unsubscribe();
+    } catch (e) {
+
+      console.log(e.message)
+    } finally {
+      setLoadingOrder(false); // Set loading state to false after fetch
+    }
+  }, [])
+  useEffect(() => {
+    // const fetchData = async () => {
+
     // };
-    // fetchData();
-  }, [allFilters]);
+    // setLoadingOrder(true)
+    fetchData(dateTimestamp, allFilters)
+  }, [allFilters, dateTimestamp]);
   // console.log(allOrders)
   // getUserColl
   useEffect(() => {
     const fetchData = async () => {
+      // setLoadingOrder(true)
       const getDoc = query(collection(firestore, "users"));
       const documentSnapshots = await getDocs(getDoc);
       var items = [];
@@ -155,6 +200,10 @@ const OrderList = () => {
       });
       // console.log('first item ', items[0])
       setUser(items);
+      // setLoadingOrder(false)
+      // const sumOmset = httpsCallable(functions, 'sumOrders');
+      // const result = await sumOmset();
+      // console.log(result)
     };
     fetchData();
   }, []);
@@ -167,6 +216,7 @@ const OrderList = () => {
   }, [findDataUser?.rules])
   // getordersColl
   useEffect(() => {
+    // setLoadingOrder(true)
     const getDoc = query(collection(firestore, "orders"), ...allFilters, orderBy("createdAt", "desc"), limit(length));
     const unsubscribe = onSnapshot(getDoc, (snapshot) => {
       const updatedData = snapshot.docs.map((doc) => ({
@@ -175,6 +225,7 @@ const OrderList = () => {
       }));
       setList(updatedData); // Update the state with the new data
     });
+    // setLoadingOrder(false)
     return () => unsubscribe();
   }, [length, allFilters]);
   // console.log(list)
@@ -182,6 +233,7 @@ const OrderList = () => {
     if (list.length === 0) {
       alert("Thats all we have for now !")
     } else {
+      setLoadingOrder(true)
       let filter = []
       if (dateTimestamp.end) {
         filter.push(where("createdAt", ">=", dateTimestamp?.start), where("createdAt", "<=", dateTimestamp?.end))
@@ -194,13 +246,15 @@ const OrderList = () => {
         }));
         setList(updatedData); // Update the state with the new data
       });
-      setPage(page + 1)
+      setPage(page + 1);
+      setLoadingOrder(false)
       return () => unsubscribe();
 
     }
   };
 
   const showPrevious = ({ item }) => {
+    setLoadingOrder(true)
     const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "desc"), endBefore(item.createdAt), limitToLast(length));
     const unsubscribe = onSnapshot(getDoc, (snapshot) => {
       const updatedData = snapshot.docs.map((doc) => ({
@@ -209,7 +263,8 @@ const OrderList = () => {
       }));
       setList(updatedData); // Update the state with the new data
     });
-    setPage(page - 1)
+    setPage(page - 1);
+    setLoadingOrder(false)
     return () => unsubscribe();
 
   };
@@ -227,6 +282,7 @@ const OrderList = () => {
   };
   const filterByDate = async (start, end) => {
     try {
+      setLoadingOrder(true)
       const yearStart = start.getFullYear();
       const monthStart = String(start.getMonth() + 1).padStart(2, '0'); // Months are 0-based
       const dayStart = String(start.getDate()).padStart(2, '0');
@@ -266,7 +322,8 @@ const OrderList = () => {
         start: startTimestamp,
         end: endTimestamp
       })
-      setPage(1)
+      setPage(1);
+      setLoadingOrder(false)
       return () => unsubscribe();
     } catch (e) {
       console.log(e.message)
@@ -281,13 +338,13 @@ const OrderList = () => {
 
     const searchOrders = async () => {
       try {
-        console.log('run-types')
+        // console.log('run-types')
         const colltyps = process.env.REACT_APP_ENVIRONMENT === 'production' ? 'orders-prod' : 'orders'
         const response = await typesense.collections(colltyps).documents().search({
           q: searchTerm,
           query_by: 'senderName,invoice_id,email',
         });
-        console.log(response?.hits?.map((hit) => hit?.document));
+        // console.log(response?.hits?.map((hit) => hit?.document));
 
         const hitResult = response?.hits?.map((hit) => hit?.document)
         setList(hitResult)
@@ -389,7 +446,8 @@ const OrderList = () => {
   // );
 
   const paidOrd = allOrders?.filter(ord => ord?.paymentStatus === 'settlement')
-  const arrayHarga = paidOrd.map((data) => data.totalHargaProduk)
+  const arrayHarga = paidOrd.map((data) => parseInt(data.totalHargaProduk));
+  console.log(loadingOrder)
   const totalOmset = arrayHarga?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang
   }, 0);
@@ -580,7 +638,7 @@ const OrderList = () => {
 
   }
   // header 
-  // console.log(mapData)
+  // console.log(mapData?.length)
   const [column, setColumn] = useState([
     {
       label: 'Invoice Id', key: (item, i, idOrder) => idOrder === 0 && <a href='#'
@@ -776,7 +834,7 @@ const OrderList = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{lengthAll}</h3>
+                <h3 style={{ margin: '0px' }}>{loadingOrder ? <Loading /> : totalOrdersCount}</h3>
                 {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -795,7 +853,7 @@ const OrderList = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{paidLength}</h3>
+                <h3 style={{ margin: '0px' }}>{loadingOrder ? <Loading /> : totalOrdersPaidCount}</h3>
                 {/* <small className="text-success">↑ 1.3% Up from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -814,7 +872,7 @@ const OrderList = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{currency(totalOmset)}</h3>
+                <h3 style={{ margin: '0px' }}>{loadingOrder ? <Loading /> : currency(totalOmset)}</h3>
                 {/* <small className="text-danger">↓ 4.3% Down from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -833,7 +891,7 @@ const OrderList = () => {
 
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{lengthAll - paidLength}</h3>
+                <h3 style={{ margin: '0px' }}>{loadingOrder ? <Loading /> : totalOrdersCount - totalOrdersPaidCount}</h3>
                 {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
               </Card.Text>
             </Card.Body>
@@ -928,7 +986,7 @@ const OrderList = () => {
                         borderRadius: '20px', backgroundColor: '#ECFDF3', padding: '5px', textAlign: 'center', color: '#14BA6D', width: '80px'
                       }
                     }
-                    return <tr key={i} style={{ whiteSpace: 'nowrap' }}>
+                    return <tr key={item?.unixId} style={{ whiteSpace: 'nowrap' }}>
                       <td>
                         <input type="checkbox"
                           checked={selectedRows.includes(i)}
@@ -974,7 +1032,7 @@ const OrderList = () => {
 
             {
               listLength?.map((kur) => {
-                return <option value={kur}>{kur} Rows </option>
+                return <option key={kur} value={kur}>{kur} Rows </option>
               })
             }
 
