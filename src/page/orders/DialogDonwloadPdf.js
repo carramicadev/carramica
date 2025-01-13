@@ -8,10 +8,15 @@ import paxel from '../../paxel.png'
 import lalamove from '../../lalamove.png'
 import { arrayUnion, doc, getDoc, onSnapshot, runTransaction, setDoc, updateDoc } from 'firebase/firestore';
 // import { firestore } from './FirebaseFrovider';
-import { Document, Image, Page, PDFDownloadLink, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Font, Image, Page, PDFDownloadLink, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { useEffect, useState } from 'react';
 import { firestore } from '../../FirebaseFrovider';
 import formatDate, { TimestampToDate } from '../../formatter';
+
+Font.register({
+    family: "chinese",
+    src: 'https://fonts.gstatic.com/s/zcoolkuaile/v7/tssqApdaRQokwFjFJjvM6h2WpozzoXhC2g.ttf'
+})
 
 const styles = StyleSheet.create({
     page: {
@@ -53,6 +58,10 @@ const styles = StyleSheet.create({
     },
     text: {
         marginBottom: 5,
+    },
+    textGC: {
+        marginBottom: 5,
+        fontFamily: 'chinese'
     },
     image: {
         width: 70,
@@ -125,14 +134,14 @@ function MyDoc({ item, setLoading }) {
             <Page size="A4" key={chunkIndex} >
                 {
                     chunk?.map?.((data, index) => {
-                        const urlImage = data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''
-                        // console.log(data?.nama)
+                        const urlImage = data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''
+                        console.log(urlImage)
                         return <View key={data?.unixId} style={styles.page}>
                             {/* Left Section */}
                             <View style={styles.leftSection}>
 
                                 <Text style={styles.header}>Gift Card:</Text>
-                                <Text style={styles.text}>
+                                <Text style={styles.textGC}>
                                     {data?.giftCard}
                                 </Text>
                                 <View style={styles.subItem}>
@@ -164,7 +173,7 @@ function MyDoc({ item, setLoading }) {
                                 /> */}
                                     <Text style={styles.text}>Shipping Date :{typeof data?.shippingDate === 'number' ? <TimestampToDate timestamp={data?.shippingDate} /> : formatDate(data?.shippingDate?.toDate?.())}</Text>
                                     {
-                                        data?.kurirType !== 'Dedicated' &&
+                                        data?.kurirService &&
                                         <Image
                                             style={data?.kurir === 'SAP' ? styles.imageSAP : styles.image}
                                             src={urlImage}
@@ -214,7 +223,7 @@ function MyDoc({ item, setLoading }) {
                                             src={logoFull}
                                         />
                                         {
-                                            data?.kurirType !== 'Dedicated' &&
+                                            data?.kurirService &&
                                             <Image
                                                 style={data?.kurir === 'SAP' ? styles.imageKurirSAP : styles.imageKurirLeft}
                                                 src={urlImage}
@@ -341,7 +350,7 @@ export default function DownloadPdfDialog(props) {
                                                                     <p>Shipping Date: {typeof data?.shippingDate === 'number' ? <TimestampToDate timestamp={data?.shippingDate} /> : formatDate(data?.shippingDate?.toDate?.())}</p>
                                                                     <div className="logoKurir">
 
-                                                                        <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
+                                                                        <img src={data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''} />
                                                                     </div>
                                                                 </div>
                                                             </td>
@@ -360,10 +369,10 @@ export default function DownloadPdfDialog(props) {
 
                                                                             alt="Carramica Logo" />
                                                                         <div
-                                                                            style={data.kurir === 'SAP' ? { marginTop: '-25px', marginLeft: '20px' } : { marginTop: '-25px', marginLeft: '-40px' }}
+                                                                            style={data.kurir === 'SAP' ? { marginTop: '-25px', marginLeft: '20px' } : { marginTop: '-25px', marginLeft: '0px', width: '60px' }}
                                                                             className="logoKurir">
 
-                                                                            <img src={data.kurir === 'SAP' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' ? paxel : ''} />
+                                                                            <img style={{ width: data.kurir === 'SAP' ? 'auto' : data.kurirService && 100 }} src={data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''} />
                                                                         </div>
                                                                     </div>
                                                                 </div>
