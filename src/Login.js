@@ -44,7 +44,7 @@ const Login = () => {
           // console.log(docSnap.data())
           if (docSnap.data().rules === 'admin') {
             navigate('/')
-          } else if (docSnap.data().rules === 'shipping') {
+          } else if (docSnap.data().rules === 'shipping' || docSnap.data().rules === 'agen') {
             // console.log('run')
             navigate('/orders')
           } else if (docSnap.data().rules === 'sales') {
