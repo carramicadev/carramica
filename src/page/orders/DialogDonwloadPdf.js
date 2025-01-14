@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     },
     textGC: {
         marginBottom: 5,
-        fontFamily: 'chinese'
+        // fontFamily: 'chinese'
     },
     image: {
         width: 70,
@@ -134,7 +134,7 @@ function MyDoc({ item, setLoading }) {
             <Page size="A4" key={chunkIndex} >
                 {
                     chunk?.map?.((data, index) => {
-                        const urlImage = data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''
+                        const urlImage = data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' || data.kurir === 'Dedicated-Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''
                         console.log(urlImage)
                         return <View key={data?.unixId} style={styles.page}>
                             {/* Left Section */}
@@ -350,7 +350,7 @@ export default function DownloadPdfDialog(props) {
                                                                     <p>Shipping Date: {typeof data?.shippingDate === 'number' ? <TimestampToDate timestamp={data?.shippingDate} /> : formatDate(data?.shippingDate?.toDate?.())}</p>
                                                                     <div className="logoKurir">
 
-                                                                        <img src={data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''} />
+                                                                        <img src={data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' || data.kurir === 'Dedicated-Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''} />
                                                                     </div>
                                                                 </div>
                                                             </td>
@@ -372,7 +372,7 @@ export default function DownloadPdfDialog(props) {
                                                                             style={data.kurir === 'SAP' ? { marginTop: '-25px', marginLeft: '20px' } : { marginTop: '-25px', marginLeft: '0px', width: '60px' }}
                                                                             className="logoKurir">
 
-                                                                            <img style={{ width: data.kurir === 'SAP' ? 'auto' : data.kurirService && 100 }} src={data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''} />
+                                                                            <img style={{ width: data.kurir === 'SAP' ? 'auto' : data.kurirService && 100 }} src={data.kurir === 'SAP' || data.kurir === 'Dedicated-SAP Regular' || data.kurir === 'Dedicated-SAP Cargo' ? sap : data.kurir === 'Lalamove' || data.kurir === 'Dedicated-Lalamove' ? lalamove : data.kurir === 'Paxel' || data.kurir === 'Dedicated-Paxel Regular' || data.kurir === 'Dedicated-Paxel Big' ? paxel : ''} />
                                                                         </div>
                                                                     </div>
                                                                 </div>
