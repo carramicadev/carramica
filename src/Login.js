@@ -35,7 +35,7 @@ const Login = () => {
   console.log(process.env.REACT_APP_ENVIRONMENT)
   useEffect(() => {
     async function getUsers() {
-      if (currentUser) {
+      if (currentUser?.uid) {
         const docRef = doc(firestore, "users", currentUser?.uid);
         const docSnap = await getDoc(docRef);
 
@@ -52,6 +52,7 @@ const Login = () => {
           }
           // console.log("Document data:", docSnap.data());
         } else {
+          navigate('/')
           // docSnap.data() will be undefined in this case
           console.log("No such document!");
         }
@@ -59,13 +60,13 @@ const Login = () => {
       }
     }
     getUsers()
-  }, [currentUser]);
+  }, [currentUser?.uid]);
   // console.log(currentUser)
-  useEffect(() => {
-    if (currentUser?.uid) {
-      navigate('/')
-    }
-  }, [currentUser?.uid])
+  // useEffect(() => {
+  //   if (currentUser?.uid) {
+  //     navigate('/')
+  //   }
+  // }, [currentUser?.uid])
 
   return (
     <div className="vh-100 d-flex align-items-center justify-content-center h-100">
