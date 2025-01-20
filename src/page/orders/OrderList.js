@@ -600,13 +600,13 @@ const OrderList = () => {
           id: id,
 
         });
-        const deleteLink = httpsCallable(functions, 'deletePaymentLink');
-        const resultLink = await deleteLink({
+        // const deleteLink = httpsCallable(functions, 'deletePaymentLink');
+        // const resultLink = await deleteLink({
 
-          id: id,
+        //   id: id,
 
-        });
-        console.log(resultLink)
+        // });
+        // console.log(resultLink)
         await setDoc(doc(firestore, 'orders', id), {
           paymentStatus: 'cancel',
           orderStatus: 'cancel'
