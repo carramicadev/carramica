@@ -84,7 +84,7 @@ const AddOrder = () => {
   // console.log(hour);
   const shippingDate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDay.toString().padStart(2, '0')}`
   const shippingDateTimestamp = Timestamp.fromDate(new Date(shippingDate));
-
+  const bulanFixed = bulan.toString().padStart(2, '0')
   const [formData, setFormData] = useState({
     email: '',
     warehouse: '',
@@ -93,7 +93,7 @@ const AddOrder = () => {
     additionalDiscount: 0,
     deliveryFee: '',
     day: tomorrowDay,
-    month: bulan.toString().padStart(2, '0'),
+    month: bulan,
     year: tahun.toString(),
     shippingDate: shippingDateTimestamp,
     notes: ''
@@ -107,12 +107,14 @@ const AddOrder = () => {
         const tomorrowUpdate = new Date(nowN);
         tomorrowUpdate.setDate(now.getDate() + 1);
         const tomorrowDayUpdate = tomorrowUpdate?.getDate();
+        const bulanNew = new Date(nowN).getMonth() + 1;
         const shippingDateUpdate = `${tahun.toString()}-${bulan.toString().padStart(2, '0')}-${tomorrowDayUpdate?.toString().padStart(2, '0')}`
         const shippingDateTimestampUpdate = Timestamp.fromDate(new Date(shippingDateUpdate));
         // console.log('newdate', tomorrowDayUpdate)
         setFormData({
           ...formData,
           day: tomorrowDayUpdate,
+          // month: bulanNew.toString().padStart(2, '0'),
           shippingDate: shippingDateTimestampUpdate
         })
 
@@ -262,7 +264,7 @@ const AddOrder = () => {
   }
 
 
-  console.log(orders)
+  console.log(formData)
   // query coll product
   const ref = query(collection(firestore, "product"),
     where("stok", ">", 0)
@@ -1123,8 +1125,8 @@ const AddOrder = () => {
             </div>
             <div className="form-group" style={{ width: '100%' }}>
               <Form.Label className="label">Month:</Form.Label>
-              <select name='month' className="input" value={formData?.month} onChange={handleFormChange}>
-                <option value="">Month</option>
+              <select name='month' className="input" value={formData.month} onChange={handleFormChange}>
+                <option >Month</option>
                 {[...Array(12)].map((_, i) => (
                   <option key={i} value={i + 1}>{(i + 1).toString().padStart(2, '0')}</option>
                 ))}

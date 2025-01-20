@@ -3,16 +3,18 @@ import { collection, deleteDoc, doc, endBefore, getDocs, limit, limitToLast, onS
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Table } from 'react-bootstrap';
-import { Images, PencilSquare, Search, SortAlphaDown, SortAlphaDownAlt, SortDown, TrashFill } from 'react-bootstrap-icons';
+import { Filter, Images, PencilSquare, Search, SortAlphaDown, SortAlphaDownAlt, SortDown, TrashFill } from 'react-bootstrap-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import DialogAddProduct from './DialogAddProduct';
 import { firestore } from '../../FirebaseFrovider';
 import Header from '../../components/Header';
 import { useNavigate } from 'react-router-dom';
+import { FilterProduct } from './filterDialog';
 
 const ListProduct = () => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const [filterDialog, setFilterDialog] = useState(false);
 
   const [search, setSearch] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -215,6 +217,11 @@ const ListProduct = () => {
               <Search size={25} />
             </div>
             <div>
+              <button style={{
+                // marginTop: '0px',
+                marginRight: '10px',
+                // padding: '0px',
+              }} onClick={() => setFilterDialog(true)} className="btn btn-outline-secondary " variant='secondary'><Filter />Filter</button>
               {/* <CSVLink style={{ width: '120px', marginRight: '10px' }} data={mapData} separator={";"} filename={"table_data.csv"} className="btn btn-primary">
                 Export CSV
               </CSVLink> */}
@@ -244,6 +251,7 @@ const ListProduct = () => {
                 {/* <th>Product Id</th> */}
                 <th>SKU</th>
                 <th onClick={() => handleSort("nama")}>Product Name {renderSortIcon('nama')}</th>
+                <th>Category</th>
                 <th>Weight/gr</th>
                 <th>Length</th>
                 <th>Width</th>
@@ -271,9 +279,10 @@ const ListProduct = () => {
                         <Images size={50} />
                     }
                   </td>
-                  {/* <td>{item?.id}</td> */}
+
                   <td>{item?.sku}</td>
                   <td>{item?.nama}</td>
+                  <td>{item?.category?.nama}</td>
                   <td>{item?.weight}</td>
                   <td>{item?.length}</td>
                   <td>{item?.width}</td>
@@ -281,8 +290,8 @@ const ListProduct = () => {
                   <td>{item?.harga}</td>
                   <td>{item?.stok}</td>
                   <td>              <button onClick={() => {
-                    // navigate(`/products/detailProduct/${item?.id}`)
-                    setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
+                    navigate(`/products/detailProduct/${item?.id}`)
+                    // setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
                   }} style={{ backgroundColor: '#998970' }} className="button button-primary"><PencilSquare /></button>
                     <button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(item?.id)}>
                       <TrashFill />
@@ -314,6 +323,12 @@ const ListProduct = () => {
             setUpdate={setUpdate}
           // handlePayment={handlePayment}
           // loading={loading}
+          />
+          <FilterProduct
+            show={filterDialog}
+            handleClose={() => setFilterDialog(false)}
+
+            setAllProducts={setAllProduct}
           />
         </div>
       </div>

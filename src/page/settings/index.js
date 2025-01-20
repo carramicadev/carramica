@@ -24,7 +24,16 @@ const Settings = (props) => {
     { component: 'home', name: 'Home', path: '/' },
     { component: 'addOrder', name: 'Add Order', path: '/add-order' },
     { component: 'orders', name: 'Orders', path: '/orders' },
-    { component: 'products', name: 'Products', path: '/products/*' },
+    {
+      component: 'products', name: 'Products', path: '/products/*', subMenu: [
+        {
+          component: 'products', name: 'Products', path: '/products/*'
+        },
+        {
+          component: 'categories', name: 'Categories', path: '/categories'
+        }
+      ]
+    },
     { component: 'logistic', name: 'Logistic', path: '/logistic' },
     { component: 'contact', name: 'Contact', path: '/contact' },
     { component: 'settings', name: 'Settings', path: '/settings' },

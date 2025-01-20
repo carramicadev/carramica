@@ -19,6 +19,7 @@ import OrderList from './page/orders/OrderList';
 import Settings from './page/settings';
 import Product from './page/products';
 import PaymentRedirect from './PaymentRedirect';
+import Categories from './page/categories';
 
 function App() {
   const { currentUser } = useAuth();
@@ -31,7 +32,8 @@ function App() {
     products: Product,
     logistic: Logistik,
     contact: Contact,
-    settings: Settings
+    settings: Settings,
+    categories: Categories
 
   }
   useEffect(() => {
@@ -73,7 +75,20 @@ function App() {
     fetchData();
   }, [profile?.rules]);
   const akses = checkList?.map((role) => {
-
+    if (role?.subMenu) {
+      return {
+        path: role?.path,
+        name: role?.name,
+        component: comp?.[role?.component],
+        subMenu: role?.subMenu?.map((sub) => {
+          return {
+            path: sub?.path,
+            name: sub?.name,
+            component: comp?.[sub?.component],
+          }
+        })
+      }
+    }
     return {
       path: role?.path,
       name: role?.name,
@@ -81,7 +96,7 @@ function App() {
     };
   });
 
-  // console.log(process.env.REACT_APP_ENVIRONMENT)
+  // console.log(akses)
   return (
     <Router>
 
@@ -102,7 +117,8 @@ function App() {
         /> */}
         {
           akses?.map((acc) => {
-            return <Route
+
+            return <><Route
               key={acc?.path}
               path={acc?.path}
               element={
@@ -111,6 +127,20 @@ function App() {
                 </PrivateRoute>
               }
             />
+              {
+                acc?.subMenu && acc.subMenu?.map((sub) => {
+                  return <Route
+                    key={sub?.path}
+                    path={sub?.path}
+                    element={
+                      <PrivateRoute>
+                        <sub.component profile={profile} /> {/* Render the component */}
+                      </PrivateRoute>
+                    }
+                  />
+                })
+              }
+            </>
           })
         }
         <Route path="/login" element={<Login />} />
