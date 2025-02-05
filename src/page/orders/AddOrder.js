@@ -284,10 +284,10 @@ const AddOrder = () => {
       setWarehouseOptions(salesList);
       const idWH = process.env.REACT_APP_ENVIRONMENT === 'production' ? 'wThhs7RSqV3JOBClZFzs' : 'SSUWQwC374ZY3pg4gPEt'
       const findDefaultWH = salesList.find(sal => sal?.id === idWH);
-      if (findDefaultWH?.name) {
+      if (findDefaultWH?.id) {
         setFormData({
           ...formData,
-          warehouse: findDefaultWH?.name
+          warehouse: findDefaultWH?.id
         })
         setKoordinateOrigin({
           lat: findDefaultWH?.coordinates?.lat,
@@ -1071,7 +1071,7 @@ const AddOrder = () => {
               <Form.Select className="select" name="warehouse" value={formData.warehouse} onChange={handleFormChange}>
                 <option selected hidden>Pilih Nama Warehouse</option>
                 {warehouseOptions.map(warehouse => (
-                  <option key={warehouse.id} value={warehouse.name}>{warehouse.name}</option>
+                  <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
                 ))}
               </Form.Select>
               {/* <button className="button button-tertiary" onClick={openModal}>Tambah Sales</button> */}
