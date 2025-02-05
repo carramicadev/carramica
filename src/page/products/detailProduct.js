@@ -3,12 +3,13 @@ import 'react-phone-input-2/lib/style.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import { arrayRemove, doc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, collection, doc, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { firestore, storage } from '../../FirebaseFrovider';
 import { deleteObject, getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { Button } from 'react-bootstrap';
 import { Border, PlusLg, XCircle, XCircleFill } from 'react-bootstrap-icons';
 import { useSnackbar } from 'notistack';
+import Header from '../../components/Header';
 
 export default function DetailProduct() {
     const { productId } = useParams();
@@ -32,7 +33,8 @@ export default function DetailProduct() {
         description: '',
         cogs: 0,
         warning_stock: 0,
-        status: 'Live'
+        status: 'Live',
+        category: {}
     });
     const [error, setError] = useState({
         weight: '',
@@ -46,14 +48,36 @@ export default function DetailProduct() {
         thumbnail: '',
         description: ''
     });
-
+    const [dataKategori, setDataKategori] = useState([]);
+    useEffect(() => {
+        // if () {
+        // const fetchData = async () => {
+        const getDoc = query(collection(firestore, "categories"), where('level', '==', 2),);
+        // const documentSnapshots = await getDocs(getDoc);
+        const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+            const updatedData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setDataKategori(updatedData); // Update the state with the new data
+        });
+        return () => unsubscribe();
+        // };
+        // fetchData();
+        // }
+    }, []);
+    console.log(dataKategori)
     const handleFormChange = (e) => {
         const { name, value } = e.target;
+        console.log(name, value)
         if (e.target.type === 'number') {
 
             setForm({ ...form, [name]: parseInt(value) });
 
 
+        } else if (name === 'category') {
+            const findcateg = dataKategori.find(cat => cat.id === value)
+            setForm({ ...form, [name]: findcateg });
         } else {
             setForm({ ...form, [name]: value });
         }
@@ -269,6 +293,7 @@ export default function DetailProduct() {
 
     console.log(form);
     return <div className="container">
+        <Header />
         <div className='card' style={{ padding: '20px' }}>
             <h2 style={{ fontWeight: 'bold' }}>
                 Edit Product
@@ -301,12 +326,16 @@ export default function DetailProduct() {
                             Category
                         </label>
                         <div style={{ width: '70%', }}>
-                            <select disabled style={{}} className="form-select" id="category">
-                                <option selected="">
-                                    Special Edition &gt; Christmast 2024
-                                </option>
+                            <select style={{}} className="form-select" id="category" name='category' onChange={handleFormChange} value={form?.category?.id || ''}>
+                                <option selected hidden >Category</option>
+
+                                {
+                                    dataKategori?.map((kur) => {
+                                        return <option key={kur?.id} value={kur?.id}>{kur?.nama}</option>
+                                    })
+                                }
                             </select>
-                            <p style={{ fontSize: '10px', color: 'red' }}> Belum tersedia</p>
+                            {/* <p style={{ fontSize: '10px', color: 'red' }}> Belum tersedia</p> */}
 
                         </div>
                     </div>

@@ -600,10 +600,18 @@ const OrderList = () => {
           id: id,
 
         });
+        // const deleteLink = httpsCallable(functions, 'deletePaymentLink');
+        // const resultLink = await deleteLink({
+
+        //   id: id,
+
+        // });
+        // console.log(resultLink)
         await setDoc(doc(firestore, 'orders', id), {
           paymentStatus: 'cancel',
           orderStatus: 'cancel'
         }, { merge: true });
+
         enqueueSnackbar(`Order berhasil dicancel!.`, { variant: 'success' })
 
       } catch (e) {
@@ -1086,6 +1094,7 @@ const OrderList = () => {
         dateTimestamp={dateTimestamp}
         setAllOrders={setAllOrders}
         setAllFilters={setAllFilters}
+        currentUser={currentUser}
       />
       <FilterColumnDialog
         show={filterColomDialog}
