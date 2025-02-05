@@ -158,7 +158,7 @@ export default function DialogAddAgen({ show, handleClose, setUpdate }) {
             e.preventDefault();
         }
     };
-    console.log(warehouseOptions)
+    console.log(formData)
     return (
         <div
             className="modal show"
@@ -294,14 +294,14 @@ export default function DialogAddAgen({ show, handleClose, setUpdate }) {
                         </Form.Group>
                         <Form.Group as={Row} controlId="formWarehouse">
                             <Col sm={12}>
-                                <Form.Label >Rules</Form.Label>
+                                <Form.Label >Warehouse</Form.Label>
 
                                 <Form.Select isInvalid={formError.warehouse ? true : false} defaultValue={formData.warehouse} defaultChecked={false} className="select" name="warehouse" value={formData.warehouse} onChange={handleFormChange}>
                                     <option selected hidden >Warehouse</option>
 
                                     {
                                         warehouseOptions?.map((wh) => {
-                                            return <option value={wh?.name}>{wh?.name}</option>
+                                            return <option value={wh?.id}>{wh?.name}</option>
                                         })
                                     }
                                 </Form.Select>
