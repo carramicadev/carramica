@@ -1094,6 +1094,7 @@ const OrderList = () => {
         dateTimestamp={dateTimestamp}
         setAllOrders={setAllOrders}
         setAllFilters={setAllFilters}
+        currentUser={currentUser}
       />
       <FilterColumnDialog
         show={filterColomDialog}

@@ -158,7 +158,7 @@ export default function DialogAddAgen({ show, handleClose, setUpdate }) {
             e.preventDefault();
         }
     };
-    // console.log(formData)
+    console.log(warehouseOptions)
     return (
         <div
             className="modal show"

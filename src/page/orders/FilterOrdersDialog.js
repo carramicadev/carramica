@@ -7,7 +7,7 @@ import DatePicker from 'react-datepicker';
 import { firestore } from '../../FirebaseFrovider';
 // import { firestore } from './FirebaseFrovider';
 
-export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders, setAllFilters }) => {
+export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAllOrders, setAllFilters, currentUser }) => {
     const [user, setUser] = useState([])
     const [checkedItems, setCheckedItems] = useState('');
     const [value, setValue] = useState('');
@@ -25,6 +25,7 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
 
         // }
     };
+    console.log(currentUser)
     const handleSelectShippingDate = (dates) => {
         const [start, end] = dates;
         setShippingDate(start);
@@ -46,8 +47,12 @@ export const FilterDialog = ({ show, handleClose, setList, dateTimestamp, setAll
     const handleFilter = async () => {
         setLoading(true)
         try {
+            const findDataUser = user?.find(usr => usr?.userId === currentUser?.uid);
 
             const filters = [];
+            if (findDataUser?.rules === 'agen') {
+                filters.push(where("warehouse", "==", findDataUser?.warehouse))
+            }
             if (checkedItems) {
                 filters.push(where('paymentStatus', '==', checkedItems));
             }

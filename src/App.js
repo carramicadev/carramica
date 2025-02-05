@@ -145,7 +145,7 @@ function App() {
         }
         <Route path="/login" element={<Login />} />
         {!currentUser && <Route path="*" element={<Navigate to='/login' />} />}
-        <Route path="/payment-redirect" element={<PaymentRedirect />} />
+        <Route path="/payment-redirect/:id" element={<PaymentRedirect />} />
       </Routes>
     </Router>
   );
