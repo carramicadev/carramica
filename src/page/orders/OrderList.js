@@ -83,7 +83,7 @@ const OrderList = () => {
     userId: currentUser?.uid,
   });
   const [user, setUser] = useState([]);
-
+  const [warehouse, setWarehouse] = useState([])
   // get settings doc
   // const settingsRef = collection(firestore, "settings");
   const settingsRef = doc(firestore, 'settings', 'counter');
@@ -200,6 +200,17 @@ const OrderList = () => {
       });
       // console.log('first item ', items[0])
       setUser(items);
+
+      // get warehouse
+      const getDocWH = query(collection(firestore, "warehouse"));
+      const documentSnapshotsWH = await getDocs(getDocWH);
+      var itemsWH = [];
+
+      documentSnapshotsWH.forEach((doc) => {
+        itemsWH.push({ id: doc.id, ...doc.data() });
+        // doc.data() is never undefined for query doc snapshots
+      });
+      setWarehouse(itemsWH)
       // setLoadingOrder(false)
       // const sumOmset = httpsCallable(functions, 'sumOrders');
       // const result = await sumOmset();
@@ -386,7 +397,7 @@ const OrderList = () => {
       const userData = user.find(itm => itm.userId === item.userId);
       const resiCreatedBy = user.find(itm => itm.userId === ord.resiCreatedBy);
       const downloadedBy = user.find(itm => itm.userId === ord.downloadedBy);
-
+      const designatedTo = warehouse.find(wh => wh?.id === item?.warehouse)
       const ordId = String(settings?.orderId - (i + idx)).padStart(4, '0');
 
       mapData.push({
@@ -429,7 +440,8 @@ const OrderList = () => {
         shippingDate: item?.shippingDate,
         notes: item?.notes,
         userRules: findDataUser?.rules,
-        kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService
+        kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService,
+        designatedTo: designatedTo?.name
 
       })
 
@@ -731,7 +743,7 @@ const OrderList = () => {
     },
     { label: "Downloaded By", key: (item) => item.downloadedBy, style: {} },
     { label: "Ceated By", key: (item) => item?.sales, style: {} },
-
+    { label: "Designated To", key: (item) => item?.designatedTo, style: {} },
 
   ]);
   const newColumn = {
