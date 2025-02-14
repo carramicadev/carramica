@@ -264,7 +264,7 @@ const AddOrder = () => {
   }
 
 
-  console.log(formData)
+  console.log(koordinateOrigin)
   // query coll product
   const ref = query(collection(firestore, "product"),
     where("stok", ">", 0)
@@ -284,6 +284,7 @@ const AddOrder = () => {
       setWarehouseOptions(salesList);
       const idWH = process.env.REACT_APP_ENVIRONMENT === 'production' ? 'wThhs7RSqV3JOBClZFzs' : 'SSUWQwC374ZY3pg4gPEt'
       const findDefaultWH = salesList.find(sal => sal?.id === idWH);
+      console.log(findDefaultWH?.id)
       if (findDefaultWH?.id) {
         setFormData({
           ...formData,

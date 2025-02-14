@@ -12,7 +12,7 @@ export const FilterProduct = ({ show, handleClose, setAllProducts, }) => {
     const [stockUnder, setStockUnder] = useState(0);
     const [value, setValue] = useState('');
     const [selectedCateg, setSelectedCateg] = useState(null);
-
+    const [status, setStatus] = useState('')
     const [loading, setLoading] = useState(false)
     const handleFilter = async () => {
         setLoading(true)
@@ -25,6 +25,9 @@ export const FilterProduct = ({ show, handleClose, setAllProducts, }) => {
             if (selectedCateg) {
                 filters.push(where('category.id', '==', selectedCateg.id));
 
+            }
+            if (status) {
+                filters.push(where('status', '==', status));
             }
             const ref = query(collection(firestore, "product"), ...filters, orderBy('createdAt', 'desc')
                 // where("createdAt", ">=", startTimestamp),
@@ -46,6 +49,7 @@ export const FilterProduct = ({ show, handleClose, setAllProducts, }) => {
 
 
         } catch (e) {
+            setLoading(false)
             console.log(e.message)
         }
         setLoading(false)
@@ -128,15 +132,31 @@ export const FilterProduct = ({ show, handleClose, setAllProducts, }) => {
                         <Form.Label className="label">Quantity Under</Form.Label>
                         <Form.Control className="input" type="number" name="email" placeholder={0} value={stockUnder} onChange={(e) => setStockUnder(e.target.value)} />
                     </div>
+
+                    <div className="mb-3" style={{ alignItems: 'center', justifyContent: 'space-between', marginTop: '30px' }}>
+                        <label className="form-label" for="product-status">
+                            Product Status
+                        </label>
+                        <select style={{ width: '70%', }} className="form-select" id="product-status" name='status' value={status} onChange={(e) => setStatus(e.target.value)}>
+                            <option selected hidden >Status</option>
+                            <option value="Live">
+                                Live
+                            </option>
+                            <option value="Hold">
+                                Hold
+                            </option>
+                        </select>
+                    </div>
                 </Form>
 
             </Modal.Body>
             <Modal.Footer style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', }}>
-                    <Button style={{ marginRight: '10px' }} disabled={!value && stockUnder < 1} variant="secondary" onClick={() => {
+                    <Button style={{ marginRight: '10px' }} disabled={!value && stockUnder < 1 && !status} variant="secondary" onClick={() => {
                         setValue('')
                         setSelectedCateg(null);
                         setStockUnder(0)
+                        setStatus('')
                         // handleClearFilter()
                     }}>
                         Clear

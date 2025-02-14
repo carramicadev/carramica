@@ -13,7 +13,7 @@ import Loading from '../../components/Loading';
 
 
 const getRasioColor = (rasio) => {
-  if (rasio === "100%") return "table-success ";
+  if (rasio === "100%" || rasio === '0%') return "table-success ";
   if (rasio !== "100%") return "table-danger ";
   return "";
 };
@@ -505,57 +505,189 @@ const Logistik = () => {
           </tr>
         </thead>
         {months.map(({ id, name }) => {
-          const arrayOngkirByMonth = mapDataByMonth[id]?.map(item => parseInt(item?.ongkir))
-          const totalOngkirByMonth = arrayOngkirByMonth?.reduce((val, nilaiSekarang) => {
+          let dataLalamoveSent = 0
+          let dataLalamoveTot = 0
+          let dataLalamoveCost = 0
+
+          let dataSAP = 0
+          // let
+          const filterArrayOngkirDed = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'Dedicated')
+          const arrayOngkirByMonthDed = filterArrayOngkirDed?.map(item => parseInt(item?.ongkir))
+          const totalOngkirByMonthDed = arrayOngkirByMonthDed?.reduce((val, nilaiSekarang) => {
             return val + nilaiSekarang
           }, 0);
+
+          // lalamove
+          const filterArrayOngkirLal = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'Lalamove')
+          const arrayOngkirByMonthLal = filterArrayOngkirLal?.map(item => parseInt(item?.ongkir))
+          const totalOngkirByMonthLal = arrayOngkirByMonthLal?.reduce((val, nilaiSekarang) => {
+            return val + nilaiSekarang
+          }, 0);
+
+          // Paxel
+          const filterArrayOngkirPax = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'Paxel')
+          const arrayOngkirByMonthPax = filterArrayOngkirPax?.map(item => parseInt(item?.ongkir))
+          const totalOngkirByMonthPax = arrayOngkirByMonthPax?.reduce((val, nilaiSekarang) => {
+            return val + nilaiSekarang
+          }, 0);
+
+          // SAP
+          const filterArrayOngkirSAP = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'SAP')
+          const arrayOngkirByMonthSAP = filterArrayOngkirSAP?.map(item => parseInt(item?.ongkir))
+          const totalOngkirByMonthSAP = arrayOngkirByMonthSAP?.reduce((val, nilaiSekarang) => {
+            return val + nilaiSekarang
+          }, 0);
+          console.log(totalOngkirByMonthDed)
           return <React.Fragment key={id}>
             {/* Month Header */}
             <tbody>
               <tr className="bg-success text-white">
-                <td className="bg-success text-white" colSpan={5} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
                   toggleMonth(id)
                   if (!expandedMonths[id]) {
                     setMonthActive(id)
                   }
                 }}>
-                  {expandedMonths.includes(id) ? <CaretDownFill size={20} /> : <CaretRightFill size={20} />} {name} {year}  {
+                  {expandedMonths.includes(id) ? <CaretDownFill size={20} /> : <CaretRightFill size={20} />} {name}{
                     loading && expandedMonths[id] &&
                     <Loading />
                   }
                 </td>
-                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                {/* Paxel */}
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
                   toggleMonth(id)
                   if (!expandedMonths[id]) {
                     setMonthActive(id)
                   }
                 }}>
-                  Paid Orders = {expandedMonths.includes(id) ? mapDataByMonth[id]?.length : 0}
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Paxel')?.length : 0}
                 </td>
 
-                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
                   toggleMonth(id)
                   if (!expandedMonths[id]) {
                     setMonthActive(id)
                   }
                 }}>
-                  Sent Orders = {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi)?.length : 0}
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Paxel')?.length : 0}
                 </td>
-                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
                   toggleMonth(id)
                   if (!expandedMonths[id]) {
                     setMonthActive(id)
                   }
                 }}>
-                  Sent Ratio = {expandedMonths.includes(id) ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi)?.length / mapDataByMonth[id]?.length) * 100).toFixed(2)) : 0}%
+                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Paxel')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Paxel')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Paxel')?.length) * 100).toFixed(2)) : 0}%
                 </td>
-                <td className="bg-success text-white" colSpan={3} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold", borderRight: '2px solid #fff' }} onClick={() => {
                   toggleMonth(id)
                   if (!expandedMonths[id]) {
                     setMonthActive(id)
                   }
                 }}>
-                  Shipping Cost = {expandedMonths.includes(id) ? currency(totalOngkirByMonth) : 'Rp.0'}
+                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthPax) : 'Rp.0'}
+                </td>
+                {/* SAP */}
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'SAP')?.length : 0}
+                </td>
+
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'SAP')?.length : 0}
+                </td>
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'SAP')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'SAP')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'SAP')?.length) * 100).toFixed(2)) : 0}%
+                </td>
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold", borderRight: '2px solid #fff' }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthSAP) : 'Rp.0'}
+                </td>
+                {/* lalamove */}
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Lalamove')?.length : 0}
+                </td>
+
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Lalamove')?.length : 0}
+                </td>
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Lalamove')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Lalamove')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Lalamove')?.length) * 100).toFixed(2)) : 0}%
+                </td>
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold", borderRight: '2px solid #fff' }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthLal) : 'Rp.0'}
+                </td>
+                {/* Dedicated */}
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Dedicated')?.length : 0}
+                </td>
+
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Dedicated')?.length : 0}
+                </td>
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Dedicated')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Dedicated')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Dedicated')?.length) * 100).toFixed(2)) : 0}%
+                </td>
+                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
+                  toggleMonth(id)
+                  if (!expandedMonths[id]) {
+                    setMonthActive(id)
+                  }
+                }}>
+                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthDed) : 'Rp.0'}
                 </td>
               </tr>
             </tbody>
@@ -595,8 +727,8 @@ const Logistik = () => {
                 const rasioLa = parseFloat(((lalamoveSent?.length / findByCourierLalamove?.length) * 100).toFixed(2))
                 // console.log(findByCourier)
                 // render month one time
-                const shouldRenderMonth = !renderedMonths[row.month];
-                renderedMonths[row.month] = true;
+
+                dataLalamoveCost += parseInt(totOngLa)
                 return <tbody key={rowIdx}>
                   {/* {shouldRenderMonth &&
                     <tr className="bg-success text-white">
