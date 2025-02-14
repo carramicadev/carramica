@@ -3,13 +3,15 @@ import { collection, deleteDoc, doc, endBefore, getDocs, limit, limitToLast, onS
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Table } from 'react-bootstrap';
-import { Filter, Images, PencilSquare, Search, SortAlphaDown, SortAlphaDownAlt, SortDown, TrashFill } from 'react-bootstrap-icons';
+import { CloudArrowDown, Filter, Images, PencilSquare, Search, SortAlphaDown, SortAlphaDownAlt, SortDown, TrashFill } from 'react-bootstrap-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import DialogAddProduct from './DialogAddProduct';
 import { firestore } from '../../FirebaseFrovider';
 import Header from '../../components/Header';
 import { useNavigate } from 'react-router-dom';
 import { FilterProduct } from './filterDialog';
+import { currency } from '../../formatter';
+import { CSVLink } from 'react-csv';
 
 const ListProduct = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -119,7 +121,6 @@ const ListProduct = () => {
       setSelectedRows(selectedRows.filter(rowId => rowId !== id));
     }
   };
-  const selectedData = filteredData?.filter?.(item => selectedRows.includes(item.id));
   // dialog add
   const handleDeleteClick = async (id) => {
     if (window.confirm(' apakah anda yakin ingin menghapus product ini?')) {
@@ -178,6 +179,7 @@ const ListProduct = () => {
     }
     return sortableItems;
   }, [filteredData, sortConfig]);
+  const selectedData = sortedData?.filter?.(item => selectedRows.includes(item.id));
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -216,7 +218,13 @@ const ListProduct = () => {
               />
               <Search size={25} />
             </div>
+            {/* <div>
+              
+            </div> */}
             <div>
+              <CSVLink style={{ width: '150px', marginRight: '10px', whiteSpace: 'nowrap' }} data={selectedData.length > 0 ? selectedData : allOfProduct} separator={";"} filename={"table_orders.csv"} className="btn btn-outline-secondary">
+                <CloudArrowDown /> Export As CSV
+              </CSVLink>
               <button style={{
                 // marginTop: '0px',
                 marginRight: '10px',
@@ -249,22 +257,26 @@ const ListProduct = () => {
                 </th>
                 <th>Image</th>
                 {/* <th>Product Id</th> */}
-                <th>SKU</th>
+                {/* <th>SKU</th> */}
                 <th onClick={() => handleSort("nama")}>Product Name {renderSortIcon('nama')}</th>
-                <th>Category</th>
+                {/* <th>Category</th>
                 <th>Weight/gr</th>
                 <th>Length</th>
                 <th>Width</th>
-                <th>Height</th>
+                <th>Height</th> */}
                 <th>Price</th>
-                <th>Stock</th>
+                <th>COGS</th>
+                <th>Inventory</th>
+                <th>QTY Sold</th>
+                <th>Order</th>
+                <th>Net Revenue</th>
                 <th>Action</th>
 
               </tr>
             </thead>
             <tbody>
               {sortedData?.map?.((item, i) => {
-                // console.log(item)
+                console.log(item?.qty_sold)
                 return <tr key={item.id}>
                   <td>
                     <input type="checkbox"
@@ -280,15 +292,19 @@ const ListProduct = () => {
                     }
                   </td>
 
-                  <td>{item?.sku}</td>
+                  {/* <td>{item?.sku}</td> */}
                   <td>{item?.nama}</td>
-                  <td>{item?.category?.nama}</td>
+                  {/* <td>{item?.category?.nama}</td>
                   <td>{item?.weight}</td>
                   <td>{item?.length}</td>
                   <td>{item?.width}</td>
-                  <td>{item?.height}</td>
-                  <td>{item?.harga}</td>
+                  <td>{item?.height}</td> */}
+                  <td>{currency(item?.harga)}</td>
+                  <td>{item?.cogs ?? 0}</td>
                   <td>{item?.stok}</td>
+                  <td>{item?.qty_sold ?? 0}</td>
+                  <td>{item?.orderCount ?? 0}</td>
+                  <td>{item?.qty_sold > 0 ? currency(parseInt(item?.qty_sold) * parseInt(item?.harga)) : 'Rp.0'}</td>
                   <td>              <button onClick={() => {
                     navigate(`/products/detailProduct/${item?.id}`)
                     // setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
