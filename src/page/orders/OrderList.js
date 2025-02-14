@@ -460,10 +460,10 @@ const OrderList = () => {
 
   const paidOrd = allOrders?.filter(ord => ord?.paymentStatus === 'settlement')
   const arrayHarga = paidOrd.map((data) => parseInt(data.totalHargaProduk));
-  console.log(loadingOrder)
   const totalOmset = arrayHarga?.reduce((val, nilaiSekarang) => {
-    return val + nilaiSekarang
+    return (isNaN(Number(val)) ? 0 : Number(val)) + (isNaN(Number(nilaiSekarang)) ? 0 : Number(nilaiSekarang));
   }, 0);
+  console.log(totalOmset)
 
   // checkbox
   const handleSelectAll = (e) => {
