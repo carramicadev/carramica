@@ -78,7 +78,7 @@ function Categories() {
                                     <Col md={6}><ThreeDotsVertical size={25} />{node.nama}</Col>
                                     <Col md={6} className="text-end" style={{ marginBottom: 10 }}>
                                         {
-                                            level < 2 &&
+                                            level < 3 &&
                                             <Button
                                                 style={{ backgroundColor: '#3d5e54', borderColor: '#3d5e54', }}
                                                 variant="primary"

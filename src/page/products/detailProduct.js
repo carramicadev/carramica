@@ -52,7 +52,7 @@ export default function DetailProduct() {
     useEffect(() => {
         // if () {
         // const fetchData = async () => {
-        const getDoc = query(collection(firestore, "categories"), where('level', '==', 2),);
+        const getDoc = query(collection(firestore, "categories"), where('level', '==', 3),);
         // const documentSnapshots = await getDocs(getDoc);
         const unsubscribe = onSnapshot(getDoc, (snapshot) => {
             const updatedData = snapshot.docs.map((doc) => ({
