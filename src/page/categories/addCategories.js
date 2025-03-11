@@ -1,38 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 // import { firestore, FieldValue, storage } from '../../../components/FirebaseProvider';
 import { useSnackbar } from 'notistack';
-import { firestore } from '../../FirebaseFrovider';
+import { firestore, storage } from '../../FirebaseFrovider';
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { PlusLg } from 'react-bootstrap-icons';
+import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 
 function AddDialog({ dialog: { mode, open, data, id, parent, level }, handleClose }) {
     const { enqueueSnackbar } = useSnackbar();
     console.log(data)
     const [form, setForm] = useState({
         nama: '',
-        icon: '',
+        thumbnail: '',
         products_counter: ''
     });
 
     const [error, setError] = useState({
         nama: '',
-        icon: '',
+        thumbnail: '',
         products_counter: ''
     });
 
     const [isSubmitting, setSubmitting] = useState(false);
-
+    const fileInputRef = useRef();
+const handleButtonClick = () => {
+        fileInputRef.current?.click();
+    };
     useEffect(() => {
         const defaultData = {
             nama: '',
-            icon: '',
+            thumbnail: '',
             products_counter: ''
         };
 
         const defaultError = {
             nama: '',
-            icon: '',
+            thumbnail: '',
             products_counter: ''
         };
 
@@ -72,6 +77,97 @@ function AddDialog({ dialog: { mode, open, data, id, parent, level }, handleClos
 
         return newError;
     };
+
+    // thumbnail
+    const [loading,setLoading]=useState(false)
+    const handleUploadProduct = async (e) => {
+        const file = e.target.files[0];
+        const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+        const maxFileSize = 512000; // 500 KB
+
+        if (!allowedTypes.includes(file.type)) {
+            setError((prev) => ({
+                ...prev,
+                thumbnail: `Tipe file tidak didukung: ${file.type}`,
+            }));
+            return;
+        }
+
+        if (file.size >= maxFileSize) {
+            setError((prev) => ({
+                ...prev,
+                thumbnail: `Ukuran file terlalu besar > 500KB`,
+            }));
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onabort = () => {
+            setError((prev) => ({
+                ...prev,
+                thumbnail: `Proses pembacaan file dibatalkan`,
+            }));
+        };
+
+        reader.onerror = () => {
+            setError((prev) => ({
+                ...prev,
+                thumbnail: "File tidak bisa dibaca",
+            }));
+        };
+
+        reader.onload = async () => {
+            setError((prev) => ({
+                ...prev,
+                thumbnail: "",
+            }));
+            setLoading(true);
+
+            try {
+                // Prepare Storage Reference
+                const thumbnailExt = file.name.substring(file.name.lastIndexOf("."));
+                const thumbnailPath = `categories/${form?.nama}/thumbnail_${Date.now()}${thumbnailExt}`;
+                const thumbnailRef = ref(storage, thumbnailPath);
+
+                // Upload File
+                await uploadString(thumbnailRef, reader.result, "data_url");
+
+                // Get Download URL
+                const thumbnailUrl = await getDownloadURL(thumbnailRef);
+console.log(thumbnailUrl)
+                // Update Firestore
+                // const prodDocRef = doc(firestore, "product", productId);
+                // const updatedThumbnail =  thumbnailUrl;
+
+                // await setDoc(
+                //     prodDocRef,
+                //     {
+                //         ...form,
+                //         thumbnail: updatedThumbnail,
+                //         updatedAt: serverTimestamp(),
+                //     },
+                //     { merge: true }
+                // );
+
+                // Update Local State
+                setForm((currentForm) => ({
+                    ...currentForm,
+                    thumbnail: thumbnailUrl,
+                }));
+            } catch (error) {
+                setError((prev) => ({
+                    ...prev,
+                    thumbnail: error.message,
+                }));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        reader.readAsDataURL(file);
+    };
+
 
     const handleSimpan = async (e) => {
         e.preventDefault();
@@ -119,7 +215,7 @@ function AddDialog({ dialog: { mode, open, data, id, parent, level }, handleClos
         }
     };
 
-    // const handleUploadIcon = async (e) => {
+    // const handleUploadthumbnail = async (e) => {
     //     const file = e.target.files[0];
 
     //     if (!['image/svg+xml'].includes(file.type)) {
@@ -178,7 +274,7 @@ function AddDialog({ dialog: { mode, open, data, id, parent, level }, handleClos
     //         reader.readAsDataURL(file);
     //     }
     // };
-
+console.log(error)
     return (
         <Modal style={{
             top: '50%',
@@ -240,6 +336,39 @@ function AddDialog({ dialog: { mode, open, data, id, parent, level }, handleClos
                             {error.products_counter}
                         </Form.Control.Feedback>
                     </Form.Group> */}
+                     <Form.Label>Thumbnail</Form.Label>
+                     <div>
+                         {form.thumbnail&&
+                          <img
+                                                    key={form?.thumbnail}
+                                                    src={form?.thumbnail}
+                                                    width="180px"
+                                                    height="98"
+                                                    alt=""
+                                                    style={{ borderRadius: '7px', marginBottom:'10px'}}
+                                                />}
+                     </div>
+                      <div >
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            style={{ display: "none" }}
+                                            onChange={handleUploadProduct}
+                                        />
+                                        {/* Custom Bootstrap button */}
+                                    {form.thumbnail?
+                                    <Button style={{ border: '2px dashed #000',}} variant='outline' onClick={handleButtonClick}>Change</Button>
+                                    :
+                                        <Button style={{ backgroundColor: 'transparent', border: '2px dashed #000', width: '180px', height: '98px' }} disabled={loading} variant="primary" onClick={handleButtonClick}>
+                                            <PlusLg color='black' size={30} />
+                                        </Button>}
+
+                                        {error.thumbnail && (
+                                            <p color="error">
+                                                {error.thumbnail}
+                                            </p>
+                                        )}
+                                    </div>
                 </Form>
             </Modal.Body>
             <Modal.Footer>
