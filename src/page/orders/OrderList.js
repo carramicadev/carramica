@@ -557,6 +557,97 @@ const OrderList = () => {
     });
   });
 
+  // all order
+  let mapDataAll = [];
+  const reBuildDataAll = allOrders?.map?.((item, idx) => {
+    // console.log('hduaisdhsa', item)
+
+    return item?.orders?.map((ord, i) => {
+      const discount = ord?.products?.map((prod) =>
+        prod?.discount > 0 ? parseInt(prod?.discount) : 0
+      );
+      const allDiscount = discount?.reduce((val, nilaiSekarang) => {
+        return val + nilaiSekarang;
+      }, 0);
+      const gross = ord?.products?.map((prod) => parseInt(prod?.amount));
+      const allGross = gross?.reduce((val, nilaiSekarang) => {
+        return val + nilaiSekarang;
+      }, 0);
+      const calculate = parseInt(allGross) + parseInt(ord?.ongkir);
+
+      // find user
+      const userData = user.find((itm) => itm.userId === item.userId);
+      const resiCreatedBy = user.find(
+        (itm) => itm.userId === ord.resiCreatedBy
+      );
+      const downloadedBy = user.find((itm) => itm.userId === ord.downloadedBy);
+      const designatedTo = warehouse.find((wh) => wh?.id === item?.warehouse);
+      const ordId = String(settings?.orderId - (i + idx)).padStart(4, "0");
+
+      mapDataAll.push({
+        invoice_id: item?.invoice_id,
+        id: item?.id,
+        senderName: <TruncatedText text={item?.senderName} maxLength={30} />,
+        senderPhone: item?.senderPhone,
+        receiverName: <TruncatedText text={ord?.receiverName} maxLength={30} />,
+        receiverPhone: ord?.receiverPhone,
+        nama: ord?.products?.map(
+          (prod, i) => `${prod?.nama}X${ord?.products?.[i]?.quantity}, `
+        ),
+        // quantity: ord?.products?.map(prod => `${prod?.quantity}, `),
+        createdAt: item?.createdAt,
+        paymentStatus: item?.paymentStatus,
+        paidAt: item?.midtransRes?.settlement_time,
+        dueDate: item?.midtransRes?.expiry_time,
+        discount: allDiscount,
+        grossRevenue: calculate,
+        kurir: ord?.kurirService?.courier_name
+          ? ord?.kurirService?.courier_name
+          : ord?.kurirService
+          ? `Dedicated-${ord?.kurirService}`
+          : ord?.kurir,
+        kurirType: ord?.kurir,
+        resi: ord?.resi,
+        resiUpdate: item?.[`resiUpdate${[i]}`],
+        address: <TruncatedText text={ord?.address} maxLength={20} />,
+        giftCard: ord?.giftCard,
+        unixId: `${item.id}_${i}`,
+        original: {
+          ...ord,
+          id: `${item.id}_${i}`,
+          senderName: item?.senderName,
+        },
+        isDownloaded: ord?.isDownloaded,
+        pdf: item?.invoice?.pdf_url,
+        isInvWASent: item?.isInvWASent,
+        isResiWASent: ord?.isResiWASent,
+        isResiSentToWASender: ord?.isResiSentToWASender,
+        link: item?.midtrans?.redirect_url,
+        harga: item?.totalHargaProduk + item?.totalOngkir,
+        ordId: ord?.orderId ?? ord?.ordId,
+        sales: `${userData?.firstName || ""} ${userData?.lastName || ""}`,
+        resiCreatedBy: `${resiCreatedBy?.firstName || ""} ${
+          resiCreatedBy?.lastName || ""
+        }`,
+        downloadedBy: `${downloadedBy?.firstName || ""} ${
+          downloadedBy?.lastName || ""
+        }`,
+        hargaAfterDiscProd: allGross,
+        shippingCost: ord?.ongkir,
+        orderStatus: ord?.orderStatus
+          ? ord?.orderStatus
+          : item?.paymentStatus === "settlement"
+          ? "processing"
+          : item?.paymentStatus,
+        shippingDate: item?.shippingDate,
+        notes: item?.notes,
+        userRules: findDataUser?.rules,
+        kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService,
+        designatedTo: designatedTo?.name,
+      });
+    });
+  });
+
   // const mapData = mapData?.filter?.(
   //   item =>
   //     item.senderName?.toLowerCase?.().includes?.(searchTerm.toLowerCase()) ||
@@ -635,9 +726,11 @@ const OrderList = () => {
       senderPhone: parseInt(data?.senderPhone),
       resiUpdate: formatDate(data?.resiUpdate?.toDate()),
       shippingDate: formatDate(data?.shippingDate?.toDate()),
+      receiverName: data?.original?.receiverName,
+      senderName: data?.original?.senderName,
     };
   });
-  const madDataExcel = mapData?.map((data) => {
+  const madDataExcel = mapDataAll?.map((data) => {
     return {
       ...data,
       address: data?.address?.props?.text,
@@ -647,8 +740,11 @@ const OrderList = () => {
       createdAt: formatDate(data?.createdAt?.toDate()),
       resiUpdate: formatDate(data?.resiUpdate?.toDate()),
       shippingDate: formatDate(data?.shippingDate?.toDate()),
+      receiverName: data?.original?.receiverName,
+      senderName: data?.original?.senderName,
     };
   });
+  console.log(madDataExcel);
   // change resi
   const handleChange = async (e, unixId) => {
     try {
