@@ -104,7 +104,7 @@ export default function DownloadInvoiceDialog(props) {
   );
 
   // const total = findOrder?.totalHargaProduk + allOngkir - findOrder?.additionalDiscount
-  // console.log(allProduct)
+
   const ReformatDate = ({ date }) => {
     // console.log(date)
     const inputDate = date;
@@ -162,7 +162,12 @@ export default function DownloadInvoiceDialog(props) {
   const allOngkir = ongkir?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
   }, 0);
-
+  const hideModal = () => {
+    allProduct = [];
+    props?.onHide();
+    allProduct = [];
+  };
+  console.log("all product=>", allProduct);
   return (
     <div
       className="modal show"
@@ -186,7 +191,7 @@ export default function DownloadInvoiceDialog(props) {
         scrollable={true}
         // {...props}
         show={props?.show?.open}
-        onHide={props?.onHide}
+        onHide={hideModal}
         backdrop="static"
         keyboard={false}
       >
@@ -270,8 +275,8 @@ export default function DownloadInvoiceDialog(props) {
                     </tr>
                   </thead>
                   <tbody>
-                    {allProduct?.map((prod) => (
-                      <tr key={prod?.id}>
+                    {allProduct?.map((prod, i) => (
+                      <tr key={prod?.id + i}>
                         <td style={styles.td}>{prod?.nama}</td>
                         <td style={styles.td}>{prod?.quantity}</td>
                         <td style={styles.td}>{currency(prod?.price)}</td>
@@ -404,9 +409,9 @@ export default function DownloadInvoiceDialog(props) {
           {/* <MyDoc item={item} /> */}
         </Modal.Body>
         <Modal.Footer style={{ display: "flex" }}>
-          {/* <Button variant="secondary" >
-                        Close
-                    </Button> */}
+          <Button onClick={hideModal} variant="secondary">
+            Close
+          </Button>
           <button onClick={handleDownloadPDF} className="button button-primary">
             DownloadPdf
           </button>
