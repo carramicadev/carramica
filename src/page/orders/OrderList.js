@@ -296,7 +296,7 @@ const OrderList = () => {
     });
     // setLoadingOrder(false)
     return () => unsubscribe();
-  }, [length, allFilters]);
+  }, [length, allFilters, !searchTerm]);
   // console.log(list);
   const showNext = ({ item }) => {
     if (list.length === 0) {
