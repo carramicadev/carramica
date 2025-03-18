@@ -313,6 +313,7 @@ const OrderList = () => {
       const getDoc = query(
         collection(firestore, "orders"),
         ...filter,
+        ...allFilters,
         orderBy("createdAt", "desc"),
         startAfter(item.createdAt),
         limit(length)
@@ -334,6 +335,7 @@ const OrderList = () => {
     setLoadingOrder(true);
     const getDoc = query(
       collection(firestore, "orders"),
+      ...allFilters,
       orderBy("createdAt", "desc"),
       endBefore(item.createdAt),
       limitToLast(length)
@@ -1666,7 +1668,7 @@ const OrderList = () => {
         />
         {/* //show next button only when we have items */}
         <Button
-          disabled={list.length < 20}
+          disabled={list.length < length}
           style={{
             whiteSpace: "nowrap",
             backgroundColor: "#3D5E54",
