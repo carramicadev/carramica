@@ -313,6 +313,7 @@ const OrderList = () => {
       const getDoc = query(
         collection(firestore, "orders"),
         ...filter,
+        ...allFilters,
         orderBy("createdAt", "desc"),
         startAfter(item.createdAt),
         limit(length)
@@ -334,6 +335,7 @@ const OrderList = () => {
     setLoadingOrder(true);
     const getDoc = query(
       collection(firestore, "orders"),
+      ...allFilters,
       orderBy("createdAt", "desc"),
       endBefore(item.createdAt),
       limitToLast(length)
