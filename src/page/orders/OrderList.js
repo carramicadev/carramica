@@ -1666,7 +1666,7 @@ const OrderList = () => {
         />
         {/* //show next button only when we have items */}
         <Button
-          disabled={list.length < 20}
+          disabled={list.length < length}
           style={{
             whiteSpace: "nowrap",
             backgroundColor: "#3D5E54",
