@@ -297,7 +297,7 @@ const OrderList = () => {
     // setLoadingOrder(false)
     return () => unsubscribe();
   }, [length, allFilters]);
-  // console.log(list)
+  // console.log(list);
   const showNext = ({ item }) => {
     if (list.length === 0) {
       alert("Thats all we have for now !");
@@ -441,7 +441,7 @@ const OrderList = () => {
           .documents()
           .search({
             q: searchTerm,
-            query_by: "senderName,invoice_id,email",
+            query_by: "senderName,senderPhone,invoice_id",
           });
         // console.log(response?.hits?.map((hit) => hit?.document));
 
