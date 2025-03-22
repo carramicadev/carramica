@@ -249,6 +249,20 @@ export const FilterDialog = ({
             checked={checkedItems === "expire"}
             onChange={handleChange}
           />
+          <Form.Check
+            type="checkbox"
+            label="Deny"
+            name="deny"
+            checked={checkedItems === "deny"}
+            onChange={handleChange}
+          />
+          <Form.Check
+            type="checkbox"
+            label="Cancel"
+            name="cancel"
+            checked={checkedItems === "cancel"}
+            onChange={handleChange}
+          />
           <Form.Label style={{ marginTop: "20px" }}>By User/Sales</Form.Label>
           <Autocomplete
             wrapperProps={{ style: { display: "block" } }}
