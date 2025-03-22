@@ -258,7 +258,7 @@ export const FilterDialog = ({
           />
           <Form.Check
             type="checkbox"
-            label="Cancel"
+            label="Canceled"
             name="cancel"
             checked={checkedItems === "cancel"}
             onChange={handleChange}
