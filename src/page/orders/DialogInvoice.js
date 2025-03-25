@@ -129,7 +129,10 @@ export default function DownloadInvoiceDialog(props) {
   };
 
   // Get the current date and time
-  const now = item?.[0]?.createdAt?.toDate?.();
+  const now =
+    typeof item?.[0]?.createdAt === "number"
+      ? new Date(item?.[0]?.createdAt * 1000)
+      : item?.[0]?.createdAt?.toDate?.();
   // console.log(findOrder?.createdAt.toDate())
   // Add 7 days to the current date
   const millisecondsIn7Days = 7 * 24 * 60 * 60 * 1000;
@@ -171,7 +174,7 @@ export default function DownloadInvoiceDialog(props) {
     allProduct = [];
   };
   console.log("all product=>", allProduct);
-  // console.log(item?.[0]?.createdAt);
+  // console.log(new Date(item?.[0]?.createdAt * 1000));
   // console.log(new Date(item?.[0]?.createdAt * 1000));
   return (
     <div
