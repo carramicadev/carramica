@@ -25,7 +25,7 @@ import {
   Text,
   View,
 } from "@react-pdf/renderer";
-import formatDate, { currency } from "../../formatter";
+import formatDate, { currency, TimestampToDate } from "../../formatter";
 import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
@@ -119,7 +119,10 @@ export default function DownloadInvoiceDialog(props) {
   const FormatFirestoreTimestamp = ({ timestamp }) => {
     // console.log(timestamp)
     // Convert Firestore timestamp to JS Date object
-    const date = timestamp.toDate();
+    const date =
+      typeof timestamp === "number"
+        ? new Date(timestamp * 1000)
+        : timestamp.toDate();
 
     // Format date using date-fns to "12 Sep, 2024"
     return date ? format(date, "dd MMM, yyyy") : "";
@@ -168,6 +171,8 @@ export default function DownloadInvoiceDialog(props) {
     allProduct = [];
   };
   console.log("all product=>", allProduct);
+  // console.log(item?.[0]?.createdAt);
+  // console.log(new Date(item?.[0]?.createdAt * 1000));
   return (
     <div
       className="modal show"
@@ -229,7 +234,11 @@ export default function DownloadInvoiceDialog(props) {
                       <div style={{ marginLeft: "50px" }}>
                         <p style={{ marginBottom: "0px" }}>{itm?.invoice_id}</p>
                         <p style={{ marginBottom: "0px" }}>
-                          {formatDate(itm?.createdAt?.toDate())}
+                          {typeof itm?.createdAt === "number" ? (
+                            <TimestampToDate timestamp={itm?.createdAt} />
+                          ) : (
+                            formatDate(itm?.createdAt?.toDate())
+                          )}
                         </p>
                         <p style={{ marginBottom: "0px" }}>
                           {" "}
