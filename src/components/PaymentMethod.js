@@ -31,6 +31,7 @@ const PaymentPage = () => {
       (error) => {
         // setError(error.message);
         setLoading(false);
+        console.log(error);
       }
     );
 
