@@ -54,7 +54,7 @@ const PaymentPage = () => {
     },
     // Virtual Accounts - fixed fees
     {
-      method: "virtual_account",
+      method: "bank_transfer",
       channel: "bni",
       name: "BNI VA",
       description: "BNI Virtual Account",
@@ -63,7 +63,7 @@ const PaymentPage = () => {
       feeType: "fixed",
     },
     {
-      method: "virtual_account",
+      method: "bank_transfer",
       channel: "mandiri",
       name: "Mandiri VA",
       description: "Mandiri Virtual Account",
@@ -72,7 +72,7 @@ const PaymentPage = () => {
       feeType: "fixed",
     },
     {
-      method: "virtual_account",
+      method: "bank_transfer",
       channel: "bri",
       name: "BRI VA",
       description: "BRI Virtual Account",
@@ -80,7 +80,7 @@ const PaymentPage = () => {
       fee: 2500,
     },
     {
-      method: "virtual_account",
+      method: "bank_transfer",
       channel: "permata",
       name: "Permata VA",
       description: "Permata Virtual Account",
