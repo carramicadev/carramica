@@ -746,7 +746,46 @@ const OrderList = () => {
       senderName: data?.original?.senderName,
     };
   });
-  console.log(madDataExcel);
+  console.log(allOrders);
+  const transformDataForCSV = (originalData) => {
+    const transformedData = [];
+
+    originalData.forEach((item) => {
+      if (item.nama && item.nama.length > 0) {
+        // First product gets all fields
+        const firstProduct = item.nama[0].trim().replace(/,$/, "");
+        const firstRow = { ...item };
+        delete firstRow.nama;
+        firstRow.product = firstProduct;
+        transformedData.push(firstRow);
+
+        // Subsequent products get only the product name
+        for (let i = 1; i < item.nama.length; i++) {
+          const product = item.nama[i].trim().replace(/,$/, "");
+          transformedData.push({
+            product: product,
+            // Empty other fields to match header structure
+            invoice_id: "",
+            senderName: "",
+            receiverName: "",
+            // Add other fields with empty values as needed
+          });
+        }
+      } else {
+        // If no products, just add the original item
+        const newRow = { ...item };
+        delete newRow.nama;
+        transformedData.push(newRow);
+      }
+    });
+
+    return transformedData;
+  };
+
+  const dataForExcel =
+    selectedData.length > 0
+      ? transformDataForCSV(selectedExcel)
+      : transformDataForCSV(madDataExcel);
   // change resi
   const handleChange = async (e, unixId) => {
     try {
@@ -1486,7 +1525,7 @@ const OrderList = () => {
               marginRight: "10px",
               whiteSpace: "nowrap",
             }}
-            data={selectedData.length > 0 ? selectedExcel : madDataExcel}
+            data={dataForExcel}
             separator={";"}
             filename={"table_orders.csv"}
             className="btn btn-outline-secondary"
