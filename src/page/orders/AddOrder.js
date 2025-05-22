@@ -142,12 +142,12 @@ const AddOrder = () => {
           new Date(shippingDateUpdate)
         );
         // console.log('newdate', tomorrowDayUpdate)
-        setFormData({
-          ...formData,
+        setFormData((prev) => ({
+          ...prev,
           day: tomorrowDayUpdate,
           // month: bulanNew.toString().padStart(2, '0'),
           shippingDate: shippingDateTimestampUpdate,
-        });
+        }));
       }
     }, 500);
   }, [hour]);
@@ -1113,6 +1113,10 @@ const AddOrder = () => {
             }))
           );
 
+          const itemsString = invoice_items
+            .map((item) => `${item.name} x ${item.quantity}`)
+            .join(", ");
+
           // disc
           const disc = orders.flatMap((order) =>
             order.products.map((product) => ({
@@ -1179,6 +1183,9 @@ const AddOrder = () => {
             price: totalAfterDiskonDanOngkir?.toString(),
             link: targetUrl,
             type: "pembayaran",
+            invoice_id: newOrderId,
+            date: invoice_date,
+            item: itemsString,
           });
 
           await setDoc(
