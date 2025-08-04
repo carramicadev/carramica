@@ -577,7 +577,7 @@ const AddOrder = () => {
               ...order.products,
               {
                 nama: "",
-                quantity: "",
+                quantity: 1,
                 price: "",
                 discount: "",
                 amount: "",
@@ -1109,7 +1109,9 @@ const AddOrder = () => {
               description: product.prod?.[0]?.description || product.nama,
               quantity: product.quantity || 0,
               price: product.price || 0,
-              // discount: 0,
+              discount: product?.discount || 0,
+              discount_type:
+                product?.discount_type === "%" ? "percentage" : "amount",
             }))
           );
 
@@ -1133,18 +1135,20 @@ const AddOrder = () => {
             invoice_date: invoice_date,
             due_date: invoice_due_date,
             customer: {
-              id: partner_number,
+              // id: "828689ef-87b1-46e7-bfe0-d92b6d35344e",
+              id: formData?.senderPhone,
               name: formData?.senderName,
               phone: formData?.senderPhone,
               // company_email: "whitewing.flute@gmail.com",
             },
-            items: product,
+            items: invoice_items,
             send: {
               email: false,
               whatsapp: false,
               sms: false,
             },
-            total_discount: diskonAfterReduce + formData?.additionalDiscount,
+            additional_discount: formData?.additionalDiscount,
+            additional_discount_type: "amount",
             additional_fee: {
               delivery_fee: totalOngkir,
             },
@@ -1196,6 +1200,28 @@ const AddOrder = () => {
             },
             { merge: true }
           );
+
+          // backup data
+          await setDoc(
+            doc(firestore, "orders-backup", newOrderId),
+            {
+              ...formData,
+              orders: updateOrder ?? [],
+              totalOngkir: totalOngkir ?? 0,
+              createdAt: serverTimestamp(),
+              paymentStatus: "pending",
+              orderStatus: "pending",
+              totalHargaProduk: totalAfterReduce ?? 0,
+              userId: currentUser?.uid ?? "",
+              invoice_id: newOrderId ?? "",
+              shippingDate: shippingDateTimestamp,
+              totalAfterDiskonDanOngkir: totalAfterDiskonDanOngkir ?? 0,
+              paper: resTransaction?.data?.items?.data ?? {},
+              isInvWASent: true,
+            },
+            { merge: true }
+          );
+
           const contactRef = await setDoc(
             doc(firestore, "contact", formData?.senderPhone),
             {
@@ -1246,7 +1272,7 @@ const AddOrder = () => {
 
       console.log("error", e);
       setLoading(false);
-      window.location.reload();
+      // window.location.reload();
     }
   };
 
