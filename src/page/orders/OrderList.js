@@ -226,7 +226,7 @@ const OrderList = () => {
       }
     } catch (e) {
       console.log(e.message);
-      console.error(e.message);
+      enqueueSnackbar(e.message, { variant: "error" });
     } finally {
       setLoadingOrder(false); // Set loading state to false after fetch
     }
@@ -423,7 +423,7 @@ const OrderList = () => {
       return () => unsubscribe();
     } catch (e) {
       console.log(e.message);
-      console.error(e.message);
+      enqueueSnackbar(e.message, { variant: "error" });
     }
   };
   const handleSearch = (e) => {
@@ -824,7 +824,7 @@ const OrderList = () => {
       }
     } catch (e) {
       console.log(e.message);
-      console.error(e.message);
+      enqueueSnackbar(e.message, { variant: "error" });
     }
     // setUpdate(false)
   };
