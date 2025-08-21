@@ -8,6 +8,7 @@ import {
   Timestamp,
   where,
 } from "firebase/firestore";
+import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import Autocomplete from "react-autocomplete";
 import { Modal, Button, Form } from "react-bootstrap";
@@ -32,6 +33,8 @@ export const FilterDialog = ({
   const [endDate, setEndDate] = useState(null);
   const [shippingDate, setShippingDate] = useState(null);
   const [endShippingDate, setEndShippingDate] = useState(null);
+  const { enqueueSnackbar } = useSnackbar();
+
   const handleSelect = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
@@ -163,6 +166,7 @@ export const FilterDialog = ({
       return () => unsubscribe();
     } catch (e) {
       console.log(e.message);
+      enqueueSnackbar(e.message, { variant: "error" });
     }
     setLoading(false);
   };

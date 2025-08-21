@@ -215,7 +215,7 @@ const OrderList = () => {
 
         // useEffect(() => {
         const unsub = onSnapshot(settingsRef, (doc) => {
-          console.log(" data: ", doc.data());
+          // console.log(" data: ", doc.data());
           setTotalOrdersCount(doc.data()?.totalOrder);
           setTotalOrdersPaidCount(doc.data()?.paidOrder);
           setRevenue(doc.data()?.revenue);
@@ -226,6 +226,7 @@ const OrderList = () => {
       }
     } catch (e) {
       console.log(e.message);
+      enqueueSnackbar(e.message, { variant: "error" });
     } finally {
       setLoadingOrder(false); // Set loading state to false after fetch
     }
@@ -422,6 +423,7 @@ const OrderList = () => {
       return () => unsubscribe();
     } catch (e) {
       console.log(e.message);
+      enqueueSnackbar(e.message, { variant: "error" });
     }
   };
   const handleSearch = (e) => {
@@ -748,7 +750,7 @@ const OrderList = () => {
       senderName: data?.original?.senderName,
     };
   });
-  console.log(allOrders);
+  // console.log(allOrders);
   const transformDataForCSV = (originalData) => {
     const transformedData = [];
 
@@ -822,6 +824,7 @@ const OrderList = () => {
       }
     } catch (e) {
       console.log(e.message);
+      enqueueSnackbar(e.message, { variant: "error" });
     }
     // setUpdate(false)
   };
