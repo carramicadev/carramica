@@ -663,7 +663,9 @@ const OrderList = () => {
   const paidOrd = allOrders?.filter(
     (ord) => ord?.paymentStatus === "settlement"
   );
-  const arrayHarga = paidOrd.map((data) => parseInt(data.totalHargaProduk));
+  const arrayHarga = paidOrd.map((data) =>
+    parseInt(data.totalAfterDiskonDanOngkir)
+  );
   const totalOmset = arrayHarga?.reduce((val, nilaiSekarang) => {
     return (
       (isNaN(Number(val)) ? 0 : Number(val)) +
