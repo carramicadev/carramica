@@ -163,6 +163,7 @@ export const FilterDialog = ({
       return () => unsubscribe();
     } catch (e) {
       console.log(e.message);
+      console.error(e.message);
     }
     setLoading(false);
   };
