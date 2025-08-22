@@ -513,7 +513,7 @@ const OrderList = () => {
         paidAt: item?.midtransRes?.settlement_time,
         dueDate: item?.midtransRes?.expiry_time,
         discount: allDiscount,
-        grossRevenue: calculate,
+        grossRevenue: calculate - parseInt(item?.additionalDiscount),
         kurir: ord?.kurirService?.courier_name
           ? ord?.kurirService?.courier_name
           : ord?.kurirService
@@ -1333,6 +1333,15 @@ const OrderList = () => {
           marginBottom: "10px",
         }}
       >
+        <p
+          style={{
+            justifyContent: "center",
+            marginRight: "5px",
+            marginTop: "5px",
+          }}
+        >
+          Date Order
+        </p>
         <DatePicker
           dateFormat="dd/MM/yyyy"
           style={{ borderRadius: "10px" }}
