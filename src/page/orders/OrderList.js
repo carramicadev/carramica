@@ -604,7 +604,7 @@ const OrderList = () => {
         paidAt: item?.midtransRes?.settlement_time,
         dueDate: item?.midtransRes?.expiry_time,
         discount: allDiscount,
-        grossRevenue: calculate,
+        grossRevenue: calculate - parseInt(item?.additionalDiscount),
         kurir: ord?.kurirService?.courier_name
           ? ord?.kurirService?.courier_name
           : ord?.kurirService
@@ -1319,6 +1319,19 @@ const OrderList = () => {
       };
     }
   }, []);
+  useEffect(() => {
+    if (tableContainerRef.current && verticalScrollRef.current) {
+      const tableWidth = tableContainerRef.current.scrollWidth;
+      const scrollContent = verticalScrollRef.current.querySelector(
+        ".table-vertical-scroll-content"
+      );
+
+      if (scrollContent) {
+        scrollContent.style.width = `${tableWidth}px`;
+      }
+    }
+  }, [selectColumn, mapData]);
+
   return (
     <div className="container">
       <Header />
