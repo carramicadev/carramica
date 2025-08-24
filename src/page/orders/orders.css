@@ -37,13 +37,19 @@ body {
 }
 
 .table-container {
-    /* max-height: 300px;  */
+    overflow-x: auto;
+    /* allow horizontal scroll */
     overflow-y: auto;
     position: relative;
+    width: 100%;
+    /* take full space */
 }
 
 table {
-    width: 90%;
+    width: max-content;
+    /* <-- expand as wide as needed */
+    min-width: 100%;
+    /* <-- still at least full width of container */
     border-collapse: collapse;
     margin: 20px 0;
 }
