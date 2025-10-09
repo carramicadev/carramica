@@ -1,27 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import Header from '../../components/Header';
-import { Button, ButtonGroup, Card, Col, Form, Row, Table } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
-import { collection, endBefore, getDocs, limit, limitToLast, orderBy, query, startAfter, Timestamp, where } from 'firebase/firestore';
-import { firestore } from '../../FirebaseFrovider';
-import { format, set } from 'date-fns';
-import { formatOrders } from '../../LogisticFormatted';
-import { currency, formatToDate } from '../../formatter';
-import { BoxFill, CaretDownFill, CaretRightFill, GraphUp, PeopleFill, Truck } from 'react-bootstrap-icons';
-import Loading from '../../components/Loading';
-
-
+import React, { useEffect, useState } from "react";
+import Header from "../../components/Header";
+import {
+  Button,
+  ButtonGroup,
+  Card,
+  Col,
+  Form,
+  Row,
+  Table,
+} from "react-bootstrap";
+import DatePicker from "react-datepicker";
+import {
+  collection,
+  endBefore,
+  getDocs,
+  limit,
+  limitToLast,
+  orderBy,
+  query,
+  startAfter,
+  Timestamp,
+  where,
+} from "firebase/firestore";
+import { firestore } from "../../FirebaseFrovider";
+import { format, set } from "date-fns";
+import { formatOrders } from "../../LogisticFormatted";
+import { currency, formatToDate } from "../../formatter";
+import {
+  BoxFill,
+  CaretDownFill,
+  CaretRightFill,
+  GraphUp,
+  PeopleFill,
+  Truck,
+} from "react-bootstrap-icons";
+import Loading from "../../components/Loading";
 
 const getRasioColor = (rasio) => {
-  if (rasio === "100%" || rasio === '0%') return "table-success ";
+  if (rasio === "100%" || rasio === "0%") return "table-success ";
   if (rasio !== "100%") return "table-danger ";
   return "";
 };
 const Logistik = () => {
-  const [allOrders, setAllOrders] = useState([])
+  const [allOrders, setAllOrders] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [year, setYear] = useState('2025')
+  const [year, setYear] = useState("2025");
   const [page, setPage] = useState(1);
   const [length, setLength] = useState(20);
   const [ordersByMonth, setOrderByMont] = useState({});
@@ -31,13 +55,13 @@ const Logistik = () => {
   const [totalFee, setTotalFee] = useState(0);
   const listLength = [5, 10, 20, 50];
   const handleChangeLength = (e) => {
-    setLength(e.target.value)
+    setLength(e.target.value);
     if (startDate && endDate) {
       // console.log('run')
-      filterByDate(startDate, endDate, e.target.value)
+      filterByDate(startDate, endDate, e.target.value);
     }
-    setCurrentPage(1)
-  }
+    setCurrentPage(1);
+  };
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   const [monthActive, setMonthActive] = useState(currentMonth ?? 1);
@@ -45,15 +69,21 @@ const Logistik = () => {
   useEffect(() => {
     if (!endDate && year) {
       const fetchData = async () => {
-        setLoading(true)
-        const startOfYear = Timestamp.fromDate(new Date(`${year}-01-01T00:00:00.000Z`)); // Millisecond precision
-        const endOfYear = Timestamp.fromDate(new Date(`${parseInt(year) + 1}-01-01T00:00:00.000Z`));
-        console.log(endOfYear.toDate())
-        const getDoc = query(collection(firestore, "orders"),
+        setLoading(true);
+        const startOfYear = Timestamp.fromDate(
+          new Date(`${year}-01-01T00:00:00.000Z`)
+        ); // Millisecond precision
+        const endOfYear = Timestamp.fromDate(
+          new Date(`${parseInt(year) + 1}-01-01T00:00:00.000Z`)
+        );
+        console.log(endOfYear.toDate());
+        const getDoc = query(
+          collection(firestore, "orders"),
           where("shippingDate", ">=", startOfYear),
           where("shippingDate", "<", endOfYear),
-          where("paymentStatus", "==", 'settlement'),
-          orderBy("shippingDate", "asc"));
+          where("paymentStatus", "==", "settlement"),
+          orderBy("shippingDate", "asc")
+        );
         const documentSnapshots = await getDocs(getDoc);
         var items = [];
         let settlementDeliveryFeeSum = 0;
@@ -82,39 +112,50 @@ const Logistik = () => {
 
         const ordersSentCount = items.reduce((acc, doc) => {
           if (Array.isArray(doc.orders)) {
-            const filteredOrders = doc.orders.filter(order => order.resi);
+            const filteredOrders = doc.orders.filter((order) => order.resi);
             return acc + filteredOrders.length;
           }
           return acc;
         }, 0);
         setTotalOrdersCount(ordersPaidCount);
         setTotalOrdersSentCount(ordersSentCount);
-        setTotalFee(settlementDeliveryFeeSum)
-        console.log('first item ', ordersPaidCount, ordersSentCount, settlementDeliveryFeeSum)
+        setTotalFee(settlementDeliveryFeeSum);
+        console.log(
+          "first item ",
+          ordersPaidCount,
+          ordersSentCount,
+          settlementDeliveryFeeSum
+        );
         // setAllOrders(items);
-        setLoading(false)
+        setLoading(false);
       };
       fetchData();
     }
   }, [year]);
   useEffect(() => {
     if (!endDate && year && monthActive) {
-
-      const currentMonthEnd = monthActive === 12 ? monthActive - 11 : monthActive + 1;
-      const monthFixed = String(monthActive)?.padStart(2, '0');
-      const monthFixedEnd = String(currentMonthEnd)?.padStart(2, '0');
+      const currentMonthEnd =
+        monthActive === 12 ? monthActive - 11 : monthActive + 1;
+      const monthFixed = String(monthActive)?.padStart(2, "0");
+      const monthFixedEnd = String(currentMonthEnd)?.padStart(2, "0");
       const fetchData = async () => {
         try {
-          setLoading(true)
-          const startOfYear = Timestamp.fromDate(new Date(`${year}-${monthFixed}-01T00:00:00.000Z`)); // Millisecond precision
-          const yearEnd = monthActive === 12 ? parseInt(year) + 1 : year
-          const endOfYear = Timestamp.fromDate(new Date(`${yearEnd}-${monthFixedEnd}-01T00:00:00.000Z`));
-          console.log(endOfYear.toDate())
-          const getDoc = query(collection(firestore, "orders"),
+          setLoading(true);
+          const startOfYear = Timestamp.fromDate(
+            new Date(`${year}-${monthFixed}-01T00:00:00.000Z`)
+          ); // Millisecond precision
+          const yearEnd = monthActive === 12 ? parseInt(year) + 1 : year;
+          const endOfYear = Timestamp.fromDate(
+            new Date(`${yearEnd}-${monthFixedEnd}-01T00:00:00.000Z`)
+          );
+          console.log(endOfYear.toDate());
+          const getDoc = query(
+            collection(firestore, "orders"),
             where("shippingDate", ">=", startOfYear),
             where("shippingDate", "<", endOfYear),
-            where("paymentStatus", "==", 'settlement'),
-            orderBy("shippingDate", "asc"));
+            where("paymentStatus", "==", "settlement"),
+            orderBy("shippingDate", "asc")
+          );
           const documentSnapshots = await getDocs(getDoc);
           var items = [];
 
@@ -124,10 +165,10 @@ const Logistik = () => {
           });
           // console.log('first item ', items[0])
           setAllOrders(items);
-          setLoading(false)
+          setLoading(false);
         } catch (e) {
-          setLoading(false)
-          console.log(e.message)
+          setLoading(false);
+          console.log(e.message);
         }
       };
       fetchData();
@@ -172,10 +213,15 @@ const Logistik = () => {
   };
   const showNext = ({ item }) => {
     if (allOrders.length === 0) {
-      alert("Thats all we have for now !")
+      alert("Thats all we have for now !");
     } else {
       const fetchNextData = async () => {
-        const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "desc"), startAfter(item.createdAt), limit(length));
+        const getDoc = query(
+          collection(firestore, "orders"),
+          orderBy("createdAt", "desc"),
+          startAfter(item.createdAt),
+          limit(length)
+        );
         const documentSnapshots = await getDocs(getDoc);
         var items = [];
 
@@ -184,7 +230,7 @@ const Logistik = () => {
           // doc.data() is never undefined for query doc snapshots
         });
         setAllOrders(items);
-        setPage(page + 1)
+        setPage(page + 1);
       };
       fetchNextData();
     }
@@ -192,7 +238,12 @@ const Logistik = () => {
 
   const showPrevious = ({ item }) => {
     const fetchPreviousData = async () => {
-      const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "asc"), endBefore(item.createdAt), limitToLast(length));
+      const getDoc = query(
+        collection(firestore, "orders"),
+        orderBy("createdAt", "asc"),
+        endBefore(item.createdAt),
+        limitToLast(length)
+      );
       const documentSnapshots = await getDocs(getDoc);
       var items = [];
 
@@ -201,56 +252,60 @@ const Logistik = () => {
         // doc.data() is never undefined for query doc snapshots
       });
       setAllOrders(items);
-      setPage(page - 1)
+      setPage(page - 1);
     };
     fetchPreviousData();
   };
   const filterByDate = async (start, end, panjang) => {
     try {
       const yearStart = start.getFullYear();
-      const monthStart = String(start.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-      const dayStart = String(start.getDate()).padStart(2, '0');
+      const monthStart = String(start.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+      const dayStart = String(start.getDate()).padStart(2, "0");
       const formattedDateStart = `${yearStart}-${monthStart}-${dayStart}`;
       // end
       const yearEnd = end.getFullYear();
-      const monthEnd = String(end.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-      const dayEnd = String(end.getDate()).padStart(2, '0');
+      const monthEnd = String(end.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+      const dayEnd = String(end.getDate()).padStart(2, "0");
       const formattedDateEnd = `${yearEnd}-${monthEnd}-${dayEnd}`;
-      // 
+      //
       const startTimestamp = Timestamp.fromDate(new Date(formattedDateStart));
-      const endTimestamp = Timestamp.fromDate(set(new Date(formattedDateEnd), {
-        hours: 23,
-        minutes: 59,
-        seconds: 59,
-        milliseconds: 999
-
-      }));
+      const endTimestamp = Timestamp.fromDate(
+        set(new Date(formattedDateEnd), {
+          hours: 23,
+          minutes: 59,
+          seconds: 59,
+          milliseconds: 999,
+        })
+      );
       // orders
-      const refOrd = query(collection(firestore, "orders"), where("createdAt", ">=", startTimestamp), where("createdAt", "<=", endTimestamp), orderBy('createdAt', 'asc'));
+      const refOrd = query(
+        collection(firestore, "orders"),
+        where("createdAt", ">=", startTimestamp),
+        where("createdAt", "<=", endTimestamp),
+        orderBy("createdAt", "asc")
+      );
       const querySnapshotOrd = await getDocs(refOrd);
-      const documentsOrd = querySnapshotOrd.docs.map(doc => ({
+      const documentsOrd = querySnapshotOrd.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
-      setAllOrders(documentsOrd)
+      setAllOrders(documentsOrd);
     } catch (e) {
-      console.log(e.message)
+      console.log(e.message);
     }
-  }
+  };
 
   const handleSelect = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
     if (start && end) {
-      filterByDate(start, end, length)
-
+      filterByDate(start, end, length);
     }
   };
 
-
   // format order
-  let mapData = []
+  let mapData = [];
   const reBuildData = allOrders?.map?.((item) => {
     // console.log(JSON.stringify(item?.invoices))
 
@@ -259,9 +314,9 @@ const Logistik = () => {
       // const allDiscount = discount?.reduce((val, nilaiSekarang) => {
       //   return val + nilaiSekarang
       // }, 0);
-      const gross = ord?.products?.map(prod => prod?.amount);
+      const gross = ord?.products?.map((prod) => prod?.amount);
       const allGross = gross?.reduce((val, nilaiSekarang) => {
-        return val + nilaiSekarang
+        return val + nilaiSekarang;
       }, 0);
       // const calculate = allGross + ord?.ongkir;
 
@@ -270,22 +325,34 @@ const Logistik = () => {
       mapData.push({
         // quantity: ord?.products?.map(prod => `${prod?.quantity}, `),
         shippingDate: item?.shippingDate ? item?.shippingDate : item?.createdAt,
-        kurir: ord?.kurir === "Biteship" ? ord?.kurirService?.courier_name : ord?.kurir === "Manual" ? 'Dedicated' : ord?.kurir,
+        kurir:
+          ord?.kurir === "Biteship"
+            ? ord?.kurirService?.courier_name
+            : ord?.kurir === "Manual"
+            ? "Dedicated"
+            : ord?.kurir,
         ongkir: ord?.ongkir || 0,
         harga: allGross,
         ordId: ord?.ordId,
-        resi: ord?.resi
+        resi: ord?.resi,
         // sales: `${userData?.firstName || ''} ${userData?.lastName || ''}`
-
-      })
-
-    })
+      });
+    });
   });
-  const sortedDate = mapData.sort((a, b) => new Date(a.shippingDate?.toDate?.()) - new Date(b.shippingDate?.toDate?.()));
+  const sortedDate = mapData.sort(
+    (a, b) =>
+      new Date(a.shippingDate?.toDate?.()) -
+      new Date(b.shippingDate?.toDate?.())
+  );
   const formattedOrders = sortedDate.map((all) => {
-
-    return { ...all, tgl: formatToDate(all?.shippingDate?.toDate?.()), month: all?.shippingDate?.toDate?.().toLocaleString('default', { month: 'long', year: 'numeric' }) }
-  })
+    return {
+      ...all,
+      tgl: formatToDate(all?.shippingDate?.toDate?.()),
+      month: all?.shippingDate
+        ?.toDate?.()
+        .toLocaleString("default", { month: "long", year: "numeric" }),
+    };
+  });
 
   const groupedDataAll = formattedOrders.reduce((acc, item) => {
     const key = item.month;
@@ -308,26 +375,26 @@ const Logistik = () => {
     }, {});
     return {
       month: month,
-      item: [...Object.entries(ordObj)]
-    }
-  })
+      item: [...Object.entries(ordObj)],
+    };
+  });
   const fixedFormatOrd = formattedOrd?.map((ord) => {
     const item = ord?.item?.map?.((itm) => {
       return {
         date: itm?.[0],
-        item: itm?.[1]
-      }
-    })
+        item: itm?.[1],
+      };
+    });
     return {
       month: ord.month,
-      item: item
-    }
+      item: item,
+    };
   });
 
-  const totalSent = mapData.filter(item => item?.resi)
-  const arrayOngkir = mapData.map(item => parseInt(item?.ongkir))
+  const totalSent = mapData.filter((item) => item?.resi);
+  const arrayOngkir = mapData.map((item) => parseInt(item?.ongkir));
   const totalOngkir = arrayOngkir?.reduce((val, nilaiSekarang) => {
-    return val + nilaiSekarang
+    return val + nilaiSekarang;
   }, 0);
   // console.log(allOrders);
   // console.log(fixedFormatOrd)
@@ -344,11 +411,12 @@ const Logistik = () => {
 
   // Calculate total pages
 
-  let allData = []
-  fixedFormatOrd.map((data, idx) => (
+  let allData = [];
+  fixedFormatOrd.map((data, idx) =>
     data.item.map((row, rowIdx) => {
-      allData.push({ ...row, month: data.month })
-    })))
+      allData.push({ ...row, month: data.month });
+    })
+  );
   // console.log(totalOngkir)
   const currentItems = allData.slice(startIndex, endIndex);
 
@@ -371,27 +439,41 @@ const Logistik = () => {
     if (allOrders) {
       setOrderByMont({
         ...ordersByMonth,
-        [monthActive]: allData
-      })
+        [monthActive]: allData,
+      });
       setMapDataByMont({
         ...mapDataByMonth,
-        [monthActive]: mapData
-      })
+        [monthActive]: mapData,
+      });
     }
   }, [allOrders, monthActive]);
-  console.log(ordersByMonth)
+  console.log(ordersByMonth);
 
   return (
     <div className="container">
       <Header />
       <h1 className="page-title">Logistik</h1>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "10px",
+        }}
+      >
         {/* <div className="form-group" style={{ width: '100%' }}> */}
         {/* <Form.Label className="label">Year:</Form.Label> */}
-        <select style={{ width: '200px' }} name='year' className="input" value={year} onChange={(e) => setYear(e.target.value)}>
+        <select
+          style={{ width: "200px" }}
+          name="year"
+          className="input"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+        >
           <option value="">Year</option>
           {[...Array(121)].map((_, i) => (
-            <option key={i} value={2024 + i}>{2024 + i}</option>
+            <option key={i} value={2024 + i}>
+              {2024 + i}
+            </option>
           ))}
         </select>
         {/* </div> */}
@@ -400,17 +482,28 @@ const Logistik = () => {
         <Col md={3}>
           <Card className="shadow-sm">
             <Card.Body>
-              <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  Paid Order
-                </div>
-                <div style={{ backgroundColor: 'rgb(229 228 255)', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Card.Title
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <div>Paid Order</div>
+                <div
+                  style={{
+                    backgroundColor: "rgb(229 228 255)",
+                    borderRadius: "35%",
+                    width: "50px",
+                    height: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <PeopleFill color="#8280FF" />
                 </div>
-
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : totalOrdersCount}</h3>
+                <h3 style={{ margin: "0px" }}>
+                  {loading ? <Loading /> : totalOrdersCount}
+                </h3>
                 {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -419,17 +512,28 @@ const Logistik = () => {
         <Col md={3}>
           <Card className="shadow-sm">
             <Card.Body>
-              <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  Sent Order
-                </div>
-                <div style={{ backgroundColor: 'rgb(255 243 217)', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Card.Title
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <div>Sent Order</div>
+                <div
+                  style={{
+                    backgroundColor: "rgb(255 243 217)",
+                    borderRadius: "35%",
+                    width: "50px",
+                    height: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <BoxFill color="#FEC53D" />
                 </div>
-
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : totalOrdersSentCount}</h3>
+                <h3 style={{ margin: "0px" }}>
+                  {loading ? <Loading /> : totalOrdersSentCount}
+                </h3>
                 {/* <small className="text-success">↑ 1.3% Up from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -438,17 +542,37 @@ const Logistik = () => {
         <Col md={3}>
           <Card className="shadow-sm">
             <Card.Body>
-              <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  Sent Ratio
-                </div>
-                <div style={{ backgroundColor: '#d9f7e8', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Card.Title
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <div>Sent Ratio</div>
+                <div
+                  style={{
+                    backgroundColor: "#d9f7e8",
+                    borderRadius: "35%",
+                    width: "50px",
+                    height: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <GraphUp color="#4AD991" />
                 </div>
-
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : parseFloat(((totalOrdersSentCount / totalOrdersCount) * 100).toFixed(2))}%</h3>
+                <h3 style={{ margin: "0px" }}>
+                  {loading ? (
+                    <Loading />
+                  ) : (
+                    parseFloat(
+                      ((totalOrdersSentCount / totalOrdersCount) * 100).toFixed(
+                        2
+                      )
+                    )
+                  )}
+                  %
+                </h3>
                 {/* <small className="text-danger">↓ 4.3% Down from last month</small> */}
               </Card.Text>
             </Card.Body>
@@ -457,312 +581,646 @@ const Logistik = () => {
         <Col md={3}>
           <Card className="shadow-sm">
             <Card.Body>
-              <Card.Title style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  Shipping Cost
-                </div>
-                <div style={{ backgroundColor: '#ffded1', borderRadius: '35%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Card.Title
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <div>Shipping Cost</div>
+                <div
+                  style={{
+                    backgroundColor: "#ffded1",
+                    borderRadius: "35%",
+                    width: "50px",
+                    height: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <Truck color="#FF9066" />
                 </div>
-
               </Card.Title>
               <Card.Text>
-                <h3 style={{ margin: '0px' }}>{loading ? <Loading /> : currency(totalFee)}</h3>
+                <h3 style={{ margin: "0px" }}>
+                  {loading ? <Loading /> : currency(totalFee)}
+                </h3>
                 {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
               </Card.Text>
             </Card.Body>
           </Card>
         </Col>
       </Row>
-      <Table bordered hover style={{ fontSize: '10px' }}>
-        <thead>
-          <tr style={{ textAlign: 'center' }}>
-            <th colSpan="5">Paxel</th>
-            <th colSpan="4">SAP</th>
-            <th colSpan="4">Lalamove</th>
-            <th colSpan="4">Dedicated</th>
+      <div
+        style={{
+          width: "100%",
+          overflowX: "auto",
+          overflowY: "hidden",
+        }}
+      >
+        <Table bordered hover style={{ fontSize: "10px", minWidth: "900px" }}>
+          <thead>
+            <tr style={{ textAlign: "center" }}>
+              <th colSpan="5">Paxel</th>
+              <th colSpan="4">SAP</th>
+              <th colSpan="4">Lalamove</th>
+              <th colSpan="4">Dedicated</th>
+            </tr>
+            <tr>
+              <th>Date</th>
+              <th>Total Order</th>
+              <th>Sent Order</th>
+              <th>Ratio</th>
+              <th>Shipping Cost</th>
+              <th>Total Order</th>
+              <th>Sent Order</th>
+              <th>Ratio</th>
+              <th>Shipping Cost</th>
+              <th>Total Order</th>
+              <th>Sent Order</th>
+              <th>Ratio</th>
+              <th>Shipping Cost</th>
+              <th>Total Order</th>
+              <th>Sent Order</th>
+              <th>Ratio</th>
+              <th>Shipping Cost</th>
+            </tr>
+          </thead>
+          {months.map(({ id, name }) => {
+            let dataLalamoveSent = 0;
+            let dataLalamoveTot = 0;
+            let dataLalamoveCost = 0;
 
-          </tr>
-          <tr>
-            <th>Date</th>
-            <th>Total Order</th>
-            <th>Sent Order</th>
-            <th>Ratio</th>
-            <th>Shipping Cost</th>
-            <th>Total Order</th>
-            <th>Sent Order</th>
-            <th>Ratio</th>
-            <th>Shipping Cost</th>
-            <th>Total Order</th>
-            <th>Sent Order</th>
-            <th>Ratio</th>
-            <th>Shipping Cost</th>
-            <th>Total Order</th>
-            <th>Sent Order</th>
-            <th>Ratio</th>
-            <th>Shipping Cost</th>
+            let dataSAP = 0;
+            // let
+            const filterArrayOngkirDed = mapDataByMonth[id]?.filter(
+              (arr) => arr?.kurir === "Dedicated"
+            );
+            const arrayOngkirByMonthDed = filterArrayOngkirDed?.map((item) =>
+              parseInt(item?.ongkir)
+            );
+            const totalOngkirByMonthDed = arrayOngkirByMonthDed?.reduce(
+              (val, nilaiSekarang) => {
+                return val + nilaiSekarang;
+              },
+              0
+            );
 
-          </tr>
-        </thead>
-        {months.map(({ id, name }) => {
-          let dataLalamoveSent = 0
-          let dataLalamoveTot = 0
-          let dataLalamoveCost = 0
+            // lalamove
+            const filterArrayOngkirLal = mapDataByMonth[id]?.filter(
+              (arr) => arr?.kurir === "Lalamove"
+            );
+            const arrayOngkirByMonthLal = filterArrayOngkirLal?.map((item) =>
+              parseInt(item?.ongkir)
+            );
+            const totalOngkirByMonthLal = arrayOngkirByMonthLal?.reduce(
+              (val, nilaiSekarang) => {
+                return val + nilaiSekarang;
+              },
+              0
+            );
 
-          let dataSAP = 0
-          // let
-          const filterArrayOngkirDed = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'Dedicated')
-          const arrayOngkirByMonthDed = filterArrayOngkirDed?.map(item => parseInt(item?.ongkir))
-          const totalOngkirByMonthDed = arrayOngkirByMonthDed?.reduce((val, nilaiSekarang) => {
-            return val + nilaiSekarang
-          }, 0);
+            // Paxel
+            const filterArrayOngkirPax = mapDataByMonth[id]?.filter(
+              (arr) => arr?.kurir === "Paxel"
+            );
+            const arrayOngkirByMonthPax = filterArrayOngkirPax?.map((item) =>
+              parseInt(item?.ongkir)
+            );
+            const totalOngkirByMonthPax = arrayOngkirByMonthPax?.reduce(
+              (val, nilaiSekarang) => {
+                return val + nilaiSekarang;
+              },
+              0
+            );
 
-          // lalamove
-          const filterArrayOngkirLal = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'Lalamove')
-          const arrayOngkirByMonthLal = filterArrayOngkirLal?.map(item => parseInt(item?.ongkir))
-          const totalOngkirByMonthLal = arrayOngkirByMonthLal?.reduce((val, nilaiSekarang) => {
-            return val + nilaiSekarang
-          }, 0);
+            // SAP
+            const filterArrayOngkirSAP = mapDataByMonth[id]?.filter(
+              (arr) => arr?.kurir === "SAP"
+            );
+            const arrayOngkirByMonthSAP = filterArrayOngkirSAP?.map((item) =>
+              parseInt(item?.ongkir)
+            );
+            const totalOngkirByMonthSAP = arrayOngkirByMonthSAP?.reduce(
+              (val, nilaiSekarang) => {
+                return val + nilaiSekarang;
+              },
+              0
+            );
+            console.log(totalOngkirByMonthDed);
+            return (
+              <React.Fragment key={id}>
+                {/* Month Header */}
+                <tbody>
+                  <tr className="bg-success text-white">
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id) ? (
+                        <CaretDownFill size={20} />
+                      ) : (
+                        <CaretRightFill size={20} />
+                      )}{" "}
+                      {name}
+                      {loading && expandedMonths[id] && <Loading />}
+                    </td>
+                    {/* Paxel */}
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.kurir === "Paxel"
+                          )?.length
+                        : 0}
+                    </td>
 
-          // Paxel
-          const filterArrayOngkirPax = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'Paxel')
-          const arrayOngkirByMonthPax = filterArrayOngkirPax?.map(item => parseInt(item?.ongkir))
-          const totalOngkirByMonthPax = arrayOngkirByMonthPax?.reduce((val, nilaiSekarang) => {
-            return val + nilaiSekarang
-          }, 0);
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.resi && item?.kurir === "Paxel"
+                          )?.length
+                        : 0}
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id) &&
+                      mapDataByMonth[id]?.filter?.(
+                        (item) => item?.kurir === "Paxel"
+                      )?.length > 0
+                        ? parseFloat(
+                            (
+                              (mapDataByMonth[id]?.filter?.(
+                                (item) => item?.resi && item?.kurir === "Paxel"
+                              )?.length /
+                                mapDataByMonth[id]?.filter?.(
+                                  (item) => item?.kurir === "Paxel"
+                                )?.length) *
+                              100
+                            ).toFixed(2)
+                          )
+                        : 0}
+                      %
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        borderRight: "2px solid #fff",
+                      }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? currency(totalOngkirByMonthPax)
+                        : "Rp.0"}
+                    </td>
+                    {/* SAP */}
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.kurir === "SAP"
+                          )?.length
+                        : 0}
+                    </td>
 
-          // SAP
-          const filterArrayOngkirSAP = mapDataByMonth[id]?.filter(arr => arr?.kurir === 'SAP')
-          const arrayOngkirByMonthSAP = filterArrayOngkirSAP?.map(item => parseInt(item?.ongkir))
-          const totalOngkirByMonthSAP = arrayOngkirByMonthSAP?.reduce((val, nilaiSekarang) => {
-            return val + nilaiSekarang
-          }, 0);
-          console.log(totalOngkirByMonthDed)
-          return <React.Fragment key={id}>
-            {/* Month Header */}
-            <tbody>
-              <tr className="bg-success text-white">
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? <CaretDownFill size={20} /> : <CaretRightFill size={20} />} {name}{
-                    loading && expandedMonths[id] &&
-                    <Loading />
-                  }
-                </td>
-                {/* Paxel */}
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Paxel')?.length : 0}
-                </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.resi && item?.kurir === "SAP"
+                          )?.length
+                        : 0}
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id) &&
+                      mapDataByMonth[id]?.filter?.(
+                        (item) => item?.kurir === "SAP"
+                      )?.length > 0
+                        ? parseFloat(
+                            (
+                              (mapDataByMonth[id]?.filter?.(
+                                (item) => item?.resi && item?.kurir === "SAP"
+                              )?.length /
+                                mapDataByMonth[id]?.filter?.(
+                                  (item) => item?.kurir === "SAP"
+                                )?.length) *
+                              100
+                            ).toFixed(2)
+                          )
+                        : 0}
+                      %
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        borderRight: "2px solid #fff",
+                      }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? currency(totalOngkirByMonthSAP)
+                        : "Rp.0"}
+                    </td>
+                    {/* lalamove */}
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.kurir === "Lalamove"
+                          )?.length
+                        : 0}
+                    </td>
 
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Paxel')?.length : 0}
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Paxel')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Paxel')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Paxel')?.length) * 100).toFixed(2)) : 0}%
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold", borderRight: '2px solid #fff' }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthPax) : 'Rp.0'}
-                </td>
-                {/* SAP */}
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'SAP')?.length : 0}
-                </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.resi && item?.kurir === "Lalamove"
+                          )?.length
+                        : 0}
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id) &&
+                      mapDataByMonth[id]?.filter?.(
+                        (item) => item?.kurir === "Lalamove"
+                      )?.length > 0
+                        ? parseFloat(
+                            (
+                              (mapDataByMonth[id]?.filter?.(
+                                (item) =>
+                                  item?.resi && item?.kurir === "Lalamove"
+                              )?.length /
+                                mapDataByMonth[id]?.filter?.(
+                                  (item) => item?.kurir === "Lalamove"
+                                )?.length) *
+                              100
+                            ).toFixed(2)
+                          )
+                        : 0}
+                      %
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        borderRight: "2px solid #fff",
+                      }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? currency(totalOngkirByMonthLal)
+                        : "Rp.0"}
+                    </td>
+                    {/* Dedicated */}
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.kurir === "Dedicated"
+                          )?.length
+                        : 0}
+                    </td>
 
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'SAP')?.length : 0}
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'SAP')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'SAP')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'SAP')?.length) * 100).toFixed(2)) : 0}%
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold", borderRight: '2px solid #fff' }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthSAP) : 'Rp.0'}
-                </td>
-                {/* lalamove */}
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Lalamove')?.length : 0}
-                </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? mapDataByMonth[id]?.filter?.(
+                            (item) => item?.resi && item?.kurir === "Dedicated"
+                          )?.length
+                        : 0}
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id) &&
+                      mapDataByMonth[id]?.filter?.(
+                        (item) => item?.kurir === "Dedicated"
+                      )?.length > 0
+                        ? parseFloat(
+                            (
+                              (mapDataByMonth[id]?.filter?.(
+                                (item) =>
+                                  item?.resi && item?.kurir === "Dedicated"
+                              )?.length /
+                                mapDataByMonth[id]?.filter?.(
+                                  (item) => item?.kurir === "Dedicated"
+                                )?.length) *
+                              100
+                            ).toFixed(2)
+                          )
+                        : 0}
+                      %
+                    </td>
+                    <td
+                      className="bg-success text-white"
+                      colSpan={1}
+                      style={{ cursor: "pointer", fontWeight: "bold" }}
+                      onClick={() => {
+                        toggleMonth(id);
+                        if (!expandedMonths[id]) {
+                          setMonthActive(id);
+                        }
+                      }}
+                    >
+                      {expandedMonths.includes(id)
+                        ? currency(totalOngkirByMonthDed)
+                        : "Rp.0"}
+                    </td>
+                  </tr>
+                </tbody>
 
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Lalamove')?.length : 0}
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Lalamove')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Lalamove')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Lalamove')?.length) * 100).toFixed(2)) : 0}%
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold", borderRight: '2px solid #fff' }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthLal) : 'Rp.0'}
-                </td>
-                {/* Dedicated */}
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Dedicated')?.length : 0}
-                </td>
+                {expandedMonths.includes(id) &&
+                  ordersByMonth[id]?.map((row, rowIdx) => {
+                    const findByCourierDed = row.item.filter(
+                      (item) => item?.kurir === "Dedicated"
+                    );
+                    const dedSent = findByCourierDed?.filter(
+                      (item) => item?.resi && item?.resi
+                    );
+                    const ongkirDed = findByCourierDed?.map((pax) =>
+                      parseInt(pax?.ongkir)
+                    );
+                    const totOngDed = ongkirDed?.reduce(
+                      (val, nilaiSekarang) => {
+                        return val + nilaiSekarang;
+                      },
+                      0
+                    );
+                    const rasioDed = parseFloat(
+                      (
+                        (dedSent?.length / findByCourierDed?.length) *
+                        100
+                      ).toFixed(2)
+                    );
+                    // sap
+                    const findByCourierSAP = row.item.filter(
+                      (item) => item?.kurir === "SAP"
+                    );
+                    const sapSent = findByCourierSAP?.filter(
+                      (item) => item?.resi && item?.resi
+                    );
+                    const ongkirSap = findByCourierSAP?.map((pax) =>
+                      parseInt(pax?.ongkir)
+                    );
+                    const totOngSap = ongkirSap?.reduce(
+                      (val, nilaiSekarang) => {
+                        return val + nilaiSekarang;
+                      },
+                      0
+                    );
+                    const rasioSap = parseFloat(
+                      (
+                        (sapSent?.length / findByCourierSAP?.length) *
+                        100
+                      ).toFixed(2)
+                    );
+                    // paxel
+                    const findByCourierPaxel = row.item.filter(
+                      (item) => item?.kurir === "Paxel"
+                    );
+                    const paxelSent = findByCourierPaxel?.filter(
+                      (item) => item?.resi && item?.resi
+                    );
+                    const ongkirPaxel = findByCourierPaxel?.map((pax) =>
+                      parseInt(pax?.ongkir)
+                    );
+                    const totOngPax = ongkirPaxel?.reduce(
+                      (val, nilaiSekarang) => {
+                        return val + nilaiSekarang;
+                      },
+                      0
+                    );
+                    const rasioPax = parseFloat(
+                      (
+                        (paxelSent?.length / findByCourierPaxel?.length) *
+                        100
+                      ).toFixed(2)
+                    );
+                    // lalamove
+                    const findByCourierLalamove = row.item.filter(
+                      (item) => item?.kurir === "Lalamove"
+                    );
+                    const lalamoveSent = findByCourierLalamove?.filter(
+                      (item) => item?.resi && item?.resi
+                    );
+                    const ongkirLa = findByCourierLalamove?.map((pax) =>
+                      parseInt(pax?.ongkir)
+                    );
+                    const totOngLa = ongkirLa?.reduce((val, nilaiSekarang) => {
+                      return val + nilaiSekarang;
+                    }, 0);
+                    const rasioLa = parseFloat(
+                      (
+                        (lalamoveSent?.length / findByCourierLalamove?.length) *
+                        100
+                      ).toFixed(2)
+                    );
+                    // console.log(findByCourier)
+                    // render month one time
 
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Dedicated')?.length : 0}
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) && mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Dedicated')?.length > 0 ? parseFloat(((mapDataByMonth[id]?.filter?.(item => item?.resi && item?.kurir === 'Dedicated')?.length / mapDataByMonth[id]?.filter?.(item => item?.kurir === 'Dedicated')?.length) * 100).toFixed(2)) : 0}%
-                </td>
-                <td className="bg-success text-white" colSpan={1} style={{ cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                  toggleMonth(id)
-                  if (!expandedMonths[id]) {
-                    setMonthActive(id)
-                  }
-                }}>
-                  {expandedMonths.includes(id) ? currency(totalOngkirByMonthDed) : 'Rp.0'}
-                </td>
-              </tr>
-            </tbody>
-
-            {expandedMonths.includes(id) &&
-              ordersByMonth[id]?.map((row, rowIdx) => {
-                const findByCourierDed = row.item.filter(item => item?.kurir === "Dedicated")
-                const dedSent = findByCourierDed?.filter(item => item?.resi && item?.resi)
-                const ongkirDed = findByCourierDed?.map((pax) => parseInt(pax?.ongkir))
-                const totOngDed = ongkirDed?.reduce((val, nilaiSekarang) => {
-                  return val + nilaiSekarang
-                }, 0);
-                const rasioDed = parseFloat(((dedSent?.length / findByCourierDed?.length) * 100).toFixed(2))
-                // sap
-                const findByCourierSAP = row.item.filter(item => item?.kurir === "SAP")
-                const sapSent = findByCourierSAP?.filter(item => item?.resi && item?.resi)
-                const ongkirSap = findByCourierSAP?.map((pax) => parseInt(pax?.ongkir))
-                const totOngSap = ongkirSap?.reduce((val, nilaiSekarang) => {
-                  return val + nilaiSekarang
-                }, 0);
-                const rasioSap = parseFloat(((sapSent?.length / findByCourierSAP?.length) * 100).toFixed(2))
-                // paxel
-                const findByCourierPaxel = row.item.filter(item => item?.kurir === "Paxel")
-                const paxelSent = findByCourierPaxel?.filter(item => item?.resi && item?.resi)
-                const ongkirPaxel = findByCourierPaxel?.map((pax) => parseInt(pax?.ongkir))
-                const totOngPax = ongkirPaxel?.reduce((val, nilaiSekarang) => {
-                  return val + nilaiSekarang
-                }, 0);
-                const rasioPax = parseFloat(((paxelSent?.length / findByCourierPaxel?.length) * 100).toFixed(2))
-                // lalamove
-                const findByCourierLalamove = row.item.filter(item => item?.kurir === "Lalamove")
-                const lalamoveSent = findByCourierLalamove?.filter(item => item?.resi && item?.resi)
-                const ongkirLa = findByCourierLalamove?.map((pax) => parseInt(pax?.ongkir))
-                const totOngLa = ongkirLa?.reduce((val, nilaiSekarang) => {
-                  return val + nilaiSekarang
-                }, 0);
-                const rasioLa = parseFloat(((lalamoveSent?.length / findByCourierLalamove?.length) * 100).toFixed(2))
-                // console.log(findByCourier)
-                // render month one time
-
-                dataLalamoveCost += parseInt(totOngLa)
-                return <tbody key={rowIdx}>
-                  {/* {shouldRenderMonth &&
+                    dataLalamoveCost += parseInt(totOngLa);
+                    return (
+                      <tbody key={rowIdx}>
+                        {/* {shouldRenderMonth &&
                     <tr className="bg-success text-white">
                       <td className="bg-success text-white" colSpan="17">{row.month}</td>
                     </tr>
                   } */}
-                  <tr>
-                    <td>{row?.date}</td>
-                    <td>{findByCourierPaxel?.length}</td>
-                    <td>{paxelSent?.length || 0}</td>
-                    <td className={getRasioColor(rasioPax ? `${rasioPax}%` : '0%')}>{rasioPax ? `${rasioPax}%` : '0%'}</td>
-                    <td style={{ borderRight: '2px solid #1a8754' }}>{currency(totOngPax)}</td>
-                    <td>{findByCourierSAP?.length}</td>
-                    <td>{sapSent?.length}</td>
-                    <td className={getRasioColor(rasioSap ? `${rasioSap}%` : '0%')}>{rasioSap ? `${rasioSap}%` : '0%'}</td>
-                    <td style={{ borderRight: '2px solid #1a8754' }}>{currency(totOngSap)}</td>
-                    <td>{findByCourierLalamove?.length}</td>
-                    <td>{lalamoveSent?.length}</td>
-                    <td className={getRasioColor(rasioLa ? `${rasioLa}%` : '0%')}>{rasioLa ? `${rasioLa}%` : '0%'}</td>
-                    <td style={{ borderRight: '2px solid #1a8754' }}>{currency(totOngLa)}</td>
-                    <td>{findByCourierDed?.length}</td>
-                    <td>{dedSent?.length}</td>
-                    <td className={getRasioColor(rasioDed ? `${rasioDed}%` : '0%')}>{rasioDed ? `${rasioDed}%` : '0%'}</td>
-                    <td>{currency(totOngDed)}</td>
-
-
-                  </tr></tbody>
-
-              })}
-            {/* Data Rows (Shown if expanded) */}
-
-          </React.Fragment>
-        })}
-        {/* {allData?.map((row, rowIdx) => {
+                        <tr>
+                          <td>{row?.date}</td>
+                          <td>{findByCourierPaxel?.length}</td>
+                          <td>{paxelSent?.length || 0}</td>
+                          <td
+                            className={getRasioColor(
+                              rasioPax ? `${rasioPax}%` : "0%"
+                            )}
+                          >
+                            {rasioPax ? `${rasioPax}%` : "0%"}
+                          </td>
+                          <td style={{ borderRight: "2px solid #1a8754" }}>
+                            {currency(totOngPax)}
+                          </td>
+                          <td>{findByCourierSAP?.length}</td>
+                          <td>{sapSent?.length}</td>
+                          <td
+                            className={getRasioColor(
+                              rasioSap ? `${rasioSap}%` : "0%"
+                            )}
+                          >
+                            {rasioSap ? `${rasioSap}%` : "0%"}
+                          </td>
+                          <td style={{ borderRight: "2px solid #1a8754" }}>
+                            {currency(totOngSap)}
+                          </td>
+                          <td>{findByCourierLalamove?.length}</td>
+                          <td>{lalamoveSent?.length}</td>
+                          <td
+                            className={getRasioColor(
+                              rasioLa ? `${rasioLa}%` : "0%"
+                            )}
+                          >
+                            {rasioLa ? `${rasioLa}%` : "0%"}
+                          </td>
+                          <td style={{ borderRight: "2px solid #1a8754" }}>
+                            {currency(totOngLa)}
+                          </td>
+                          <td>{findByCourierDed?.length}</td>
+                          <td>{dedSent?.length}</td>
+                          <td
+                            className={getRasioColor(
+                              rasioDed ? `${rasioDed}%` : "0%"
+                            )}
+                          >
+                            {rasioDed ? `${rasioDed}%` : "0%"}
+                          </td>
+                          <td>{currency(totOngDed)}</td>
+                        </tr>
+                      </tbody>
+                    );
+                  })}
+                {/* Data Rows (Shown if expanded) */}
+              </React.Fragment>
+            );
+          })}
+          {/* {allData?.map((row, rowIdx) => {
           const findByCourierDed = row.item.filter(item => item?.kurir === "Dedicated")
           const dedSent = findByCourierDed?.filter(item => item?.resi && item?.resi)
           const ongkirDed = findByCourierDed?.map((pax) => parseInt(pax?.ongkir))
@@ -827,8 +1285,8 @@ const Logistik = () => {
             </tr></tbody>
 
         })} */}
-
-      </Table>
+        </Table>
+      </div>
       {/* <ButtonGroup style={{ textAlign: 'center', float: 'right' }}>
         <div>
           <Form.Select style={{

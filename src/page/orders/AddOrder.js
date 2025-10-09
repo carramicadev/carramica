@@ -1339,7 +1339,15 @@ const AddOrder = () => {
     <div className="container">
       <Header />
       <h1 className="page-title">Form Order</h1>
-      <div className="form-container">
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "20px",
+          alignItems: "flex-start",
+        }}
+        className="form-container"
+      >
         <div className="form-section">
           <div className="salesField">
             <div className="form-group ">

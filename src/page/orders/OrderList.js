@@ -1494,62 +1494,85 @@ const OrderList = () => {
           </Card>
         </Col>
       </Row>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div style={{ display: "flex" }}>
-          <div>
-            <input
-              className="input"
-              style={{
-                width: "300px",
-                borderRadius: "5px",
-                padding: "9px ",
-                marginTop: "10px",
-              }}
-              type="text"
-              placeholder="Search here"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </div>
-          <div style={{ display: "flex", marginTop: "10px" }}>
-            <OverlayTrigger
-              delay={{ hide: 450, show: 300 }}
-              overlay={(props) => <Tooltip {...props}>Filter</Tooltip>}
-              placement="bottom"
-            >
-              <button
-                style={{
-                  // marginTop: '0px',
-                  marginLeft: "10px",
-                  // padding: '0px',
-                }}
-                onClick={() => setFilterDialog(true)}
-                className="btn btn-outline-secondary btn-sm"
-                variant="secondary"
-              >
-                <Filter />
-              </button>
-            </OverlayTrigger>
-            {/* <FilterSquare size={60} /> */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "10px",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          {/* <div> */}
+          <input
+            className="input"
+            style={{
+              width: "280px",
+              borderRadius: "5px",
+              padding: "9px",
+            }}
+            type="text"
+            placeholder="Search here"
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+          {/* </div> */}
+          {/* <div style={{ display: "flex", marginTop: "10px" }}> */}
+          <OverlayTrigger
+            delay={{ hide: 450, show: 300 }}
+            overlay={(props) => <Tooltip {...props}>Filter</Tooltip>}
+            placement="bottom"
+          >
             <button
-              style={{
-                // marginTop: '0px',
-                marginLeft: "10px",
-                whiteSpace: "nowrap",
-              }}
-              onClick={() => setFilterColomDialog(true)}
+              style={
+                {
+                  // marginTop: '0px',
+                  // marginLeft: "10px",
+                  // padding: '0px',
+                }
+              }
+              onClick={() => setFilterDialog(true)}
               className="btn btn-outline-secondary btn-sm"
-              variant="secondary"
+              // variant="secondary"
             >
-              Custom Column
+              <Filter />
             </button>
-          </div>
+          </OverlayTrigger>
+          {/* <FilterSquare size={60} /> */}
+          <button
+            style={{
+              // marginTop: '0px',
+              // marginLeft: "10px",
+              whiteSpace: "nowrap",
+            }}
+            onClick={() => setFilterColomDialog(true)}
+            className="btn btn-outline-secondary btn-sm"
+            // variant="secondary"
+          >
+            Custom Column
+          </button>
+          {/* </div> */}
         </div>
-        <div style={{}}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
           <CSVLink
             style={{
-              width: "150px",
-              marginRight: "10px",
+              // width: "150px",
+              // marginRight: "10px",
               whiteSpace: "nowrap",
             }}
             data={dataForExcel}
