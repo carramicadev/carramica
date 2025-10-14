@@ -194,6 +194,7 @@ export default function DownloadInvoiceDialog(props) {
           width: "auto",
           height: "auto",
           overFlowY: "auto",
+          zIndex: 99999,
           // paddingLeft: '20px'
         }}
         scrollable={true}

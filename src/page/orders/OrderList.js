@@ -9,6 +9,8 @@ import {
   Row,
   Table,
   Tooltip,
+  Popover,
+  ListGroup,
 } from "react-bootstrap";
 import { CSVLink } from "react-csv";
 // import Header from './Header';
@@ -52,7 +54,10 @@ import {
   TrashFill,
   Whatsapp,
   XCircleFill,
+  Eye,
+  JournalPlus,
 } from "react-bootstrap-icons";
+
 import DatePicker from "react-datepicker";
 import { set } from "date-fns";
 import { FilterDialog } from "./FilterOrdersDialog";
@@ -70,6 +75,8 @@ import Header from "../../components/Header";
 import DialogEditShipDate from "./DialogEditShippingDate";
 import { typesense } from "../../typesense";
 import Loading from "../../components/Loading";
+import PopoverListExample from "./PopupInvoice";
+import DialogAddKuitansi from "./DialogAddKuitansi";
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -105,6 +112,11 @@ const OrderList = () => {
     open: false,
     data: {},
     userId: currentUser?.uid,
+  });
+  const [dialogAddKuitansi, setDialogAddKuitansi] = useState({
+    open: false,
+    data: {},
+    mode: "add",
   });
   const [user, setUser] = useState([]);
   const [warehouse, setWarehouse] = useState([]);
@@ -926,22 +938,59 @@ const OrderList = () => {
   };
   // header
   // console.log(mapData?.length)
+  // popupevers
+  const ListContent = (item) => {
+    return (
+      <Popover id="popover-list">
+        {/* <Popover.Header as="h3">My List</Popover.Header> */}
+        <Popover.Body>
+          <ListGroup variant="flush">
+            <ListGroup.Item
+              action
+              onClick={() => setInvoiceDialog({ open: true, data: [item] })}
+            >
+              <Eye size={20} /> Lihat Invoice
+            </ListGroup.Item>
+            <ListGroup.Item
+              action
+              onClick={() =>
+                setDialogAddKuitansi({ open: true, data: item, mode: "add" })
+              }
+            >
+              <JournalPlus size={20} /> Buat kuitansi Penjualan
+            </ListGroup.Item>
+            {/* <ListGroup.Item action onClick={() => alert("Item 3 clicked!")}>
+        Item 3
+      </ListGroup.Item> */}
+          </ListGroup>
+        </Popover.Body>
+      </Popover>
+    );
+  };
+
   const [column, setColumn] = useState([
     {
       label: "Invoice Id",
       key: (item, i, idOrder) =>
         idOrder === 0 && (
-          <a
-            href="#"
-            // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
-            onClick={() => setInvoiceDialog({ open: true, data: [item] })}
-            style={
-              // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
-              { color: "black" }
-            }
+          <OverlayTrigger
+            trigger="click" // can also be ['hover', 'focus']
+            placement="right"
+            overlay={ListContent(item)}
+            rootClose
           >
-            {item?.invoice_id}
-          </a>
+            <a
+              // href="#"
+              // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+              // onClick={() => setInvoiceDialog({ open: true, data: [item] })}
+              style={
+                // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                { color: "black", cursor: "pointer" }
+              }
+            >
+              {item?.invoice_id}
+            </a>
+          </OverlayTrigger>
         ),
       style: {},
     },
@@ -1829,6 +1878,10 @@ const OrderList = () => {
       <DialogEditShipDate
         show={editShipDateDialog}
         handleClose={() => setEditShipDateDialog({ open: false, id: "" })}
+      />
+      <DialogAddKuitansi
+        show={dialogAddKuitansi}
+        onHide={() => setDialogAddKuitansi({ open: false, data: {} })}
       />
     </div>
   );
