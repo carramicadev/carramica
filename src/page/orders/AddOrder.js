@@ -443,6 +443,7 @@ const AddOrder = () => {
                         sku: e?.[0]?.sku,
                         id: e?.[0]?.id,
                         stock: e?.[0]?.stok,
+                        discount: 0,
                       }
                     : name === "quantity"
                     ? {
@@ -576,7 +577,7 @@ const AddOrder = () => {
               ...order.products,
               {
                 nama: "",
-                quantity: "",
+                quantity: 1,
                 price: "",
                 discount: "",
                 amount: "",
@@ -1182,7 +1183,7 @@ const AddOrder = () => {
 
       console.log("error", e);
       setLoading(false);
-      // window.location.reload();
+      window.location.reload();
     }
   };
 

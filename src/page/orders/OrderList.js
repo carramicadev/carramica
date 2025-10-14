@@ -952,6 +952,7 @@ const OrderList = () => {
               <Eye size={20} /> Lihat Invoice
             </ListGroup.Item>
             <ListGroup.Item
+              disabled
               action
               onClick={() =>
                 setDialogAddKuitansi({ open: true, data: item, mode: "add" })
