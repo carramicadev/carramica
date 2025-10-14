@@ -1182,7 +1182,7 @@ const AddOrder = () => {
 
       console.log("error", e);
       setLoading(false);
-      // window.location.reload();
+      window.location.reload();
     }
   };
 
