@@ -1,48 +1,85 @@
-import { collection, deleteDoc, doc, endBefore, getDoc, getDocs, limit, limitToLast, orderBy, query, setDoc, startAfter, where } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { useSnackbar } from 'notistack';
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Nav, Tab, Form, Button, Tabs, ButtonGroup } from 'react-bootstrap';
-import { PersonSquare, TrashFill } from 'react-bootstrap-icons';
-import DialogAddUsers from './DialogAddUsers';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  endBefore,
+  getDoc,
+  getDocs,
+  limit,
+  limitToLast,
+  orderBy,
+  query,
+  setDoc,
+  startAfter,
+  where,
+} from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { useSnackbar } from "notistack";
+import React, { useEffect, useState } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Nav,
+  Tab,
+  Form,
+  Button,
+  Tabs,
+  ButtonGroup,
+} from "react-bootstrap";
+import { PencilSquare, PersonSquare, TrashFill } from "react-bootstrap-icons";
+import DialogAddUsers from "./DialogAddUsers";
 // import DialogAddContact from './DialogAddContact';
-import { firestore, functions } from '../../FirebaseFrovider';
-import ProfilePage from './settingsProfil';
-import './settings.css';
-import Warehouse from './warehouse';
-import Header from '../../components/Header';
-import Agen from './agen';
+import { firestore, functions } from "../../FirebaseFrovider";
+import ProfilePage from "./settingsProfil";
+import "./settings.css";
+import Warehouse from "./warehouse";
+import Header from "../../components/Header";
+import Agen from "./agen";
 
 const Settings = (props) => {
   const { enqueueSnackbar } = useSnackbar();
   const [update, setUpdate] = useState(false);
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [selectedRules, setSelectedRules] = React.useState('sales');
-  const rules = ['sales', 'admin', 'shipping', 'Head Of Sales', 'agen']
+  const [openAddDialog, setOpenAddDialog] = useState({
+    open: false,
+    mode: "add",
+    data: {},
+  });
+  const [selectedRules, setSelectedRules] = React.useState("sales");
+  const rules = ["sales", "admin", "shipping", "Head Of Sales", "agen"];
   // const [selectedOptions, setSelectedOptions] = useState([]);
   const options = [
-    { component: 'home', name: 'Home', path: '/' },
-    { component: 'addOrder', name: 'Add Order', path: '/add-order' },
-    { component: 'orders', name: 'Orders', path: '/orders' },
+    { component: "home", name: "Home", path: "/" },
+    { component: "addOrder", name: "Add Order", path: "/add-order" },
+    { component: "orders", name: "Orders", path: "/orders" },
     {
-      component: 'products', name: 'Products', path: '/products/*', subMenu: [
+      component: "products",
+      name: "Products",
+      path: "/products/*",
+      subMenu: [
         {
-          component: 'products', name: 'Products', path: '/products/*'
+          component: "products",
+          name: "Products",
+          path: "/products/*",
         },
         {
-          component: 'categories', name: 'Categories', path: '/categories'
-        }
-      ]
+          component: "categories",
+          name: "Categories",
+          path: "/categories",
+        },
+      ],
     },
-    { component: 'logistic', name: 'Logistic', path: '/logistic' },
-    { component: 'contact', name: 'Contact', path: '/contact' },
-    { component: 'settings', name: 'Settings', path: '/settings' },
+    { component: "logistic", name: "Logistic", path: "/logistic" },
+    { component: "contact", name: "Contact", path: "/contact" },
+    { component: "settings", name: "Settings", path: "/settings" },
   ];
 
-  const [checkList, setChcekList] = useState([])
+  const [checkList, setChcekList] = useState([]);
 
   const handeCheckList = (value, i) => (e) => {
-    const currentIndex = checkList.findIndex(check => check.component === value.component);
+    const currentIndex = checkList.findIndex(
+      (check) => check.component === value.component
+    );
     // console.log(currentIndex)
     const newChecked = [...checkList];
 
@@ -53,16 +90,14 @@ const Settings = (props) => {
     }
 
     setChcekList(newChecked);
-
-  }
+  };
   useEffect(() => {
     const fetchData = async () => {
       const docRef = doc(firestore, "settings", "rules", "menu", selectedRules);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setChcekList(docSnap.data().akses)
+        setChcekList(docSnap.data().akses);
       }
-
     };
     fetchData();
   }, [selectedRules]);
@@ -73,7 +108,12 @@ const Settings = (props) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const getDoc = query(collection(firestore, "users"), where("rules", "!=", "agen"), orderBy("createdAt", "desc"), limit(20));
+      const getDoc = query(
+        collection(firestore, "users"),
+        where("rules", "!=", "agen"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
       const documentSnapshots = await getDocs(getDoc);
       var items = [];
 
@@ -89,10 +129,15 @@ const Settings = (props) => {
   // console.log(list)
   const showNext = ({ item }) => {
     if (list.length === 0) {
-      alert("Thats all we have for now !")
+      alert("Thats all we have for now !");
     } else {
       const fetchNextData = async () => {
-        const getDoc = query(collection(firestore, "users"), orderBy("createdAt", "desc"), startAfter(item.createdAt), limit(20));
+        const getDoc = query(
+          collection(firestore, "users"),
+          orderBy("createdAt", "desc"),
+          startAfter(item.createdAt),
+          limit(20)
+        );
         const documentSnapshots = await getDocs(getDoc);
         var items = [];
 
@@ -101,7 +146,7 @@ const Settings = (props) => {
           // doc.data() is never undefined for query doc snapshots
         });
         setList(items);
-        setPage(page + 1)
+        setPage(page + 1);
       };
       fetchNextData();
     }
@@ -109,7 +154,12 @@ const Settings = (props) => {
 
   const showPrevious = ({ item }) => {
     const fetchPreviousData = async () => {
-      const getDoc = query(collection(firestore, "users"), orderBy("createdAt", "desc"), endBefore(item.createdAt), limitToLast(20));
+      const getDoc = query(
+        collection(firestore, "users"),
+        orderBy("createdAt", "desc"),
+        endBefore(item.createdAt),
+        limitToLast(20)
+      );
       const documentSnapshots = await getDocs(getDoc);
       var items = [];
 
@@ -118,67 +168,68 @@ const Settings = (props) => {
         // doc.data() is never undefined for query doc snapshots
       });
       setList(items);
-      setPage(page - 1)
+      setPage(page - 1);
     };
     fetchPreviousData();
   };
 
-
   const handleSave = async () => {
     try {
       await setDoc(doc(firestore, "settings", "rules", "menu", selectedRules), {
-        akses: checkList
-      })
+        akses: checkList,
+      });
       // console.log('Saved settings:',);
-      enqueueSnackbar('settings berhasil disimpan!.', { variant: 'success' })
+      enqueueSnackbar("settings berhasil disimpan!.", { variant: "success" });
       // alert('Settings saved successfully!');
     } catch (e) {
-      console.log(e.message)
+      console.log(e.message);
     }
   };
   // delete contact
   const handleDeleteClick = async (id) => {
-    if (window.confirm(' apakah anda yakin ingin menghapus sales ini?')) {
+    if (window.confirm(" apakah anda yakin ingin menghapus sales ini?")) {
       try {
         // console.log(id)
-        const deleteUser = httpsCallable(functions, 'deleteUser');
+        const deleteUser = httpsCallable(functions, "deleteUser");
         await deleteUser({
           id: id,
         });
-        const docRef = doc(firestore, 'users', id);
+        const docRef = doc(firestore, "users", id);
         await deleteDoc(docRef);
-        setUpdate((prevValue) => !prevValue)
-        enqueueSnackbar(`berhasil menghapus sales`, { variant: 'success' })
+        setUpdate((prevValue) => !prevValue);
+        enqueueSnackbar(`berhasil menghapus sales`, { variant: "success" });
         // setData(data.filter((row) => row.id !== id));
       } catch (e) {
-        enqueueSnackbar(`gagal menghapus sales, ${e.message}`, { variant: 'error' })
+        enqueueSnackbar(`gagal menghapus sales, ${e.message}`, {
+          variant: "error",
+        });
 
-        console.log(e.message)
+        console.log(e.message);
       }
     } else {
-
     }
-
   };
 
-  const [key, setKey] = useState(props?.profile?.rules === 'admin' ? 'settings' : 'profile');
-  const [subKey, setSubKey] = useState('users')
+  const [key, setKey] = useState(
+    props?.profile?.rules === "admin" ? "settings" : "profile"
+  );
+  const [subKey, setSubKey] = useState("users");
   // console.log(props?.profile)
   // style
   const defaultTabStyle = {
-    padding: '10px 20px',
-    borderRadius: '50%',
-    color: '#3D5E54',
+    padding: "10px 20px",
+    borderRadius: "50%",
+    color: "#3D5E54",
   };
 
   const activeTabStyle = {
-    backgroundColor: '#3D5E54',
-    color: '#fff',
+    backgroundColor: "#3D5E54",
+    color: "#fff",
   };
 
   const inactiveTabStyle = {
-    backgroundColor: 'transparent',
-    color: '#3D5E54',
+    backgroundColor: "transparent",
+    color: "#3D5E54",
   };
   return (
     <div className="container">
@@ -193,20 +244,45 @@ const Settings = (props) => {
         activeKey={key}
         onSelect={(k) => setKey(k)}
         className="mb-3"
-        style={{ color: '#3D5E54' }}
+        style={{ color: "#3D5E54" }}
       >
-        {
-          props?.profile?.rules === 'admin' &&
-          <Tab tabClassName="custom-tab" style={{ color: '#3D5E54', borderRadius: '50%' }} eventKey="settings" title="Settings">
-            <Tab.Container defaultActiveKey={subKey} onSelect={(k) => setSubKey(k)}>
+        {props?.profile?.rules === "admin" && (
+          <Tab
+            tabClassName="custom-tab"
+            style={{ color: "#3D5E54", borderRadius: "50%" }}
+            eventKey="settings"
+            title="Settings"
+          >
+            <Tab.Container
+              defaultActiveKey={subKey}
+              onSelect={(k) => setSubKey(k)}
+            >
               <Row>
                 <Col sm={3}>
                   <Nav variant="pills" className="flex-column">
-                    <Nav.Item style={{ marginBottom: '10px' }}>
-                      <Nav.Link style={subKey === 'users' ? { backgroundColor: 'grey' } : { backgroundColor: 'lightgray', color: 'black' }} eventKey="users">Users</Nav.Link>
+                    <Nav.Item style={{ marginBottom: "10px" }}>
+                      <Nav.Link
+                        style={
+                          subKey === "users"
+                            ? { backgroundColor: "grey" }
+                            : { backgroundColor: "lightgray", color: "black" }
+                        }
+                        eventKey="users"
+                      >
+                        Users
+                      </Nav.Link>
                     </Nav.Item>
                     <Nav.Item>
-                      <Nav.Link style={subKey === 'control' ? { backgroundColor: 'grey' } : { backgroundColor: 'lightgray', color: 'black' }} eventKey="control">Control</Nav.Link>
+                      <Nav.Link
+                        style={
+                          subKey === "control"
+                            ? { backgroundColor: "grey" }
+                            : { backgroundColor: "lightgray", color: "black" }
+                        }
+                        eventKey="control"
+                      >
+                        Control
+                      </Nav.Link>
                     </Nav.Item>
                   </Nav>
                 </Col>
@@ -217,48 +293,82 @@ const Settings = (props) => {
                       <Form>
                         <Form.Group>
                           <Form.Label>Rules</Form.Label>
-                          <Form.Control as="select" value={selectedRules} onChange={(e) => setSelectedRules(e.target.value)}>
-                            {
-                              rules.map((rule) => (
-                                <option value={rule}>{rule}</option>
-
-                              ))
-                            }
-
+                          <Form.Control
+                            as="select"
+                            value={selectedRules}
+                            onChange={(e) => setSelectedRules(e.target.value)}
+                          >
+                            {rules.map((rule) => (
+                              <option value={rule}>{rule}</option>
+                            ))}
                           </Form.Control>
                         </Form.Group>
                         <Form.Group>
                           <Form.Label>Tidak dapat melihat</Form.Label>
 
-
                           {options.map((option) => {
                             // console.log(checkList.find(check => check.id === option.id))
-                            return <Form.Check
-                              key={option?.component}
-                              name={option?.component}
-                              label={`Halaman ${option?.name}`}
-
-                              type="checkbox"
-                              checked={checkList.find(check => check.component === option.component) ? true : false}
-                              onChange={handeCheckList(option)}
-                              disableRipple
-                              // inputProps={{ 'aria-labelledby': option?.id }}
-                              defaultChecked
-
-
-                            />
+                            return (
+                              <Form.Check
+                                key={option?.component}
+                                name={option?.component}
+                                label={`Halaman ${option?.name}`}
+                                type="checkbox"
+                                checked={
+                                  checkList.find(
+                                    (check) =>
+                                      check.component === option.component
+                                  )
+                                    ? true
+                                    : false
+                                }
+                                onChange={handeCheckList(option)}
+                                disableRipple
+                                // inputProps={{ 'aria-labelledby': option?.id }}
+                                defaultChecked
+                              />
+                            );
                           })}
                         </Form.Group>
-                        <Button style={{ backgroundColor: '#3D5E54', border: 'none', width: '100%' }} onClick={handleSave}>
+                        <Button
+                          style={{
+                            backgroundColor: "#3D5E54",
+                            border: "none",
+                            width: "100%",
+                          }}
+                          onClick={handleSave}
+                        >
                           Save
                         </Button>
                       </Form>
                     </Tab.Pane>
                     <Tab.Pane eventKey="users">
                       <div className="table-responsive">
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <div style={{ display: 'flex' }}>
-                            <button style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none', marginLeft: '10px' }} className="btn btn-primary" onClick={() => setOpenAddDialog(true)}>+Add Sales</button>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          <div style={{ display: "flex" }}>
+                            <button
+                              style={{
+                                whiteSpace: "nowrap",
+                                backgroundColor: "#3D5E54",
+                                border: "none",
+                                marginLeft: "10px",
+                              }}
+                              className="btn btn-primary"
+                              onClick={() =>
+                                setOpenAddDialog({
+                                  open: true,
+                                  mode: "add",
+                                  data: {},
+                                })
+                              }
+                            >
+                              +Add Sales
+                            </button>
                           </div>
                         </div>
                         <table className="table table-bordered">
@@ -272,14 +382,13 @@ const Settings = (props) => {
                             </tr>
                           </thead>
                           <tbody>
-
-                            {
-                              list?.map((user) => {
-                                return <tr>
+                            {list?.map((user) => {
+                              return (
+                                <tr>
                                   <td>
                                     <div className="d-flex align-items-center">
                                       <span className="me-2">
-                                        <PersonSquare color='#3D5E54' />
+                                        <PersonSquare color="#3D5E54" />
                                       </span>
                                       {user?.firstName} {user?.lastName}
                                     </div>
@@ -289,33 +398,89 @@ const Settings = (props) => {
                                   <td>{user?.rules}</td>
 
                                   <td>
-                                    <button style={{ backgroundColor: 'red' }} className="button button-primary" onClick={() => handleDeleteClick(user?.userId)}>
+                                    <button
+                                      onClick={() => {
+                                        setOpenAddDialog({
+                                          open: true,
+                                          mode: "edit",
+                                          data: user,
+                                        });
+                                        // setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
+                                      }}
+                                      style={{ backgroundColor: "#998970" }}
+                                      className="button button-primary"
+                                    >
+                                      <PencilSquare />
+                                    </button>
+                                    <button
+                                      style={{ backgroundColor: "red" }}
+                                      className="button button-primary"
+                                      onClick={() =>
+                                        handleDeleteClick(user?.userId)
+                                      }
+                                    >
                                       <TrashFill />
                                     </button>
                                   </td>
                                 </tr>
-                              })
-                            }
+                              );
+                            })}
                           </tbody>
                         </table>
-                        <ButtonGroup style={{ textAlign: 'center', float: 'right' }}>
+                        <ButtonGroup
+                          style={{ textAlign: "center", float: "right" }}
+                        >
                           {/* //show previous button only when we have items */}
-                          <Button disabled={page === 1} style={{ marginRight: '10px', whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={() => showPrevious({ item: list[0] })}>{'<-Prev'}</Button>
-                          <input value={page} className="input" disabled style={{
-                            padding: '0px',
-                            width: '40px',
-                            marginRight: '10px',
-                            textAlign: 'center',
-                            border: 'none',
-                            marginBottom: '8px',
-                            marginTop: '8px'
-                          }} />
+                          <Button
+                            disabled={page === 1}
+                            style={{
+                              marginRight: "10px",
+                              whiteSpace: "nowrap",
+                              backgroundColor: "#3D5E54",
+                              border: "none",
+                            }}
+                            onClick={() => showPrevious({ item: list[0] })}
+                          >
+                            {"<-Prev"}
+                          </Button>
+                          <input
+                            value={page}
+                            className="input"
+                            disabled
+                            style={{
+                              padding: "0px",
+                              width: "40px",
+                              marginRight: "10px",
+                              textAlign: "center",
+                              border: "none",
+                              marginBottom: "8px",
+                              marginTop: "8px",
+                            }}
+                          />
                           {/* //show next button only when we have items */}
-                          <Button disabled={list.length < 20} style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={() => showNext({ item: list[list.length - 1] })}>{'Next->'}</Button>
+                          <Button
+                            disabled={list.length < 20}
+                            style={{
+                              whiteSpace: "nowrap",
+                              backgroundColor: "#3D5E54",
+                              border: "none",
+                            }}
+                            onClick={() =>
+                              showNext({ item: list[list.length - 1] })
+                            }
+                          >
+                            {"Next->"}
+                          </Button>
                         </ButtonGroup>
                         <DialogAddUsers
                           show={openAddDialog}
-                          handleClose={() => setOpenAddDialog(false)}
+                          handleClose={() =>
+                            setOpenAddDialog({
+                              open: false,
+                              mode: "add",
+                              data: {},
+                            })
+                          }
                           setUpdate={setUpdate}
                         />
                       </div>
@@ -323,18 +488,19 @@ const Settings = (props) => {
                   </Tab.Content>
                 </Col>
               </Row>
-            </Tab.Container>        </Tab>
-        }
+            </Tab.Container>{" "}
+          </Tab>
+        )}
 
         {/* Admin-only Warehouse Tab */}
-        {props?.profile?.rules === 'admin' && (
+        {props?.profile?.rules === "admin" && (
           <Tab eventKey="warehouse" title="Warehouse">
             <Warehouse />
           </Tab>
         )}
 
         {/* Admin-only Agen Tab */}
-        {props?.profile?.rules === 'admin' && (
+        {props?.profile?.rules === "admin" && (
           <Tab eventKey="agen" title="Agen">
             <Agen />
           </Tab>
@@ -343,7 +509,6 @@ const Settings = (props) => {
           <ProfilePage enqueueSnackbar={enqueueSnackbar} />
         </Tab>
       </Tabs>
-
     </div>
   );
 };
