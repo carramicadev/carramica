@@ -1113,7 +1113,7 @@ const OrderList = () => {
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },
     { label: "Discount", key: (item) => item?.discount, style: {} },
     {
-      label: "Gross Revenue",
+      label: "Net Revenue",
       key: (item) => currency(item?.grossRevenue),
       style: {},
     },
