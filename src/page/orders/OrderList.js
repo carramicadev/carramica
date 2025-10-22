@@ -975,7 +975,7 @@ const OrderList = () => {
                 setDialogAddKuitansi({ open: true, data: item, mode: "add" })
               }
             >
-              <JournalPlus size={20} /> Buat kuitansi Penjualan
+              <JournalPlus size={20} /> Buat Invoice Penjualan
             </ListGroup.Item>
             {/* <ListGroup.Item action onClick={() => alert("Item 3 clicked!")}>
         Item 3
@@ -1072,7 +1072,7 @@ const OrderList = () => {
                         }
                       }
                     >
-                      KUITANSI {kui?.id + 1}
+                      INVOICE {kui?.id + 1}
                     </a>
                   );
                 })}
@@ -1206,13 +1206,96 @@ const OrderList = () => {
     },
     {
       label: "Partial Payment",
-      key: (item) => (item?.kuitansi ? currency(item?.partialPayment) : "-"),
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 && (
+          // expandedMonths.includes(id) ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {item?.kuitansi ? currency(item?.partialPayment) : "-"}
+
+            {opIt.includes(item.id) && (
+              <div
+                style={{
+                  // marginLeft: "25px",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "3px",
+                }}
+              >
+                {item?.kuitansi?.map?.((kui, ik) => {
+                  return (
+                    <a
+                      key={kui?.id}
+                      // href="#"
+                      // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+
+                      style={
+                        // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                        {
+                          color: "#0e703f",
+                          // cursor: "pointer",
+                          marginTop: "5px",
+                          backgroundColor: "#d9f7e8",
+                          padding: "5px",
+                          borderRadius: "5px",
+                        }
+                      }
+                    >
+                      {currency(kui?.jumlah)}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ),
+
       style: {},
     },
     {
       label: "Partial Payment Date",
-      key: (item) =>
-        item?.kuitansi?.[item?.kuitansi?.length - 1]?.tanggal ?? "-",
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 && (
+          // expandedMonths.includes(id) ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {item?.kuitansi?.[item?.kuitansi?.length - 1]?.tanggal ?? "-"}
+
+            {opIt.includes(item.id) && (
+              <div
+                style={{
+                  // marginLeft: "25px",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "3px",
+                }}
+              >
+                {item?.kuitansi?.map?.((kui, ik) => {
+                  return (
+                    <a
+                      key={kui?.id}
+                      // href="#"
+                      // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+
+                      style={
+                        // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                        {
+                          color: "#0e703f",
+                          // cursor: "pointer",
+                          marginTop: "5px",
+                          backgroundColor: "#d9f7e8",
+                          padding: "5px",
+                          borderRadius: "5px",
+                        }
+                      }
+                    >
+                      {kui?.tanggal}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ),
+
       style: {},
     },
     {

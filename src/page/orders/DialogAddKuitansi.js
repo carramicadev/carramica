@@ -11,6 +11,7 @@ import {
   collection,
   doc,
   getDoc,
+  onSnapshot,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -27,16 +28,37 @@ export default function DialogAddKuitansi(props) {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [findOrder, setFindOrder] = useState({});
+  //   console.log(item);
+
   useEffect(() => {
-    if (props?.show?.data) {
-      const item = props?.show?.data;
-      setFormData({
-        ...formData,
-        no_invoice: item?.invoice_id,
-        jumlah: item?.grossRevenue,
-      });
+    if (props?.show?.data?.id) {
+      const docRef = doc(firestore, "orders", props?.show?.data?.id);
+
+      const unsubscribe = onSnapshot(
+        docRef,
+        (doc) => {
+          if (doc.exists()) {
+            setFindOrder(doc.data());
+            setFormData({
+              no_invoice: doc.data()?.invoice_id,
+              jumlah: doc.data()?.totalAfterDiskonDanOngkir,
+            });
+          } else {
+            // setError("Document does not exist");
+          }
+          //  setLoading(false);
+        },
+        (error) => {
+          // setError(error.message);
+          //  setLoading(false);
+        }
+      );
+
+      // Cleanup subscription on component unmount
+      return () => unsubscribe();
     }
-  }, [props?.show?.data]);
+  }, [props?.show?.data?.id]);
   const [formData, setFormData] = useState({
     no_invoice: "",
     tanggal: "",
@@ -139,7 +161,7 @@ export default function DialogAddKuitansi(props) {
             {
               kuitansi: [...existing, newItem],
               paymentStatus:
-                cumulative >= props?.show?.data?.grossRevenue
+                cumulative >= findOrder?.totalAfterDiskonDanOngkir
                   ? "settlement"
                   : "partially paid",
             },
@@ -202,7 +224,7 @@ export default function DialogAddKuitansi(props) {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {props?.show?.mode === "edit" ? "Edit Product" : "Buat Kuitansi"}
+            {props?.show?.mode === "edit" ? "Edit Product" : "Buat Invoice"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -300,7 +322,7 @@ export default function DialogAddKuitansi(props) {
             onClick={handleAdd}
             className="button button-primary"
           >
-            {props?.show?.mode === "edit" ? "Update" : "Buat Kuitansi"}
+            {props?.show?.mode === "edit" ? "Update" : "Buat Invoice"}
           </button>
 
           {/* <button className="button button-primary" >Understood</button> */}
