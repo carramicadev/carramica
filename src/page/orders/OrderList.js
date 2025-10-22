@@ -56,6 +56,11 @@ import {
   XCircleFill,
   Eye,
   JournalPlus,
+  CaretDownFill,
+  CaretRightFill,
+  ChevronRight,
+  ChevronLeft,
+  ChevronDown,
 } from "react-bootstrap-icons";
 
 import DatePicker from "react-datepicker";
@@ -508,6 +513,10 @@ const OrderList = () => {
       const downloadedBy = user.find((itm) => itm.userId === ord.downloadedBy);
       const designatedTo = warehouse.find((wh) => wh?.id === item?.warehouse);
       const ordId = String(settings?.orderId - (i + idx)).padStart(4, "0");
+      const partialPayment = item?.kuitansi?.reduce?.(
+        (sum, p) => sum + p.jumlah,
+        0
+      );
 
       mapData.push({
         invoice_id: item?.invoice_id,
@@ -569,6 +578,8 @@ const OrderList = () => {
         userRules: findDataUser?.rules,
         kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService,
         designatedTo: designatedTo?.name,
+        kuitansi: item?.kuitansi,
+        partialPayment: partialPayment,
       });
     });
   });
@@ -599,6 +610,10 @@ const OrderList = () => {
       const downloadedBy = user.find((itm) => itm.userId === ord.downloadedBy);
       const designatedTo = warehouse.find((wh) => wh?.id === item?.warehouse);
       const ordId = String(settings?.orderId - (i + idx)).padStart(4, "0");
+      const partialPayment = item?.kuitansi?.reduce?.(
+        (sum, p) => sum + p.jumlah,
+        0
+      );
 
       mapDataAll.push({
         invoice_id: item?.invoice_id,
@@ -660,6 +675,8 @@ const OrderList = () => {
         userRules: findDataUser?.rules,
         kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService,
         designatedTo: designatedTo?.name,
+        kuitansi: item?.kuitansi,
+        partialPayment: partialPayment,
       });
     });
   });
@@ -686,7 +703,7 @@ const OrderList = () => {
       (isNaN(Number(nilaiSekarang)) ? 0 : Number(nilaiSekarang))
     );
   }, 0);
-  console.log(totalOmset);
+  // console.log(totalOmset);
 
   // checkbox
   const handleSelectAll = (e) => {
@@ -952,7 +969,7 @@ const OrderList = () => {
               <Eye size={20} /> Lihat Invoice
             </ListGroup.Item>
             <ListGroup.Item
-              disabled
+              // disabled
               action
               onClick={() =>
                 setDialogAddKuitansi({ open: true, data: item, mode: "add" })
@@ -968,30 +985,100 @@ const OrderList = () => {
       </Popover>
     );
   };
+  const [openItems, setOpenItems] = useState([]);
 
+  const toggleOpen = (id) => {
+    setOpenItems((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+  // console.log(mapData);
   const [column, setColumn] = useState([
     {
       label: "Invoice Id",
-      key: (item, i, idOrder) =>
+      key: (item, i, idOrder, style, edit, opIt) =>
         idOrder === 0 && (
-          <OverlayTrigger
-            trigger="click" // can also be ['hover', 'focus']
-            placement="right"
-            overlay={ListContent(item)}
-            rootClose
-          >
-            <a
-              // href="#"
-              // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
-              // onClick={() => setInvoiceDialog({ open: true, data: [item] })}
-              style={
-                // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
-                { color: "black", cursor: "pointer" }
-              }
-            >
-              {item?.invoice_id}
-            </a>
-          </OverlayTrigger>
+          // expandedMonths.includes(id) ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex" }}>
+              {item.kuitansi && (
+                <div
+                  style={{ marginRight: "3px", cursor: "pointer" }}
+                  onClick={() => toggleOpen(item.id)}
+                >
+                  {opIt.includes(item.id) ? (
+                    <ChevronDown size={12} />
+                  ) : (
+                    <ChevronRight size={12} />
+                  )}
+                </div>
+              )}
+
+              <OverlayTrigger
+                trigger="click" // can also be ['hover', 'focus']
+                placement="right"
+                overlay={ListContent(item)}
+                rootClose
+              >
+                <a
+                  // href="#"
+                  // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+                  // onClick={() => setInvoiceDialog({ open: true, data: [item] })}
+                  style={
+                    // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                    {
+                      color: "black",
+                      cursor: "pointer",
+                      marginLeft: !item?.kuitansi && "15px",
+                    }
+                  }
+                >
+                  {item?.invoice_id}
+                </a>
+              </OverlayTrigger>
+            </div>
+            {opIt.includes(item.id) && (
+              <div
+                style={{
+                  marginLeft: "25px",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "3px",
+                }}
+              >
+                {item?.kuitansi?.map?.((kui, ik) => {
+                  return (
+                    <a
+                      key={kui?.id}
+                      // href="#"
+                      // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+                      onClick={() =>
+                        setInvoiceDialog({
+                          open: true,
+                          data: [item],
+                          type: "dp",
+                          id: kui?.id,
+                        })
+                      }
+                      style={
+                        // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                        {
+                          color: "#0e703f",
+                          cursor: "pointer",
+                          marginTop: "5px",
+                          backgroundColor: "#d9f7e8",
+                          padding: "5px",
+                          borderRadius: "5px",
+                        }
+                      }
+                    >
+                      KUITANSI {kui?.id + 1}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         ),
       style: {},
     },
@@ -1115,6 +1202,17 @@ const OrderList = () => {
     {
       label: "Net Revenue",
       key: (item) => currency(item?.grossRevenue),
+      style: {},
+    },
+    {
+      label: "Partial Payment",
+      key: (item) => (item?.kuitansi ? currency(item?.partialPayment) : "-"),
+      style: {},
+    },
+    {
+      label: "Partial Payment Date",
+      key: (item) =>
+        item?.kuitansi?.[item?.kuitansi?.length - 1]?.tanggal ?? "-",
       style: {},
     },
     {
@@ -1712,6 +1810,15 @@ const OrderList = () => {
                         color: "#14BA6D",
                         width: "80px",
                       };
+                    } else if (item.paymentStatus === "partially paid") {
+                      style = {
+                        borderRadius: "20px",
+                        backgroundColor: "#add4ed",
+                        padding: "5px",
+                        textAlign: "center",
+                        color: "#2278af",
+                        width: "80px",
+                      };
                     }
                     return (
                       <tr key={item?.unixId} style={{ whiteSpace: "nowrap" }}>
@@ -1726,7 +1833,7 @@ const OrderList = () => {
                         </td>
                         {selectColumn.map((col, colIndex) => (
                           <td key={colIndex} style={col.style}>
-                            {col.key(item, i, idOrder, style, edit)}
+                            {col.key(item, i, idOrder, style, edit, openItems)}
                           </td>
                         ))}
                       </tr>
