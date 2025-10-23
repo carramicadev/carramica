@@ -320,13 +320,10 @@ export default function DownloadInvoiceDialog(props) {
                       {props?.show?.type === "dp" && (
                         <>
                           <p>
-                            <span style={styles.bold}>Jumlah Tertagih</span>
+                            <span style={styles.bold}>Paid Invoice</span>
                           </p>
                           <p>
-                            <span style={styles.bold}>Lunas</span>
-                          </p>
-                          <p>
-                            <span style={styles.bold}>Sisa</span>
+                            <span style={styles.bold}>Outstanding Balance</span>
                           </p>
                         </>
                       )}
@@ -360,12 +357,6 @@ export default function DownloadInvoiceDialog(props) {
                         <>
                           <p>
                             <span style={styles.bold}></span>{" "}
-                            {currency(
-                              findOrder?.kuitansi?.[props?.show?.id]?.jumlah
-                            )}
-                          </p>
-                          <p>
-                            <span style={styles.bold}></span>{" "}
                             {currency(cumulative)}
                           </p>
                           <p>
@@ -381,31 +372,33 @@ export default function DownloadInvoiceDialog(props) {
                   style={{ height: "2px", marginTop: "5px" }}
                 />
                 <div style={styles.summaryBlock}>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div style={{ marginRight: "100px" }}>
-                      <p>
-                        <span style={styles.bold}>Amount Due</span>
-                      </p>
+                  {props?.show?.type !== "dp" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ marginRight: "100px" }}>
+                        <p>
+                          <span style={styles.bold}>Amount Due</span>
+                        </p>
+                      </div>
+                      <div>
+                        <p>
+                          <span style={styles.bold}></span>{" "}
+                          {currency(
+                            parseInt(allGross) +
+                              parseInt(allOngkir) -
+                              (findOrder?.additionalDiscount
+                                ? findOrder?.additionalDiscount
+                                : 0)
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p>
-                        <span style={styles.bold}></span>{" "}
-                        {currency(
-                          parseInt(allGross) +
-                            parseInt(allOngkir) -
-                            (findOrder?.additionalDiscount
-                              ? findOrder?.additionalDiscount
-                              : 0)
-                        )}
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
                 <div
                   style={{
@@ -423,7 +416,9 @@ export default function DownloadInvoiceDialog(props) {
                         textAlign: "justify",
                       }}
                     >
-                      {itm?.notes ?? "__"}
+                      {props?.show?.type === "dp"
+                        ? findOrder?.kuitansi?.[props?.show?.id]?.catatan
+                        : itm?.notes ?? "__"}
                     </p>
                   </div>
                   <div style={styles.footer}>

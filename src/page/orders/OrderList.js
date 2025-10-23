@@ -534,7 +534,7 @@ const OrderList = () => {
         paidAt: item?.midtransRes?.settlement_time,
         dueDate: item?.midtransRes?.expiry_time,
         discount: allDiscount,
-        grossRevenue: calculate - parseInt(item?.additionalDiscount),
+        grossRevenue: calculate,
         kurir: ord?.kurirService?.courier_name
           ? ord?.kurirService?.courier_name
           : ord?.kurirService
@@ -580,6 +580,8 @@ const OrderList = () => {
         designatedTo: designatedTo?.name,
         kuitansi: item?.kuitansi,
         partialPayment: partialPayment,
+        additionalDiscount: item?.additionalDiscount,
+        netRevenue: item?.totalAfterDiskonDanOngkir,
       });
     });
   });
@@ -631,7 +633,7 @@ const OrderList = () => {
         paidAt: item?.midtransRes?.settlement_time,
         dueDate: item?.midtransRes?.expiry_time,
         discount: allDiscount,
-        grossRevenue: calculate - parseInt(item?.additionalDiscount),
+        grossRevenue: calculate,
         kurir: ord?.kurirService?.courier_name
           ? ord?.kurirService?.courier_name
           : ord?.kurirService
@@ -677,6 +679,8 @@ const OrderList = () => {
         designatedTo: designatedTo?.name,
         kuitansi: item?.kuitansi,
         partialPayment: partialPayment,
+        additionalDiscount: item?.additionalDiscount,
+        netRevenue: item?.totalAfterDiskonDanOngkir,
       });
     });
   });
@@ -969,7 +973,7 @@ const OrderList = () => {
               <Eye size={20} /> Lihat Invoice
             </ListGroup.Item>
             <ListGroup.Item
-              // disabled
+              disabled={item?.paymentStatus === "settlement"}
               action
               onClick={() =>
                 setDialogAddKuitansi({ open: true, data: item, mode: "add" })
@@ -1198,10 +1202,30 @@ const OrderList = () => {
     },
     { label: "Paid At", key: (item) => item?.paidAt, style: {} },
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },
-    { label: "Discount", key: (item) => item?.discount, style: {} },
+    { label: "Discount", key: (item) => currency(item?.discount), style: {} },
+    {
+      label: "Additional Discount",
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 &&
+        // expandedMonths.includes(id) ? (
+
+        currency(item?.additionalDiscount),
+
+      style: {},
+    },
+    {
+      label: "Revenue",
+      key: (item) => currency(item?.grossRevenue),
+      style: {},
+    },
     {
       label: "Net Revenue",
-      key: (item) => currency(item?.grossRevenue),
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 &&
+        // expandedMonths.includes(id) ? (
+
+        currency(item?.netRevenue),
+
       style: {},
     },
     {

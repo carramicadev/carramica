@@ -29,6 +29,7 @@ export default function DialogAddKuitansi(props) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [findOrder, setFindOrder] = useState({});
+  const [sisaTagihan, setSisaTagihan] = useState(0);
   //   console.log(item);
 
   useEffect(() => {
@@ -40,9 +41,15 @@ export default function DialogAddKuitansi(props) {
         (doc) => {
           if (doc.exists()) {
             setFindOrder(doc.data());
+            const cumulative = doc
+              .data()
+              ?.kuitansi?.reduce?.((sum, p) => sum + p.jumlah, 0);
+            const sisaTagihan =
+              doc.data()?.totalAfterDiskonDanOngkir - cumulative;
+            setSisaTagihan(sisaTagihan);
             setFormData({
               no_invoice: doc.data()?.invoice_id,
-              jumlah: doc.data()?.totalAfterDiskonDanOngkir,
+              jumlah: sisaTagihan,
             });
           } else {
             // setError("Document does not exist");
@@ -64,12 +71,14 @@ export default function DialogAddKuitansi(props) {
     tanggal: "",
     metode_pembayaran: "",
     jumlah: 0,
+    catatan: "",
   });
   const [formError, setFormError] = useState({
     no_invoice: "",
     tanggal: "",
     metode_pembayaran: "",
     jumlah: "",
+    catatan: "",
   });
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -103,6 +112,9 @@ export default function DialogAddKuitansi(props) {
     }
     if (!formData.metode_pembayaran) {
       newError.metode_pembayaran = "metode_pembayaran is required";
+    }
+    if (formData.jumlah > sisaTagihan) {
+      newError.jumlah = "jumlah melebihi sisa pembayaran";
     }
 
     return newError;
@@ -308,6 +320,23 @@ export default function DialogAddKuitansi(props) {
               {formError.metode_pembayaran && (
                 <Form.Control.Feedback type="invalid">
                   {formError.metode_pembayaran}
+                </Form.Control.Feedback>
+              )}
+            </div>
+            <div className="form-group">
+              <label className="label">Catatan</label>
+              <Form.Control
+                isInvalid={formError.catatan ? true : false}
+                className="input"
+                type="text"
+                name="catatan"
+                placeholder="Catatan"
+                value={formData.catatan}
+                onChange={handleFormChange}
+              />
+              {formError.catatan && (
+                <Form.Control.Feedback type="invalid">
+                  {formError.catatan}
                 </Form.Control.Feedback>
               )}
             </div>
