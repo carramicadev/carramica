@@ -49,7 +49,9 @@ export default function DialogAddKuitansi(props) {
             setSisaTagihan(sisaTagihan);
             setFormData({
               no_invoice: doc.data()?.invoice_id,
-              jumlah: sisaTagihan,
+              jumlah: cumulative
+                ? sisaTagihan
+                : doc.data()?.totalAfterDiskonDanOngkir,
             });
           } else {
             // setError("Document does not exist");

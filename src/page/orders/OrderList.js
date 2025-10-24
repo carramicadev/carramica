@@ -581,7 +581,7 @@ const OrderList = () => {
         kuitansi: item?.kuitansi,
         partialPayment: partialPayment,
         additionalDiscount: item?.additionalDiscount,
-        netRevenue: item?.totalAfterDiskonDanOngkir,
+        netRevenue: i === 0 ? item?.totalAfterDiskonDanOngkir : 0,
       });
     });
   });
@@ -680,7 +680,7 @@ const OrderList = () => {
         kuitansi: item?.kuitansi,
         partialPayment: partialPayment,
         additionalDiscount: item?.additionalDiscount,
-        netRevenue: item?.totalAfterDiskonDanOngkir,
+        netRevenue: i === 0 ? item?.totalAfterDiskonDanOngkir : 0,
       });
     });
   });
@@ -861,7 +861,7 @@ const OrderList = () => {
     }
     // setUpdate(false)
   };
-
+  // console.log(selectedData);
   // create invoice
   const handlecreateInv = async (id) => {
     try {
