@@ -280,7 +280,7 @@ const Contact = () => {
   console.log(loading);
 
   return (
-    <div className="container">
+    <div className="container" style={{ paddingTop: "100px" }}>
       <Header />
       <h1 className="page-title">Contact</h1>
       {/* <div class="container mt-5"> */}

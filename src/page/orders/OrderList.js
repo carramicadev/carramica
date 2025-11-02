@@ -61,6 +61,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronDown,
+  Truck,
 } from "react-bootstrap-icons";
 
 import DatePicker from "react-datepicker";
@@ -169,6 +170,7 @@ const OrderList = () => {
   const lengthAll = allOrders.length;
   const [totalOrdersCount, setTotalOrdersCount] = useState(0);
   const [totalOrdersPaidCount, setTotalOrdersPaidCount] = useState(0);
+  const [totalOngkir, setTotalOngkir] = useState(0);
   const [revenue, setRevenue] = useState();
   const paidLength = allOrders.filter(
     (ord) => ord?.paymentStatus === "settlement"
@@ -236,6 +238,7 @@ const OrderList = () => {
           setTotalOrdersCount(doc.data()?.totalOrder);
           setTotalOrdersPaidCount(doc.data()?.paidOrder);
           setRevenue(doc.data()?.revenue);
+          setTotalOngkir(doc.data()?.totalOngkir);
         });
         setLoadingOrder(false);
         return () => unsub;
@@ -707,6 +710,15 @@ const OrderList = () => {
       (isNaN(Number(nilaiSekarang)) ? 0 : Number(nilaiSekarang))
     );
   }, 0);
+
+  // shipping cost
+  const arrayShip = paidOrd.map((data) => parseInt(data.totalOngkir));
+  const totalShipCost = arrayShip?.reduce((val, nilaiSekarang) => {
+    return (
+      (isNaN(Number(val)) ? 0 : Number(val)) +
+      (isNaN(Number(nilaiSekarang)) ? 0 : Number(nilaiSekarang))
+    );
+  }, 0);
   // console.log(totalOmset);
 
   // checkbox
@@ -755,7 +767,7 @@ const OrderList = () => {
   const filterForDownloadAll = selectedData.filter(
     (item) => !item.isDownloaded && item.paymentStatus === "settlement"
   );
-  // console.log(arrayHarga);
+  console.log(list);
   const selectedExcel = selectedData?.map((data) => {
     return {
       ...data,
@@ -1587,8 +1599,26 @@ const OrderList = () => {
     }
   }, [selectColumn, mapData]);
 
+  // responsive card
+  const [width, setWidth] = React.useState(window.innerWidth);
+
+  // track window resize
+  React.useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // responsive column width
+  const getColWidth = () => {
+    if (width <= 576) return "100%"; // 2 per row (mobile)
+    if (width <= 992) return "33.333%"; // 3 per row (tablet)
+    if (width <= 1200) return "25%"; // 4 per row (small desktop)
+    return "20%"; // 5 per row (desktop)
+  };
+
   return (
-    <div className="container">
+    <div className="container" style={{ paddingTop: "100px" }}>
       <Header />
       <h1 className="page-title">Order</h1>
       {/* <div className="form-container"> */}
@@ -1623,8 +1653,13 @@ const OrderList = () => {
           // inline
         />
       </div>
-      <Row className="mb-4">
-        <Col md={3}>
+      <Row className="mb-4 gy-2 gx-1">
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1654,7 +1689,12 @@ const OrderList = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1684,7 +1724,12 @@ const OrderList = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1714,7 +1759,12 @@ const OrderList = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1741,6 +1791,45 @@ const OrderList = () => {
                     <Loading />
                   ) : (
                     totalOrdersCount - totalOrdersPaidCount
+                  )}
+                </h3>
+                {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
+          <Card className="shadow-sm">
+            <Card.Body>
+              <Card.Title
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <div>Total Shipping Cost</div>
+                <div
+                  style={{
+                    backgroundColor: "#ffded1",
+                    borderRadius: "35%",
+                    width: "50px",
+                    height: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Truck color="#FF9066" />
+                </div>
+              </Card.Title>
+              <Card.Text>
+                <h3 style={{ margin: "0px" }}>
+                  {loadingOrder ? (
+                    <Loading />
+                  ) : (
+                    currency(totalOngkir ?? totalShipCost)
                   )}
                 </h3>
                 {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}

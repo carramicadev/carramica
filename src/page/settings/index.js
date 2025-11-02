@@ -71,6 +71,7 @@ const Settings = (props) => {
     },
     { component: "logistic", name: "Logistic", path: "/logistic" },
     { component: "contact", name: "Contact", path: "/contact" },
+    { component: "report", name: "Report", path: "/report" },
     { component: "settings", name: "Settings", path: "/settings" },
   ];
 
@@ -232,7 +233,7 @@ const Settings = (props) => {
     color: "#3D5E54",
   };
   return (
-    <div className="container">
+    <div className="container" style={{ paddingTop: "100px" }}>
       <Header />
       <Row>
         <Col>
