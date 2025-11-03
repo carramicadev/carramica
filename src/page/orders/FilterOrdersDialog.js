@@ -267,6 +267,13 @@ export const FilterDialog = ({
             checked={checkedItems === "cancel"}
             onChange={handleChange}
           />
+          <Form.Check
+            type="checkbox"
+            label="Partially Paid"
+            name="partially paid"
+            checked={checkedItems === "partially paid"}
+            onChange={handleChange}
+          />
           <Form.Label style={{ marginTop: "20px" }}>By User/Sales</Form.Label>
           <Autocomplete
             wrapperProps={{ style: { display: "block" } }}
