@@ -189,6 +189,7 @@ const OrderList = () => {
       }
       if (dateTimestamp?.end || all?.length > 0) {
         setRevenue();
+        setTotalOngkir();
         const getDoc = query(
           collection(firestore, "orders"),
           ...all,
@@ -991,7 +992,7 @@ const OrderList = () => {
                 setDialogAddKuitansi({ open: true, data: item, mode: "add" })
               }
             >
-              <JournalPlus size={20} /> Buat Invoice Penjualan
+              <JournalPlus size={20} /> Buat Invoice Manual
             </ListGroup.Item>
             {/* <ListGroup.Item action onClick={() => alert("Item 3 clicked!")}>
         Item 3
