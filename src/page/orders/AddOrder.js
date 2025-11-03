@@ -220,7 +220,7 @@ const AddOrder = () => {
   const [selected, setSelected] = useState({});
   const [options, setOptions] = useState([]);
   const [value, setValue] = useState("");
-  // const [allProduct, setProduct] = useState([]);
+  const [allProduct, setAllProduct] = useState([]);
   const [modalShow, setModalShow] = useState(false);
   const [dialoglRedirectWAShow, setDialogRedirectWAShow] = useState({
     open: false,
@@ -308,21 +308,24 @@ const AddOrder = () => {
 
   console.log(koordinateOrigin);
   // query coll product
-  const ref = query(
-    collection(firestore, "product"),
-    where("stok", ">", 0)
-    // limit(10),
-  );
+  useEffect(() => {
+    // define query
+    const ref = query(collection(firestore, "product"), where("stok", ">", 0));
 
-  // Provide the query to the hook
-  const {
-    data: allProduct,
-    isLoading: loadingProd,
-    error: err,
-  } = useFirestoreQueryData(["product"], ref, {
-    subscribe: true,
-    idField: "id",
-  });
+    // subscribe in real-time
+    const unsubscribe = onSnapshot(ref, (snapshot) => {
+      const products = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setAllProduct(products);
+      setLoading(false);
+    });
+
+    // cleanup on unmount
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -490,8 +493,6 @@ const AddOrder = () => {
       setOrders(updatedOrders);
       setOrdersErr(updatedOrdersErr);
     } else {
-      // console.log(e, typeof e !== 'object')
-
       const selectedObj = listService?.[orderIndex]?.find?.(
         (option) => option?.courier_service_code === value
       );
@@ -850,8 +851,6 @@ const AddOrder = () => {
           },
         ],
       });
-      // console.log(result.data?.items)
-      // setOngkir(result.data?.items?.data);
     } catch (error) {
       console.error("Error calling function:", error);
       // setListService([]);
@@ -1337,7 +1336,7 @@ const AddOrder = () => {
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   return (
-    <div className="container">
+    <div className="container" style={{ paddingTop: "100px" }}>
       <Header />
       <h1 className="page-title">Form Order</h1>
       <div

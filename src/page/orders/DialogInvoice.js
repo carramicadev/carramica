@@ -3,28 +3,8 @@ import Modal from "react-bootstrap/Modal";
 import { usePDF } from "react-to-pdf";
 import "./dialogDownload.css";
 import logoFull from "../../logoFull.png";
-// import sap from './sap.png'
-// import paxel from './paxel.png'
-// import lalamove from './lalamove.png'
-import {
-  arrayUnion,
-  doc,
-  getDoc,
-  onSnapshot,
-  runTransaction,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
-// import { firestore } from './FirebaseFrovider';
-import {
-  Document,
-  Image,
-  Page,
-  PDFDownloadLink,
-  StyleSheet,
-  Text,
-  View,
-} from "@react-pdf/renderer";
+import { doc, onSnapshot } from "firebase/firestore";
+
 import formatDate, { currency, TimestampToDate } from "../../formatter";
 import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
@@ -62,13 +42,6 @@ export default function DownloadInvoiceDialog(props) {
   }, [item?.[0]?.id]);
   const { toPDF, targetRef } = usePDF({ filename: `${findOrder?.id}.pdf` });
 
-  const downloadPdf = async () => {
-    try {
-      toPDF();
-    } catch (e) {
-      console.log(`Error updating document: ${e.message}`);
-    }
-  };
   const printRef = useRef();
 
   const handleDownloadPDF = () => {
@@ -173,7 +146,18 @@ export default function DownloadInvoiceDialog(props) {
     props?.onHide();
     allProduct = [];
   };
-  console.log("all product=>", allProduct);
+
+  // kuitansi
+  const previousPayments = findOrder?.kuitansi?.filter?.(
+    (p) => p.id <= props?.show?.id
+  );
+  const cumulative = previousPayments?.reduce?.((sum, p) => sum + p.jumlah, 0);
+  const sisa =
+    parseInt(allGross) +
+    parseInt(allOngkir) -
+    (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0) -
+    cumulative;
+  // console.log("all product=>", props?.show?.data);
   // console.log(new Date(item?.[0]?.createdAt * 1000));
   // console.log(new Date(item?.[0]?.createdAt * 1000));
   return (
@@ -234,6 +218,7 @@ export default function DownloadInvoiceDialog(props) {
                         <p style={{ marginBottom: "0px" }}>Reference </p>
                         <p style={{ marginBottom: "0px" }}>Date </p>
                         <p style={{ marginBottom: "0px" }}>Due Date</p>
+                        <p style={{ marginBottom: "0px" }}>Status Invoice</p>
                       </div>
                       <div style={{ marginLeft: "50px" }}>
                         <p style={{ marginBottom: "0px" }}>{itm?.invoice_id}</p>
@@ -247,6 +232,9 @@ export default function DownloadInvoiceDialog(props) {
                         <p style={{ marginBottom: "0px" }}>
                           {" "}
                           <ReformatDate date={itm?.dueDate ?? formattedDate} />
+                        </p>
+                        <p style={{ marginBottom: "0px" }}>
+                          {itm?.paymentStatus}
                         </p>
                       </div>
                     </div>
@@ -328,6 +316,17 @@ export default function DownloadInvoiceDialog(props) {
                       <p>
                         <span style={styles.bold}>Total</span>
                       </p>
+
+                      {props?.show?.type === "dp" && (
+                        <>
+                          <p>
+                            <span style={styles.bold}>Paid Invoice</span>
+                          </p>
+                          <p>
+                            <span style={styles.bold}>Outstanding Balance</span>
+                          </p>
+                        </>
+                      )}
                     </div>
                     <div style={{ lineHeight: "5px" }}>
                       <p>
@@ -354,6 +353,17 @@ export default function DownloadInvoiceDialog(props) {
                               : 0)
                         )}
                       </p>
+                      {props?.show?.type === "dp" && (
+                        <>
+                          <p>
+                            <span style={styles.bold}></span>{" "}
+                            {currency(cumulative)}
+                          </p>
+                          <p>
+                            <span style={styles.bold}></span> {currency(sisa)}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -362,31 +372,33 @@ export default function DownloadInvoiceDialog(props) {
                   style={{ height: "2px", marginTop: "5px" }}
                 />
                 <div style={styles.summaryBlock}>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div style={{ marginRight: "100px" }}>
-                      <p>
-                        <span style={styles.bold}>Amount Due</span>
-                      </p>
+                  {props?.show?.type !== "dp" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ marginRight: "100px" }}>
+                        <p>
+                          <span style={styles.bold}>Amount Due</span>
+                        </p>
+                      </div>
+                      <div>
+                        <p>
+                          <span style={styles.bold}></span>{" "}
+                          {currency(
+                            parseInt(allGross) +
+                              parseInt(allOngkir) -
+                              (findOrder?.additionalDiscount
+                                ? findOrder?.additionalDiscount
+                                : 0)
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p>
-                        <span style={styles.bold}></span>{" "}
-                        {currency(
-                          parseInt(allGross) +
-                            parseInt(allOngkir) -
-                            (findOrder?.additionalDiscount
-                              ? findOrder?.additionalDiscount
-                              : 0)
-                        )}
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
                 <div
                   style={{
@@ -404,7 +416,9 @@ export default function DownloadInvoiceDialog(props) {
                         textAlign: "justify",
                       }}
                     >
-                      {itm?.notes ?? "__"}
+                      {props?.show?.type === "dp"
+                        ? findOrder?.kuitansi?.[props?.show?.id]?.catatan
+                        : itm?.notes ?? "__"}
                     </p>
                   </div>
                   <div style={styles.footer}>

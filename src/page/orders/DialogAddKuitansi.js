@@ -11,40 +11,76 @@ import {
   collection,
   doc,
   getDoc,
+  onSnapshot,
   serverTimestamp,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { firestore } from "../../FirebaseFrovider";
+import { firestore, functions } from "../../FirebaseFrovider";
 import { useEffect, useState } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
+import { httpsCallable } from "firebase/functions";
+import { format } from "date-fns";
 
 export default function DialogAddKuitansi(props) {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [findOrder, setFindOrder] = useState({});
+  const [sisaTagihan, setSisaTagihan] = useState(0);
+  //   console.log(item);
+
   useEffect(() => {
-    if (props?.show?.data) {
-      const item = props?.show?.data;
-      setFormData({
-        ...formData,
-        no_invoice: item?.invoice_id,
-        jumlah: item?.grossRevenue,
-      });
+    if (props?.show?.data?.id) {
+      const docRef = doc(firestore, "orders", props?.show?.data?.id);
+
+      const unsubscribe = onSnapshot(
+        docRef,
+        (doc) => {
+          if (doc.exists()) {
+            setFindOrder(doc.data());
+            const cumulative = doc
+              .data()
+              ?.kuitansi?.reduce?.((sum, p) => sum + p.jumlah, 0);
+            const sisaTagihan =
+              doc.data()?.totalAfterDiskonDanOngkir - cumulative;
+            setSisaTagihan(sisaTagihan);
+            setFormData({
+              no_invoice: doc.data()?.invoice_id,
+              jumlah: cumulative
+                ? sisaTagihan
+                : doc.data()?.totalAfterDiskonDanOngkir,
+            });
+          } else {
+            // setError("Document does not exist");
+          }
+          //  setLoading(false);
+        },
+        (error) => {
+          // setError(error.message);
+          //  setLoading(false);
+        }
+      );
+
+      // Cleanup subscription on component unmount
+      return () => unsubscribe();
     }
-  }, [props?.show?.mode]);
+  }, [props?.show?.data?.id]);
   const [formData, setFormData] = useState({
     no_invoice: "",
-    createdAt: "",
+    tanggal: "",
     metode_pembayaran: "",
     jumlah: 0,
+    catatan: "",
   });
   const [formError, setFormError] = useState({
     no_invoice: "",
-    createdAt: "",
+    tanggal: "",
     metode_pembayaran: "",
     jumlah: "",
+    catatan: "",
   });
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -70,14 +106,17 @@ export default function DialogAddKuitansi(props) {
       newError.no_invoice = "no invoice is required";
     }
 
-    if (!formData.createdAt) {
-      newError.createdAt = "tanggal is required";
+    if (!formData.tanggal) {
+      newError.tanggal = "tanggal is required";
     }
     if (!formData.jumlah) {
       newError.jumlah = "jumlah is required";
     }
     if (!formData.metode_pembayaran) {
       newError.metode_pembayaran = "metode_pembayaran is required";
+    }
+    if (formData.jumlah > sisaTagihan) {
+      newError.jumlah = "jumlah melebihi sisa pembayaran";
     }
 
     return newError;
@@ -89,11 +128,12 @@ export default function DialogAddKuitansi(props) {
       // console.log('Errors found:', findErros);
       setFormError(findErros);
     } else {
+      setLoading(true);
       try {
         if (props?.show?.mode === "edit") {
           await setDoc(
-            doc(firestore, "orders", props?.show?.data?.id, "kuitansi"),
-            { ...formData, updatedAt: serverTimestamp() },
+            doc(firestore, "orders", props?.show?.data?.id),
+            { kuitansi: { ...formData }, updatedAt: serverTimestamp() },
             { merge: true }
           );
           // console.log("Document written with ID: ",);
@@ -103,13 +143,45 @@ export default function DialogAddKuitansi(props) {
 
           props.onHide();
         } else {
-          const tambahProduk = await addDoc(
-            collection(firestore, "orders", props?.show?.data?.id, "kuitansi"),
-            {
-              ...formData,
-              // createdAt: serverTimestamp(),
-            }
+          const sendWA = httpsCallable(functions, "qontakSendWAToSender");
+          await sendWA({
+            name: props?.show?.data?.original?.senderName,
+            no: props?.show?.data?.senderPhone,
+            price: formData?.jumlah,
+            type: "dp",
+          });
+          const orderRef = doc(firestore, "orders", props.show.data.id);
+          const snap = await getDoc(orderRef);
+
+          const existing =
+            snap.exists() && Array.isArray(snap.data().kuitansi)
+              ? snap.data().kuitansi
+              : [];
+
+          const newItem = {
+            ...formData,
+            id: existing.length,
+            tanggal: format(new Date(), "dd/MM/yyyy HH:mm"),
+          };
+          const allKuitansi = [...existing, newItem];
+
+          const cumulative = allKuitansi?.reduce?.(
+            (sum, p) => sum + p.jumlah,
+            0
           );
+          //   console.log(cumulative);
+          await setDoc(
+            orderRef,
+            {
+              kuitansi: [...existing, newItem],
+              paymentStatus:
+                cumulative >= findOrder?.totalAfterDiskonDanOngkir
+                  ? "settlement"
+                  : "partially paid",
+            },
+            { merge: true }
+          );
+
           //   await setDoc(
           //     doc(firestore, "product", tambahProduk?.id),
           //     { ...formData,  id: tambahProduk?.id },
@@ -125,13 +197,16 @@ export default function DialogAddKuitansi(props) {
         }
         // props?.setUpdate((prevValue) => !prevValue);
       } catch (e) {
+        console.log(e.message);
         enqueueSnackbar(`gagal menambahkan kuitansi ${e.message}`, {
           variant: "error",
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
-  console.log(formData);
+  //   console.log(new Date());
   return (
     <div
       className="modal show"
@@ -163,7 +238,7 @@ export default function DialogAddKuitansi(props) {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {props?.show?.mode === "edit" ? "Edit Product" : "Buat Kuitansi"}
+            {props?.show?.mode === "edit" ? "Edit Product" : "Buat Invoice"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -193,17 +268,17 @@ export default function DialogAddKuitansi(props) {
             <div className="form-group">
               <label className="label">Tanggal</label>
               <Form.Control
-                isInvalid={formError.createdAt ? true : false}
+                isInvalid={formError.tanggal ? true : false}
                 className="input"
                 type="date"
-                name="createdAt"
+                name="tanggal"
                 placeholder="Tanggal"
-                value={formData.createdAt}
+                value={formData.tanggal}
                 onChange={handleFormChange}
               />
-              {formError.createdAt && (
+              {formError.tanggal && (
                 <Form.Control.Feedback type="invalid">
-                  {formError.createdAt}
+                  {formError.tanggal}
                 </Form.Control.Feedback>
               )}
             </div>
@@ -250,14 +325,35 @@ export default function DialogAddKuitansi(props) {
                 </Form.Control.Feedback>
               )}
             </div>
+            <div className="form-group">
+              <label className="label">Catatan</label>
+              <Form.Control
+                isInvalid={formError.catatan ? true : false}
+                className="input"
+                type="text"
+                name="catatan"
+                placeholder="Catatan"
+                value={formData.catatan}
+                onChange={handleFormChange}
+              />
+              {formError.catatan && (
+                <Form.Control.Feedback type="invalid">
+                  {formError.catatan}
+                </Form.Control.Feedback>
+              )}
+            </div>
           </div>
         </Modal.Body>
         <Modal.Footer style={{ display: "flex" }}>
           {/* <Button variant="secondary" >
                         Close
                     </Button> */}
-          <button onClick={handleAdd} className="button button-primary">
-            {props?.show?.mode === "edit" ? "Update" : "Buat Kuitansi"}
+          <button
+            disabled={loading}
+            onClick={handleAdd}
+            className="button button-primary"
+          >
+            {props?.show?.mode === "edit" ? "Update" : "Buat Invoice"}
           </button>
 
           {/* <button className="button button-primary" >Understood</button> */}

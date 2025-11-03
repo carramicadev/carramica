@@ -56,6 +56,12 @@ import {
   XCircleFill,
   Eye,
   JournalPlus,
+  CaretDownFill,
+  CaretRightFill,
+  ChevronRight,
+  ChevronLeft,
+  ChevronDown,
+  Truck,
 } from "react-bootstrap-icons";
 
 import DatePicker from "react-datepicker";
@@ -164,6 +170,7 @@ const OrderList = () => {
   const lengthAll = allOrders.length;
   const [totalOrdersCount, setTotalOrdersCount] = useState(0);
   const [totalOrdersPaidCount, setTotalOrdersPaidCount] = useState(0);
+  const [totalOngkir, setTotalOngkir] = useState(0);
   const [revenue, setRevenue] = useState();
   const paidLength = allOrders.filter(
     (ord) => ord?.paymentStatus === "settlement"
@@ -231,6 +238,7 @@ const OrderList = () => {
           setTotalOrdersCount(doc.data()?.totalOrder);
           setTotalOrdersPaidCount(doc.data()?.paidOrder);
           setRevenue(doc.data()?.revenue);
+          setTotalOngkir(doc.data()?.totalOngkir);
         });
         setLoadingOrder(false);
         return () => unsub;
@@ -508,6 +516,10 @@ const OrderList = () => {
       const downloadedBy = user.find((itm) => itm.userId === ord.downloadedBy);
       const designatedTo = warehouse.find((wh) => wh?.id === item?.warehouse);
       const ordId = String(settings?.orderId - (i + idx)).padStart(4, "0");
+      const partialPayment = item?.kuitansi?.reduce?.(
+        (sum, p) => sum + p.jumlah,
+        0
+      );
 
       mapData.push({
         invoice_id: item?.invoice_id,
@@ -525,7 +537,7 @@ const OrderList = () => {
         paidAt: item?.midtransRes?.settlement_time,
         dueDate: item?.midtransRes?.expiry_time,
         discount: allDiscount,
-        grossRevenue: calculate - parseInt(item?.additionalDiscount),
+        grossRevenue: calculate,
         kurir: ord?.kurirService?.courier_name
           ? ord?.kurirService?.courier_name
           : ord?.kurirService
@@ -569,6 +581,10 @@ const OrderList = () => {
         userRules: findDataUser?.rules,
         kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService,
         designatedTo: designatedTo?.name,
+        kuitansi: item?.kuitansi,
+        partialPayment: partialPayment,
+        additionalDiscount: item?.additionalDiscount,
+        netRevenue: i === 0 ? item?.totalAfterDiskonDanOngkir : 0,
       });
     });
   });
@@ -599,6 +615,10 @@ const OrderList = () => {
       const downloadedBy = user.find((itm) => itm.userId === ord.downloadedBy);
       const designatedTo = warehouse.find((wh) => wh?.id === item?.warehouse);
       const ordId = String(settings?.orderId - (i + idx)).padStart(4, "0");
+      const partialPayment = item?.kuitansi?.reduce?.(
+        (sum, p) => sum + p.jumlah,
+        0
+      );
 
       mapDataAll.push({
         invoice_id: item?.invoice_id,
@@ -616,7 +636,7 @@ const OrderList = () => {
         paidAt: item?.midtransRes?.settlement_time,
         dueDate: item?.midtransRes?.expiry_time,
         discount: allDiscount,
-        grossRevenue: calculate - parseInt(item?.additionalDiscount),
+        grossRevenue: calculate,
         kurir: ord?.kurirService?.courier_name
           ? ord?.kurirService?.courier_name
           : ord?.kurirService
@@ -660,6 +680,10 @@ const OrderList = () => {
         userRules: findDataUser?.rules,
         kurirService: ord?.kurirService?.courier_name ?? ord?.kurirService,
         designatedTo: designatedTo?.name,
+        kuitansi: item?.kuitansi,
+        partialPayment: partialPayment,
+        additionalDiscount: item?.additionalDiscount,
+        netRevenue: i === 0 ? item?.totalAfterDiskonDanOngkir : 0,
       });
     });
   });
@@ -686,7 +710,16 @@ const OrderList = () => {
       (isNaN(Number(nilaiSekarang)) ? 0 : Number(nilaiSekarang))
     );
   }, 0);
-  console.log(totalOmset);
+
+  // shipping cost
+  const arrayShip = paidOrd.map((data) => parseInt(data.totalOngkir));
+  const totalShipCost = arrayShip?.reduce((val, nilaiSekarang) => {
+    return (
+      (isNaN(Number(val)) ? 0 : Number(val)) +
+      (isNaN(Number(nilaiSekarang)) ? 0 : Number(nilaiSekarang))
+    );
+  }, 0);
+  // console.log(totalOmset);
 
   // checkbox
   const handleSelectAll = (e) => {
@@ -734,7 +767,7 @@ const OrderList = () => {
   const filterForDownloadAll = selectedData.filter(
     (item) => !item.isDownloaded && item.paymentStatus === "settlement"
   );
-  // console.log(arrayHarga);
+  console.log(list);
   const selectedExcel = selectedData?.map((data) => {
     return {
       ...data,
@@ -840,7 +873,7 @@ const OrderList = () => {
     }
     // setUpdate(false)
   };
-
+  // console.log(selectedData);
   // create invoice
   const handlecreateInv = async (id) => {
     try {
@@ -952,13 +985,13 @@ const OrderList = () => {
               <Eye size={20} /> Lihat Invoice
             </ListGroup.Item>
             <ListGroup.Item
-              disabled
+              disabled={item?.paymentStatus === "settlement"}
               action
               onClick={() =>
                 setDialogAddKuitansi({ open: true, data: item, mode: "add" })
               }
             >
-              <JournalPlus size={20} /> Buat kuitansi Penjualan
+              <JournalPlus size={20} /> Buat Invoice Penjualan
             </ListGroup.Item>
             {/* <ListGroup.Item action onClick={() => alert("Item 3 clicked!")}>
         Item 3
@@ -968,30 +1001,100 @@ const OrderList = () => {
       </Popover>
     );
   };
+  const [openItems, setOpenItems] = useState([]);
 
+  const toggleOpen = (id) => {
+    setOpenItems((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+  // console.log(mapData);
   const [column, setColumn] = useState([
     {
       label: "Invoice Id",
-      key: (item, i, idOrder) =>
+      key: (item, i, idOrder, style, edit, opIt) =>
         idOrder === 0 && (
-          <OverlayTrigger
-            trigger="click" // can also be ['hover', 'focus']
-            placement="right"
-            overlay={ListContent(item)}
-            rootClose
-          >
-            <a
-              // href="#"
-              // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
-              // onClick={() => setInvoiceDialog({ open: true, data: [item] })}
-              style={
-                // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
-                { color: "black", cursor: "pointer" }
-              }
-            >
-              {item?.invoice_id}
-            </a>
-          </OverlayTrigger>
+          // expandedMonths.includes(id) ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex" }}>
+              {item.kuitansi && (
+                <div
+                  style={{ marginRight: "3px", cursor: "pointer" }}
+                  onClick={() => toggleOpen(item.id)}
+                >
+                  {opIt.includes(item.id) ? (
+                    <ChevronDown size={12} />
+                  ) : (
+                    <ChevronRight size={12} />
+                  )}
+                </div>
+              )}
+
+              <OverlayTrigger
+                trigger="click" // can also be ['hover', 'focus']
+                placement="right"
+                overlay={ListContent(item)}
+                rootClose
+              >
+                <a
+                  // href="#"
+                  // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+                  // onClick={() => setInvoiceDialog({ open: true, data: [item] })}
+                  style={
+                    // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                    {
+                      color: "black",
+                      cursor: "pointer",
+                      marginLeft: !item?.kuitansi && "15px",
+                    }
+                  }
+                >
+                  {item?.invoice_id}
+                </a>
+              </OverlayTrigger>
+            </div>
+            {opIt.includes(item.id) && (
+              <div
+                style={{
+                  marginLeft: "25px",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "3px",
+                }}
+              >
+                {item?.kuitansi?.map?.((kui, ik) => {
+                  return (
+                    <a
+                      key={kui?.id}
+                      // href="#"
+                      // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+                      onClick={() =>
+                        setInvoiceDialog({
+                          open: true,
+                          data: [item],
+                          type: "dp",
+                          id: kui?.id,
+                        })
+                      }
+                      style={
+                        // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                        {
+                          color: "#0e703f",
+                          cursor: "pointer",
+                          marginTop: "5px",
+                          backgroundColor: "#d9f7e8",
+                          padding: "5px",
+                          borderRadius: "5px",
+                        }
+                      }
+                    >
+                      INVOICE {kui?.id + 1}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         ),
       style: {},
     },
@@ -1111,10 +1214,124 @@ const OrderList = () => {
     },
     { label: "Paid At", key: (item) => item?.paidAt, style: {} },
     { label: "Due Date", key: (item) => item?.dueDate, style: {} },
-    { label: "Discount", key: (item) => item?.discount, style: {} },
+    { label: "Discount", key: (item) => currency(item?.discount), style: {} },
+    {
+      label: "Additional Discount",
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 &&
+        // expandedMonths.includes(id) ? (
+
+        currency(item?.additionalDiscount),
+
+      style: {},
+    },
+    {
+      label: "Revenue",
+      key: (item) => currency(item?.grossRevenue),
+      style: {},
+    },
     {
       label: "Net Revenue",
-      key: (item) => currency(item?.grossRevenue),
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 &&
+        // expandedMonths.includes(id) ? (
+
+        currency(item?.netRevenue),
+
+      style: {},
+    },
+    {
+      label: "Partial Payment",
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 && (
+          // expandedMonths.includes(id) ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {item?.kuitansi ? currency(item?.partialPayment) : "-"}
+
+            {opIt.includes(item.id) && (
+              <div
+                style={{
+                  // marginLeft: "25px",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "3px",
+                }}
+              >
+                {item?.kuitansi?.map?.((kui, ik) => {
+                  return (
+                    <a
+                      key={kui?.id}
+                      // href="#"
+                      // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+
+                      style={
+                        // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                        {
+                          color: "#0e703f",
+                          // cursor: "pointer",
+                          marginTop: "5px",
+                          backgroundColor: "#d9f7e8",
+                          padding: "5px",
+                          borderRadius: "5px",
+                        }
+                      }
+                    >
+                      {currency(kui?.jumlah)}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ),
+
+      style: {},
+    },
+    {
+      label: "Partial Payment Date",
+      key: (item, i, idOrder, style, edit, opIt) =>
+        idOrder === 0 && (
+          // expandedMonths.includes(id) ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {item?.kuitansi?.[item?.kuitansi?.length - 1]?.tanggal ?? "-"}
+
+            {opIt.includes(item.id) && (
+              <div
+                style={{
+                  // marginLeft: "25px",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "3px",
+                }}
+              >
+                {item?.kuitansi?.map?.((kui, ik) => {
+                  return (
+                    <a
+                      key={kui?.id}
+                      // href="#"
+                      // onClick={() => { item?.pdf ? window.open(item.pdf) : item?.dueDate && handlecreateInv(item?.id) }}
+
+                      style={
+                        // !item?.dueDate ? { color: 'lightgray', pointerEvents: 'none' } :
+                        {
+                          color: "#0e703f",
+                          // cursor: "pointer",
+                          marginTop: "5px",
+                          backgroundColor: "#d9f7e8",
+                          padding: "5px",
+                          borderRadius: "5px",
+                        }
+                      }
+                    >
+                      {kui?.tanggal}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ),
+
       style: {},
     },
     {
@@ -1382,8 +1599,26 @@ const OrderList = () => {
     }
   }, [selectColumn, mapData]);
 
+  // responsive card
+  const [width, setWidth] = React.useState(window.innerWidth);
+
+  // track window resize
+  React.useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // responsive column width
+  const getColWidth = () => {
+    if (width <= 576) return "100%"; // 2 per row (mobile)
+    if (width <= 992) return "33.333%"; // 3 per row (tablet)
+    if (width <= 1200) return "25%"; // 4 per row (small desktop)
+    return "20%"; // 5 per row (desktop)
+  };
+
   return (
-    <div className="container">
+    <div className="container" style={{ paddingTop: "100px" }}>
       <Header />
       <h1 className="page-title">Order</h1>
       {/* <div className="form-container"> */}
@@ -1418,8 +1653,13 @@ const OrderList = () => {
           // inline
         />
       </div>
-      <Row className="mb-4">
-        <Col md={3}>
+      <Row className="mb-4 gy-2 gx-1">
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1449,7 +1689,12 @@ const OrderList = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1479,7 +1724,12 @@ const OrderList = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1509,7 +1759,12 @@ const OrderList = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
           <Card className="shadow-sm">
             <Card.Body>
               <Card.Title
@@ -1536,6 +1791,45 @@ const OrderList = () => {
                     <Loading />
                   ) : (
                     totalOrdersCount - totalOrdersPaidCount
+                  )}
+                </h3>
+                {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col
+          style={{
+            flex: `0 0 ${getColWidth()}`,
+            maxWidth: getColWidth(),
+          }}
+        >
+          <Card className="shadow-sm">
+            <Card.Body>
+              <Card.Title
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <div>Total Shipping Cost</div>
+                <div
+                  style={{
+                    backgroundColor: "#ffded1",
+                    borderRadius: "35%",
+                    width: "50px",
+                    height: "50px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Truck color="#FF9066" />
+                </div>
+              </Card.Title>
+              <Card.Text>
+                <h3 style={{ margin: "0px" }}>
+                  {loadingOrder ? (
+                    <Loading />
+                  ) : (
+                    currency(totalOngkir ?? totalShipCost)
                   )}
                 </h3>
                 {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
@@ -1712,6 +2006,15 @@ const OrderList = () => {
                         color: "#14BA6D",
                         width: "80px",
                       };
+                    } else if (item.paymentStatus === "partially paid") {
+                      style = {
+                        borderRadius: "20px",
+                        backgroundColor: "#add4ed",
+                        padding: "5px",
+                        textAlign: "center",
+                        color: "#2278af",
+                        width: "80px",
+                      };
                     }
                     return (
                       <tr key={item?.unixId} style={{ whiteSpace: "nowrap" }}>
@@ -1726,7 +2029,7 @@ const OrderList = () => {
                         </td>
                         {selectColumn.map((col, colIndex) => (
                           <td key={colIndex} style={col.style}>
-                            {col.key(item, i, idOrder, style, edit)}
+                            {col.key(item, i, idOrder, style, edit, openItems)}
                           </td>
                         ))}
                       </tr>
