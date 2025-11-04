@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, firestore } from "./FirebaseFrovider";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import { redirect, useLocation, useNavigate } from "react-router-dom";
-import logo from "./logo.svg"
+import logo from "./logo.svg";
 import { useAuth } from "./AuthContext";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 const Login = () => {
@@ -19,8 +19,12 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      const createUser = await signInWithEmailAndPassword(auth, email, password);
-      // console.log(createUser)
+      const createUser = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log(createUser);
       // await setDoc(doc(firestore, 'users', createUser?.user?.uid), {
       //   email: email,
       //   userId: createUser?.user?.uid
@@ -32,7 +36,7 @@ const Login = () => {
   };
 
   // const [profile, setProfile] = useState({})
-  console.log(process.env.REACT_APP_ENVIRONMENT)
+  console.log(process.env.REACT_APP_ENVIRONMENT);
   useEffect(() => {
     async function getUsers() {
       if (currentUser?.uid) {
@@ -40,26 +44,29 @@ const Login = () => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-
           // console.log(docSnap.data())
-          if (docSnap.data().rules === 'admin') {
-            navigate('/')
-          } else if (docSnap.data().rules === 'shipping' || docSnap.data().rules === 'agen') {
+          if (docSnap.data().rules === "admin") {
+            navigate("/");
+          } else if (
+            docSnap.data().rules === "shipping" ||
+            docSnap.data().rules === "agen"
+          ) {
             // console.log('run')
-            navigate('/orders')
-          } else if (docSnap.data().rules === 'sales') {
-            navigate('/add-order')
+            navigate("/orders");
+          } else if (docSnap.data().rules === "sales") {
+            navigate("/add-order");
+          } else {
+            navigate("/");
           }
           // console.log("Document data:", docSnap.data());
         } else {
-          navigate('/')
+          navigate("/");
           // docSnap.data() will be undefined in this case
           console.log("No such document!");
         }
-
       }
     }
-    getUsers()
+    getUsers();
   }, [currentUser?.uid]);
   // console.log(currentUser)
   // useEffect(() => {
@@ -71,7 +78,6 @@ const Login = () => {
   return (
     <div className="vh-100 d-flex align-items-center justify-content-center h-100">
       <div className="row w-100">
-
         <div className="vh-100 col-md-6 bg-light d-flex align-items-center justify-content-center">
           <div className="w-75">
             <h2 className="mb-4">Log in</h2>
@@ -101,7 +107,10 @@ const Login = () => {
                   required
                 />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }} className="form-check mb-3">
+              <div
+                style={{ display: "flex", justifyContent: "space-between" }}
+                className="form-check mb-3"
+              >
                 <div>
                   <input
                     type="checkbox"
@@ -112,14 +121,27 @@ const Login = () => {
                     Remember me
                   </label>
                 </div>
-                <a href="#" className="float-right">Forgot password?</a>
+                <a href="#" className="float-right">
+                  Forgot password?
+                </a>
               </div>
-              <button type="submit" className="btn btn-dark w-100">Masuk</button>
+              <button type="submit" className="btn btn-dark w-100">
+                Masuk
+              </button>
             </form>
           </div>
         </div>
-        <div style={{ backgroundColor: '#3D5E54' }} className="col-md-6 d-none d-md-block  text-white d-flex align-items-center justify-content-center">
-          <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' }}>
+        <div
+          style={{ backgroundColor: "#3D5E54" }}
+          className="col-md-6 d-none d-md-block  text-white d-flex align-items-center justify-content-center"
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              height: "100vh",
+            }}
+          >
             <img src={logo} width={300} />
           </div>
         </div>
