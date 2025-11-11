@@ -6,19 +6,20 @@ import {
   Timestamp,
   where,
 } from "firebase/firestore";
-import { fromUnixTime, isWithinInterval, set } from "date-fns";
+import { set } from "date-fns";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { firestore } from "../../FirebaseFrovider";
 import Loading from "../../components/Loading";
 import { CSVLink } from "react-csv";
-import { CloudArrowDown } from "react-bootstrap-icons";
+import { CloudArrowDown, ArrowDown, ArrowUp } from "react-bootstrap-icons";
 
 export default function ReportProdukTerjual() {
   const [orders, setOrders] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState("asc"); // 🔹 sort direction
 
   // 🔹 Fetch orders
   useEffect(() => {
@@ -88,9 +89,23 @@ export default function ReportProdukTerjual() {
       }
     });
 
-    return Array.from(productMap.values());
-  }, [orders]);
+    // 🔹 sort by product name
+    const sorted = Array.from(productMap.values()).sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.nama.localeCompare(b.nama);
+      } else {
+        return b.nama.localeCompare(a.nama);
+      }
+    });
 
+    return sorted;
+  }, [orders, sortOrder]);
+
+  // 🔹 toggle sort
+  const toggleSort = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+  console.log(orders);
   // 🔹 Styles
   const styles = {
     container: {
@@ -121,7 +136,7 @@ export default function ReportProdukTerjual() {
       alignItems: "flex-end",
     },
     tableWrapper: {
-      overflowX: "auto", // ✅ makes table scrollable on mobile
+      overflowX: "auto",
     },
     table: {
       width: "100%",
@@ -137,6 +152,7 @@ export default function ReportProdukTerjual() {
       backgroundColor: "#3D5E54",
       color: "white",
       whiteSpace: "nowrap",
+      cursor: "pointer",
     },
     td: {
       padding: 12,
@@ -165,7 +181,7 @@ export default function ReportProdukTerjual() {
               startDate={startDate}
               endDate={endDate}
               dateFormat="dd/MM/yyyy"
-              placeholderText="Pilih tanggal mulai"
+              placeholderText="Select start date"
               className="border p-2 rounded"
             />
           </div>
@@ -179,7 +195,7 @@ export default function ReportProdukTerjual() {
               endDate={endDate}
               minDate={startDate}
               dateFormat="dd/MM/yyyy"
-              placeholderText="Pilih tanggal akhir"
+              placeholderText="Select end date"
               className="border p-2 rounded"
             />
           </div>
@@ -205,8 +221,16 @@ export default function ReportProdukTerjual() {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Product Name</th>
+                  <th style={styles.th} onClick={toggleSort}>
+                    Product Name{" "}
+                    {sortOrder === "asc" ? (
+                      <ArrowUp size={14} />
+                    ) : (
+                      <ArrowDown size={14} />
+                    )}
+                  </th>
                   <th style={styles.th}>Product Code (SKU)</th>
+                  <th style={styles.th}>Category</th>
                   <th style={styles.th}>Quantity Sold</th>
                 </tr>
               </thead>
@@ -216,6 +240,7 @@ export default function ReportProdukTerjual() {
                     <tr key={idx}>
                       <td style={styles.td}>{item.nama}</td>
                       <td style={styles.td}>{item.sku}</td>
+                      <td style={styles.td}>-</td>
                       <td style={styles.td}>{item.totalQty}</td>
                     </tr>
                   ))
