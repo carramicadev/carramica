@@ -100,7 +100,7 @@ export default function DialogSendWA(props) {
       setLoading(false);
     }
   };
-  console.log(props?.show?.type);
+  //   console.log(props?.show?.type);
 
   return (
     <div

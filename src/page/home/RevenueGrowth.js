@@ -11,11 +11,12 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { format, parseISO } from "date-fns";
 import { firestore } from "../../FirebaseFrovider";
 import Loading from "../../components/Loading";
-import { Col, Row } from "react-bootstrap";
+import { Card, Col, Row } from "react-bootstrap";
+import { JournalX } from "react-bootstrap-icons";
 
 ChartJS.register(
   CategoryScale,
@@ -33,7 +34,8 @@ const RevenueGrowth = () => {
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [yearlyRevenue, setYearlyRevenue] = useState([]);
   const [pendingOrders, setPendingOrders] = useState([]);
-
+  const [totalOrdersCountsall, setTotalOrdersCount] = useState(0);
+  const [totalOrdersPaidCount, setTotalOrdersPaidCount] = useState(0);
   // ✅ Realtime listener from Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -44,6 +46,24 @@ const RevenueGrowth = () => {
       }
     );
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const settingsRef = doc(
+      firestore,
+      "settings",
+      "counter",
+      "orders",
+      "counter"
+    );
+
+    // useEffect(() => {
+    const unsub = onSnapshot(settingsRef, (doc) => {
+      // console.log(" data: ", doc.data());
+      setTotalOrdersCount(doc.data()?.totalOrder);
+      setTotalOrdersPaidCount(doc.data()?.paidOrder);
+    });
+    return () => unsub();
   }, []);
 
   // ✅ Process data when orders update
@@ -84,7 +104,7 @@ const RevenueGrowth = () => {
     setYearlyRevenue(yearly);
 
     // ✅ Filter all pending orders
-    const pending = orders.filter((o) => o.paymentStatus === "pending");
+    const pending = orders.filter((o) => o.paymentStatus !== "settlement");
     setPendingOrders(pending);
   }, [orders]);
   console.log(pendingOrders);
@@ -225,7 +245,7 @@ const RevenueGrowth = () => {
         </>
       ) : (
         <>
-          <Row>
+          <Row className="gy-3">
             <Col md={6}>
               <div className="card" style={{ marginTop: "3rem" }}>
                 <Bar data={momData} options={momOptions} />
@@ -235,6 +255,43 @@ const RevenueGrowth = () => {
               <div className="card" style={{ marginTop: "3rem" }}>
                 <Bar data={yoyData} options={yoyOptions} />
               </div>
+            </Col>
+            <Col md={12}>
+              <Card className="shadow-sm">
+                <Card.Body>
+                  <Card.Title
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>Unpaid Total</div>
+                    <div
+                      style={{
+                        backgroundColor: "#ffded1",
+                        borderRadius: "50%",
+                        width: "35px",
+                        height: "35px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <JournalX color="#FF9066" />
+                    </div>
+                  </Card.Title>
+                  <Card.Text>
+                    <h3>
+                      {!orders.length ? (
+                        <Loading />
+                      ) : (
+                        totalOrdersCountsall - totalOrdersPaidCount
+                      )}
+                    </h3>
+                    {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
+                  </Card.Text>
+                </Card.Body>
+              </Card>
             </Col>
           </Row>
           {/* <div style={{ marginTop: "3rem" }}>

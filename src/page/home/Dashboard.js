@@ -5,6 +5,7 @@ import {
   endBefore,
   getDoc,
   getDocs,
+  onSnapshot,
   orderBy,
   query,
   startAfter,
@@ -55,6 +56,10 @@ const Dashboard = ({ profile }) => {
   const [allOrders, setAllOrders] = useState([]);
   const [user, setUser] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalOrdersCountsall, setTotalOrdersCount] = useState(0);
+  const [totalOrdersPaidCount, setTotalOrdersPaidCount] = useState(0);
+  const [totalOngkirAll, setTotalOngkir] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       const getDoc = query(
@@ -91,7 +96,24 @@ const Dashboard = ({ profile }) => {
       setAllOrders(items);
       setStartDate(null);
       setEndDate(null);
+
+      const settingsRef = doc(
+        firestore,
+        "settings",
+        "counter",
+        "orders",
+        "counter"
+      );
+
+      // useEffect(() => {
+      const unsub = onSnapshot(settingsRef, (doc) => {
+        // console.log(" data: ", doc.data());
+        setTotalOrdersCount(doc.data()?.totalOrder);
+        setTotalOrdersPaidCount(doc.data()?.paidOrder);
+        setTotalOngkir(doc.data()?.totalOngkir);
+      });
       setLoading(false);
+      return () => unsub;
     } catch (e) {
       setLoading(false);
       console.log(e.message);
@@ -101,6 +123,9 @@ const Dashboard = ({ profile }) => {
   const filterByDate = useCallback(async (start, end) => {
     try {
       setLoading(true);
+      setTotalOrdersCount();
+      setTotalOrdersPaidCount();
+      setTotalOngkir();
       const yearStart = start.getFullYear();
       const monthStart = String(start.getMonth() + 1).padStart(2, "0"); // Months are 0-based
       const dayStart = String(start.getDate()).padStart(2, "0");
@@ -182,12 +207,15 @@ const Dashboard = ({ profile }) => {
   console.log(arrayTotalNet);
 
   // total orders count
-  const totalOrdersCount = allOrders?.reduce?.((total, doc) => {
+  const totalOrdersCount = ordersFilterd?.reduce?.((total, doc) => {
     return total + (doc.orders?.length || 0);
   }, 0);
 
   //total paid orders
-  const totalOrdersCountPaid = orderSettlement?.reduce?.((total, doc) => {
+  const orderSettlementAll = allOrders?.filter?.(
+    (ord) => ord.paymentStatus === "settlement"
+  );
+  const totalOrdersCountPaid = orderSettlementAll?.reduce?.((total, doc) => {
     return total + (doc.orders?.length || 0);
   }, 0);
 
@@ -378,7 +406,13 @@ const Dashboard = ({ profile }) => {
                       </div>
                     </Card.Title>
                     <Card.Text>
-                      <h3>{loading ? <Loading /> : totalOrdersCount}</h3>
+                      <h3>
+                        {loading ? (
+                          <Loading />
+                        ) : (
+                          totalOrdersCountsall ?? totalOrdersCount
+                        )}
+                      </h3>
                       {/* <small className="text-danger">↓ 4.3% Down from last month</small> */}
                     </Card.Text>
                   </Card.Body>
@@ -473,7 +507,11 @@ const Dashboard = ({ profile }) => {
                         </Card.Title>
                         <Card.Text>
                           <h3>
-                            {loading ? <Loading /> : totalOrdersCountPaid}
+                            {loading ? (
+                              <Loading />
+                            ) : (
+                              totalOrdersPaidCount ?? totalOrdersCountPaid
+                            )}
                           </h3>
                           {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
                         </Card.Text>
@@ -614,7 +652,13 @@ const Dashboard = ({ profile }) => {
                       </div>
                     </Card.Title>
                     <Card.Text>
-                      <h3>{loading ? <Loading /> : currency(totalOngkir)}</h3>
+                      <h3>
+                        {loading ? (
+                          <Loading />
+                        ) : (
+                          currency(totalOngkirAll ?? totalOngkir)
+                        )}
+                      </h3>
                       {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
                     </Card.Text>
                   </Card.Body>
