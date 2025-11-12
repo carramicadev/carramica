@@ -74,22 +74,6 @@ const Dashboard = ({ profile }) => {
   }, []);
   // query order
 
-  // Provide the query to the hook
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const getDoc = query(collection(firestore, "orders"), orderBy("createdAt", "asc"));
-  //     const documentSnapshots = await getDocs(getDoc);
-  //     var items = [];
-
-  //     documentSnapshots.forEach((doc) => {
-  //       items.push({ id: doc.id, ...doc.data() });
-  //       // doc.data() is never undefined for query doc snapshots
-  //     });
-  //     setAllOrders(items);
-  //   };
-  //   fetchData();
-  // }, []);
-
   const fetchAllData = async () => {
     try {
       setLoading(true);
