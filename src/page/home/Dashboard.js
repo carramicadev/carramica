@@ -290,6 +290,7 @@ const Dashboard = ({ profile }) => {
         {profile?.rules === "admin" && (
           <>
             <Row className="mb-4">
+              <p className="fw-bold text-success fs-5">Performance Overview</p>
               <Col md={3}>
                 <Card className="shadow-sm">
                   <Card.Body>
@@ -426,140 +427,168 @@ const Dashboard = ({ profile }) => {
               </Col>
             </Row>
             <Row className="mb-4">
-              <Col md={3}>
-                <Card className="shadow-sm">
+              <p className="fw-bold text-success fs-5">
+                Sales & Transaction Metrics
+              </p>
+              <Col md={6} className="h-100">
+                <Card className="shadow-sm h-100">
                   <Card.Body>
-                    <Card.Title
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <div>Total Paid Orders</div>
-                      <div
-                        style={{
-                          backgroundColor: "#d9f7e8",
-                          borderRadius: "50%",
-                          width: "35px",
-                          height: "35px",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <CartCheck color="#4AD991" />
-                      </div>
-                    </Card.Title>
-                    <Card.Text>
-                      <h3>{loading ? <Loading /> : totalOrdersCountPaid}</h3>
-                      {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
-                    </Card.Text>
+                    <Card.Title>Transaction</Card.Title>
+                    <div>
+                      {/* Add a chart component here or use an image */}
+                      {loading ? (
+                        <Loading />
+                      ) : (
+                        <TransactionChart allOrders={allOrders} />
+                      )}
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={3}>
-                <Card className="shadow-sm">
-                  <Card.Body>
-                    <Card.Title
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <div>Average Order Value</div>
-                      <div
-                        style={{
-                          backgroundColor: "rgb(255 243 217)",
-                          borderRadius: "50%",
-                          width: "35px",
-                          height: "35px",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Clipboard2Pulse color="#FEC53D" />
-                      </div>
-                    </Card.Title>
-                    <Card.Text>
-                      <h3>
-                        {loading ? (
-                          <Loading />
-                        ) : (
-                          currency(totalOmsetNet / orderSettlement.length)
-                        )}
-                      </h3>
-                      {/* <small className="text-success">↑ 1.3% Up from last month</small> */}
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="shadow-sm">
-                  <Card.Body>
-                    <Card.Title
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <div>Total Invoice</div>
-                      <div
-                        style={{
-                          backgroundColor: "rgb(229 228 255)",
-                          borderRadius: "50%",
-                          width: "35px",
-                          height: "35px",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <ReceiptCutoff color="#8280FF" />
-                      </div>
-                    </Card.Title>
-                    <Card.Text>
-                      <h3>{loading ? <Loading /> : allOrders?.length}</h3>
-                      {/* <small className="text-danger">↓ 4.3% Down from last month</small> */}
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="shadow-sm">
-                  <Card.Body>
-                    <Card.Title
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <div>Unpaid Revenue</div>
-                      <div
-                        style={{
-                          backgroundColor: "#ffded1",
-                          borderRadius: "50%",
-                          width: "35px",
-                          height: "35px",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <JournalX color="#FF9066" />
-                      </div>
-                    </Card.Title>
-                    <Card.Text>
-                      <h3>
-                        {loading ? <Loading /> : currency(totalOmsetUnpaid)}
-                      </h3>
-                      {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
+              <Col md={6}>
+                <Row className="mb-4 gy-4">
+                  <Col md={6}>
+                    <Card className="shadow-sm">
+                      <Card.Body>
+                        <Card.Title
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div>Total Paid Orders</div>
+                          <div
+                            style={{
+                              backgroundColor: "#d9f7e8",
+                              borderRadius: "50%",
+                              width: "35px",
+                              height: "35px",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <CartCheck color="#4AD991" />
+                          </div>
+                        </Card.Title>
+                        <Card.Text>
+                          <h3>
+                            {loading ? <Loading /> : totalOrdersCountPaid}
+                          </h3>
+                          {/* <small className="text-success">↑ 8.5% Up from last month</small> */}
+                        </Card.Text>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="shadow-sm">
+                      <Card.Body>
+                        <Card.Title
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div>Average Order Value</div>
+                          <div
+                            style={{
+                              backgroundColor: "rgb(255 243 217)",
+                              borderRadius: "50%",
+                              width: "35px",
+                              height: "35px",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Clipboard2Pulse color="#FEC53D" />
+                          </div>
+                        </Card.Title>
+                        <Card.Text>
+                          <h3>
+                            {loading ? (
+                              <Loading />
+                            ) : (
+                              currency(totalOmsetNet / orderSettlement.length)
+                            )}
+                          </h3>
+                          {/* <small className="text-success">↑ 1.3% Up from last month</small> */}
+                        </Card.Text>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="shadow-sm">
+                      <Card.Body>
+                        <Card.Title
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div>Total Invoice</div>
+                          <div
+                            style={{
+                              backgroundColor: "rgb(229 228 255)",
+                              borderRadius: "50%",
+                              width: "35px",
+                              height: "35px",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <ReceiptCutoff color="#8280FF" />
+                          </div>
+                        </Card.Title>
+                        <Card.Text>
+                          <h3>{loading ? <Loading /> : allOrders?.length}</h3>
+                          {/* <small className="text-danger">↓ 4.3% Down from last month</small> */}
+                        </Card.Text>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="shadow-sm">
+                      <Card.Body>
+                        <Card.Title
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div>Unpaid Revenue</div>
+                          <div
+                            style={{
+                              backgroundColor: "#ffded1",
+                              borderRadius: "50%",
+                              width: "35px",
+                              height: "35px",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <JournalX color="#FF9066" />
+                          </div>
+                        </Card.Title>
+                        <Card.Text>
+                          <h3>
+                            {loading ? <Loading /> : currency(totalOmsetUnpaid)}
+                          </h3>
+                          {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
+                        </Card.Text>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
               </Col>
             </Row>
+
             <Row className="mb-4">
+              <p className="fw-bold text-success fs-5">
+                Logistics & Fulfillment
+              </p>
               <Col md={4}>
                 <Card className="shadow-sm">
                   <Card.Body>
@@ -664,24 +693,11 @@ const Dashboard = ({ profile }) => {
                 </Card>
               </Col>
             </Row>
+
             <Row className="mb-4">
-              <Col>
-                <Card className="shadow-sm">
-                  <Card.Body>
-                    <Card.Title>Transaction</Card.Title>
-                    <div className="chart">
-                      {/* Add a chart component here or use an image */}
-                      {loading ? (
-                        <Loading />
-                      ) : (
-                        <TransactionChart allOrders={allOrders} />
-                      )}
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-            <Row className="mb-4">
+              <p className="fw-bold text-success fs-5">
+                Finacial Health & Growth
+              </p>
               <Col>
                 <Card className="shadow-sm">
                   <Card.Body>

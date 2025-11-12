@@ -15,6 +15,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { format, parseISO } from "date-fns";
 import { firestore } from "../../FirebaseFrovider";
 import Loading from "../../components/Loading";
+import { Col, Row } from "react-bootstrap";
 
 ChartJS.register(
   CategoryScale,
@@ -224,14 +225,18 @@ const RevenueGrowth = () => {
         </>
       ) : (
         <>
-          <div style={{ marginTop: "3rem" }}>
-            <Bar data={momData} options={momOptions} />
-          </div>
-
-          <div style={{ marginTop: "3rem" }}>
-            <Bar data={yoyData} options={yoyOptions} />
-          </div>
-
+          <Row>
+            <Col md={6}>
+              <div className="card" style={{ marginTop: "3rem" }}>
+                <Bar data={momData} options={momOptions} />
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="card" style={{ marginTop: "3rem" }}>
+                <Bar data={yoyData} options={yoyOptions} />
+              </div>
+            </Col>
+          </Row>
           {/* <div style={{ marginTop: "3rem" }}>
             <Bar data={pendingData} options={pendingOptions} />
           </div> */}
