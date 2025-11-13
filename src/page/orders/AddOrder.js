@@ -1112,6 +1112,16 @@ const AddOrder = () => {
             { merge: true }
           );
 
+          // order counter
+          await setDoc(
+            doc(firestore, "settings", "counter", "orders", "counter"),
+            {
+              totalOrder: increment(orders.length),
+            },
+            {
+              merge: true,
+            }
+          );
           // backup
           await setDoc(
             doc(firestore, "orders-backup", newOrderId),
