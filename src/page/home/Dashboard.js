@@ -743,13 +743,7 @@ const Dashboard = ({ profile }) => {
                 Finacial Health & Growth
               </p>
               <Col>
-                <Card className="shadow-sm">
-                  <Card.Body>
-                    <div className="chart">
-                      <RevenueGrowth />
-                    </div>
-                  </Card.Body>
-                </Card>
+                <RevenueGrowth />
               </Col>
             </Row>
           </>

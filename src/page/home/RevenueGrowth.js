@@ -12,7 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import { collection, doc, onSnapshot } from "firebase/firestore";
-import { format, parseISO } from "date-fns";
+import { differenceInDays, format, parseISO } from "date-fns";
 import { firestore } from "../../FirebaseFrovider";
 import Loading from "../../components/Loading";
 import { Card, Col, Row } from "react-bootstrap";
@@ -34,8 +34,6 @@ const RevenueGrowth = () => {
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [yearlyRevenue, setYearlyRevenue] = useState([]);
   const [pendingOrders, setPendingOrders] = useState([]);
-  const [totalOrdersCountsall, setTotalOrdersCount] = useState(0);
-  const [totalOrdersPaidCount, setTotalOrdersPaidCount] = useState(0);
   // ✅ Realtime listener from Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -48,23 +46,15 @@ const RevenueGrowth = () => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const settingsRef = doc(
-      firestore,
-      "settings",
-      "counter",
-      "orders",
-      "counter"
-    );
+  const pendingOver30Days = orders.filter((o) => {
+    if (o.paymentStatus === "settlement") return false;
 
-    // useEffect(() => {
-    const unsub = onSnapshot(settingsRef, (doc) => {
-      // console.log(" data: ", doc.data());
-      setTotalOrdersCount(doc.data()?.totalOrder);
-      setTotalOrdersPaidCount(doc.data()?.paidOrder);
-    });
-    return () => unsub();
-  }, []);
+    const orderDate = new Date(o.createdAt?.seconds * 1000); // convert Firestore timestamp
+    const now = new Date();
+
+    const diffInDays = (now - orderDate) / (1000 * 60 * 60 * 24); // ms → days
+    return diffInDays > 30;
+  });
 
   // ✅ Process data when orders update
   useEffect(() => {
@@ -107,7 +97,7 @@ const RevenueGrowth = () => {
     const pending = orders.filter((o) => o.paymentStatus !== "settlement");
     setPendingOrders(pending);
   }, [orders]);
-  console.log(pendingOrders);
+  //   console.log(pendingOver30Days);
   // ✅ Calculate growths
   const monthlyGrowth = monthlyRevenue.map((item, i) => {
     if (i === 0) return 0;
@@ -209,35 +199,33 @@ const RevenueGrowth = () => {
   };
 
   // ✅ Pending orders chart (all, not by month)
-  const pendingData = {
-    labels: pendingOrders.map((o, i) => o.customerName || `Order ${i + 1}`),
-    datasets: [
-      {
-        label: "Pending Orders",
-        data: pendingOrders.map((o) => o.totalAfterDiskonDanOngkir || 0),
-        backgroundColor: "rgba(255, 159, 64, 0.6)",
-      },
-    ],
-  };
+  //   const pendingData = {
+  //     labels: pendingOrders.map((o, i) => o.customerName || `Order ${i + 1}`),
+  //     datasets: [
+  //       {
+  //         label: "Pending Orders",
+  //         data: pendingOrders.map((o) => o.totalAfterDiskonDanOngkir || 0),
+  //         backgroundColor: "rgba(255, 159, 64, 0.6)",
+  //       },
+  //     ],
+  //   };
 
-  const pendingOptions = {
-    responsive: true,
-    plugins: {
-      legend: { position: "top" },
-      title: { display: true, text: "🕒 Pending Orders (All)" },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: { display: true, text: "Total (IDR)" },
-      },
-    },
-  };
+  //   const pendingOptions = {
+  //     responsive: true,
+  //     plugins: {
+  //       legend: { position: "top" },
+  //       title: { display: true, text: "🕒 Pending Orders (All)" },
+  //     },
+  //     scales: {
+  //       y: {
+  //         beginAtZero: true,
+  //         title: { display: true, text: "Total (IDR)" },
+  //       },
+  //     },
+  //   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>📉 Real-Time Revenue Growth Dashboard</h2>
-
+    <div style={{}}>
       {!orders.length ? (
         <>
           <Loading />
@@ -247,12 +235,12 @@ const RevenueGrowth = () => {
         <>
           <Row className="gy-3">
             <Col md={6}>
-              <div className="card" style={{ marginTop: "3rem" }}>
+              <div className="card shadow-sm" style={{}}>
                 <Bar data={momData} options={momOptions} />
               </div>
             </Col>
             <Col md={6}>
-              <div className="card" style={{ marginTop: "3rem" }}>
+              <div className="card shadow-sm" style={{}}>
                 <Bar data={yoyData} options={yoyOptions} />
               </div>
             </Col>
@@ -265,7 +253,7 @@ const RevenueGrowth = () => {
                       justifyContent: "space-between",
                     }}
                   >
-                    <div>Unpaid Total</div>
+                    <div>Unpaid {`>`} 30 Days</div>
                     <div
                       style={{
                         backgroundColor: "#ffded1",
@@ -282,11 +270,7 @@ const RevenueGrowth = () => {
                   </Card.Title>
                   <Card.Text>
                     <h3>
-                      {!orders.length ? (
-                        <Loading />
-                      ) : (
-                        totalOrdersCountsall - totalOrdersPaidCount
-                      )}
+                      {!orders.length ? <Loading /> : pendingOver30Days.length}
                     </h3>
                     {/* <small className="text-danger">↓ 4.3% Unpaid</small> */}
                   </Card.Text>
