@@ -62,11 +62,12 @@ const RevenueGrowth = () => {
 
     const monthlyMap = {};
     const yearlyMap = {};
-
-    orders.forEach((order) => {
+    const settlementOrders = orders.filter(
+      (o) => o.paymentStatus === "settlement"
+    );
+    settlementOrders.forEach((order) => {
       const settlementTime =
         order?.midtransRes?.settlement_time ||
-        order?.midtransRes?.transaction_time ||
         (order?.createdAt?.seconds
           ? new Date(order.createdAt.seconds * 1000).toISOString()
           : null);
@@ -93,9 +94,9 @@ const RevenueGrowth = () => {
     setMonthlyRevenue(monthly);
     setYearlyRevenue(yearly);
 
-    // ✅ Filter all pending orders
-    const pending = orders.filter((o) => o.paymentStatus !== "settlement");
-    setPendingOrders(pending);
+    // // ✅ Filter all pending orders
+    // const pending = orders.filter((o) => o.paymentStatus !== "settlement");
+    // setPendingOrders(pending);
   }, [orders]);
   //   console.log(pendingOver30Days);
   // ✅ Calculate growths
@@ -112,7 +113,7 @@ const RevenueGrowth = () => {
     const growth = prev ? ((item.total - prev) / prev) * 100 : 0;
     return +growth.toFixed(2);
   });
-
+  console.log(yearlyRevenue);
   // ✅ MoM chart data
   const momData = {
     labels: monthlyRevenue.map((d) => d.month),
