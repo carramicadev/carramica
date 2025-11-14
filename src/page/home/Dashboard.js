@@ -193,7 +193,12 @@ const Dashboard = ({ profile }) => {
     (ord) => ord.paymentStatus === "pending"
   );
 
-  const arrayTotal = orderSettlement.map((all) => all?.totalHargaProduk);
+  const arrayTotal = orderSettlement.map(
+    (all) =>
+      all?.totalAfterDiskonDanOngkir -
+      all?.totalOngkir -
+      all?.additionalDiscount
+  );
   const totalOmset = arrayTotal?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
   }, 0);
@@ -749,7 +754,7 @@ const Dashboard = ({ profile }) => {
           </>
         )}
         <div>
-          <h1 className="page-title">Seles</h1>
+          <h1 className="page-title">Sales</h1>
         </div>
         <Row>
           {loading ? (
