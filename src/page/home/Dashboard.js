@@ -194,17 +194,14 @@ const Dashboard = ({ profile }) => {
   );
 
   const arrayTotal = orderSettlement.map(
-    (all) =>
-      all?.totalAfterDiskonDanOngkir -
-      all?.totalOngkir -
-      all?.additionalDiscount
+    (all) => all?.totalHargaProduk + all?.totalOngkir
   );
   const totalOmset = arrayTotal?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
   }, 0);
   // net revenue
   const arrayTotalNet = orderSettlement.map(
-    (all) => all?.totalAfterDiskonDanOngkir
+    (all) => all?.totalAfterDiskonDanOngkir - all?.totalOngkir
   );
   const totalOmsetNet = arrayTotalNet?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
