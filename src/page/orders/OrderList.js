@@ -503,7 +503,7 @@ const OrderList = () => {
       const allDiscount = discount?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang;
       }, 0);
-      const gross = ord?.products?.map((prod) => parseInt(prod?.amount));
+      const gross = ord?.products?.map((prod) => parseInt(prod?.price));
       const allGross = gross?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang;
       }, 0);
@@ -585,7 +585,8 @@ const OrderList = () => {
         kuitansi: item?.kuitansi,
         partialPayment: partialPayment,
         additionalDiscount: item?.additionalDiscount,
-        netRevenue: i === 0 ? item?.totalAfterDiskonDanOngkir : 0,
+        netRevenue:
+          i === 0 ? item?.totalAfterDiskonDanOngkir - item?.totalOngkir : 0,
       });
     });
   });
@@ -703,7 +704,7 @@ const OrderList = () => {
     (ord) => ord?.paymentStatus === "settlement"
   );
   const arrayHarga = paidOrd.map((data) =>
-    parseInt(data.totalAfterDiskonDanOngkir)
+    parseInt(data.totalAfterDiskonDanOngkir - data?.totalOngkir)
   );
   const totalOmset = arrayHarga?.reduce((val, nilaiSekarang) => {
     return (
@@ -1227,7 +1228,7 @@ const OrderList = () => {
       style: {},
     },
     {
-      label: "Revenue",
+      label: "Gross Revenue",
       key: (item) => currency(item?.grossRevenue),
       style: {},
     },
@@ -1736,7 +1737,7 @@ const OrderList = () => {
               <Card.Title
                 style={{ display: "flex", justifyContent: "space-between" }}
               >
-                <div>Revenue</div>
+                <div>Net Revenue</div>
                 <div
                   style={{
                     backgroundColor: "#d9f7e8",
