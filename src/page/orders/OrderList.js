@@ -83,6 +83,7 @@ import { typesense } from "../../typesense";
 import Loading from "../../components/Loading";
 import PopoverListExample from "./PopupInvoice";
 import DialogAddKuitansi from "./DialogAddKuitansi";
+import GetDateTimestamp from "./GetDateTimestamp";
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -93,12 +94,17 @@ const OrderList = () => {
   const [allFilters, setAllFilters] = useState([]);
   const [loadingOrder, setLoadingOrder] = useState(false);
   // filter
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const today = new Date();
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(today);
   const [dateTimestamp, setDateTimestamp] = useState({
     start: null,
     end: null,
   });
+  useEffect(() => {
+    setDateTimestamp(GetDateTimestamp(today, today));
+    filterByDate(today, today);
+  }, []);
   const [modalDownload, setModalDownload] = useState({
     open: false,
     data: [],
@@ -192,6 +198,7 @@ const OrderList = () => {
         setTotalOngkir();
         const getDoc = query(
           collection(firestore, "orders"),
+          orderBy("createdAt", "desc"),
           ...all,
           ...filter
         );
@@ -223,28 +230,30 @@ const OrderList = () => {
         setTotalOrdersPaidCount(ordersPaidCount);
         // console.log(ordersPaidCount)
         setAllOrders(updatedData);
-      } else {
-        setLoadingOrder(true);
-        const settingsRef = doc(
-          firestore,
-          "settings",
-          "counter",
-          "orders",
-          "counter"
-        );
-
-        // useEffect(() => {
-        const unsub = onSnapshot(settingsRef, (doc) => {
-          // console.log(" data: ", doc.data());
-          setTotalOrdersCount(doc.data()?.totalOrder);
-          setTotalOrdersPaidCount(doc.data()?.paidOrder);
-          setRevenue(doc.data()?.revenue);
-          setTotalOngkir(doc.data()?.totalOngkir);
-        });
-        setLoadingOrder(false);
-        return () => unsub;
-        // }, []);
+        setList(updatedData);
       }
+      //  else {
+      //   setLoadingOrder(true);
+      //   const settingsRef = doc(
+      //     firestore,
+      //     "settings",
+      //     "counter",
+      //     "orders",
+      //     "counter"
+      //   );
+
+      //   // useEffect(() => {
+      //   const unsub = onSnapshot(settingsRef, (doc) => {
+      //     // console.log(" data: ", doc.data());
+      //     setTotalOrdersCount(doc.data()?.totalOrder);
+      //     setTotalOrdersPaidCount(doc.data()?.paidOrder);
+      //     setRevenue(doc.data()?.revenue);
+      //     setTotalOngkir(doc.data()?.totalOngkir);
+      //   });
+      //   setLoadingOrder(false);
+      //   return () => unsub;
+      //   // }, []);
+      // }
     } catch (e) {
       console.log(e.message);
       enqueueSnackbar(e.message, { variant: "error" });
@@ -252,14 +261,14 @@ const OrderList = () => {
       setLoadingOrder(false); // Set loading state to false after fetch
     }
   }, []);
-  useEffect(() => {
-    // const fetchData = async () => {
+  // useEffect(() => {
+  //   // const fetchData = async () => {
 
-    // };
-    // setLoadingOrder(true)
-    fetchData(dateTimestamp, allFilters);
-  }, [allFilters, dateTimestamp]);
-  // console.log(allOrders)
+  //   // };
+  //   // setLoadingOrder(true)
+  //   fetchData(dateTimestamp, allFilters);
+  // }, [allFilters]);
+  console.log(allFilters);
   // getUserColl
   useEffect(() => {
     const fetchData = async () => {
@@ -301,24 +310,24 @@ const OrderList = () => {
     }
   }, [findDataUser?.rules]);
   // getordersColl
-  useEffect(() => {
-    // setLoadingOrder(true)
-    const getDoc = query(
-      collection(firestore, "orders"),
-      ...allFilters,
-      orderBy("createdAt", "desc"),
-      limit(length)
-    );
-    const unsubscribe = onSnapshot(getDoc, (snapshot) => {
-      const updatedData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setList(updatedData); // Update the state with the new data
-    });
-    // setLoadingOrder(false)
-    return () => unsubscribe();
-  }, [length, allFilters, !searchTerm]);
+  // useEffect(() => {
+  //   // setLoadingOrder(true)
+  //   const getDoc = query(
+  //     collection(firestore, "orders"),
+  //     ...allFilters,
+  //     orderBy("createdAt", "desc"),
+  //     limit(length)
+  //   );
+  //   const unsubscribe = onSnapshot(getDoc, (snapshot) => {
+  //     const updatedData = snapshot.docs.map((doc) => ({
+  //       id: doc.id,
+  //       ...doc.data(),
+  //     }));
+  //     setList(updatedData); // Update the state with the new data
+  //   });
+  //   // setLoadingOrder(false)
+  //   return () => unsubscribe();
+  // }, [length, allFilters, !searchTerm]);
   // console.log(list);
   const showNext = ({ item }) => {
     if (list.length === 0) {
@@ -387,6 +396,10 @@ const OrderList = () => {
   const filterByDate = async (start, end) => {
     try {
       setLoadingOrder(true);
+      setTotalOrdersCount();
+      setTotalOrdersPaidCount();
+      setRevenue();
+      setTotalOngkir();
       const yearStart = start.getFullYear();
       const monthStart = String(start.getMonth() + 1).padStart(2, "0"); // Months are 0-based
       const dayStart = String(start.getDate()).padStart(2, "0");
@@ -434,6 +447,23 @@ const OrderList = () => {
         id: doc.id,
         ...doc.data(),
       }));
+      // Calculate total orders count
+      const ordersCount = documentsOrd.reduce((acc, doc) => {
+        if (Array.isArray(doc.orders)) {
+          return acc + doc.orders.length;
+        }
+        return acc;
+      }, 0);
+
+      // Calculate orders with paymentStatus === 'settlement'
+      const ordersPaidCount = documentsOrd.reduce((acc, doc) => {
+        if (doc.paymentStatus === "settlement" && Array.isArray(doc.orders)) {
+          return acc + doc.orders.length;
+        }
+        return acc;
+      }, 0);
+      setTotalOrdersCount(ordersCount);
+      setTotalOrdersPaidCount(ordersPaidCount);
       setAllOrders(documentsOrd);
       setDateTimestamp({
         start: startTimestamp,
@@ -2164,6 +2194,12 @@ const OrderList = () => {
         setAllOrders={setAllOrders}
         setAllFilters={setAllFilters}
         currentUser={currentUser}
+        setDateTimestamp={setDateTimestamp}
+        setStartDateList={setStartDate}
+        setEndDateList={setEndDate}
+        setTotalOrdersCount={setTotalOrdersCount}
+        setTotalOrdersPaidCount={setTotalOrdersPaidCount}
+        length={length}
       />
       <FilterColumnDialog
         show={filterColomDialog}
