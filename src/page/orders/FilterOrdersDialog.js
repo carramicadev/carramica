@@ -2,6 +2,7 @@ import { set } from "date-fns";
 import {
   collection,
   getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -24,6 +25,12 @@ export const FilterDialog = ({
   setAllOrders,
   setAllFilters,
   currentUser,
+  setDateTimestamp,
+  setStartDateList,
+  setEndDateList,
+  setTotalOrdersCount,
+  setTotalOrdersPaidCount,
+  length,
 }) => {
   const [user, setUser] = useState([]);
   const [checkedItems, setCheckedItems] = useState("");
@@ -81,10 +88,12 @@ export const FilterDialog = ({
         filters.push(where("userId", "==", selectedUser.userId));
       }
       if (dateTimestamp?.start && dateTimestamp?.end) {
-        filters.push(
-          where("createdAt", ">=", dateTimestamp?.start),
-          where("createdAt", "<=", dateTimestamp?.end)
-        );
+        if (!endShippingDate && !endDate) {
+          filters.push(
+            where("createdAt", ">=", dateTimestamp?.start),
+            where("createdAt", "<=", dateTimestamp?.end)
+          );
+        }
       }
       if (startDate && endDate) {
         const yearStart = startDate.getFullYear();
@@ -148,21 +157,45 @@ export const FilterDialog = ({
         collection(firestore, "orders"),
         ...filters,
         orderBy("createdAt", "desc")
+        // limit(length)
         // where("createdAt", ">=", startTimestamp),
         // where("createdAt", "<=", endTimestamp)
       );
       // console.log(filters)
       // const querySnapshot = await getDocs(ref);
+      if (endShippingDate || endDate) {
+        setDateTimestamp({ start: null, end: null });
+        setStartDateList(null);
+        setEndDateList(null);
+      }
       const unsubscribe = onSnapshot(ref, (snapshot) => {
         const updatedData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+        // Calculate total orders count
+        const ordersCount = updatedData.reduce((acc, doc) => {
+          if (Array.isArray(doc.orders)) {
+            return acc + doc.orders.length;
+          }
+          return acc;
+        }, 0);
+
+        // Calculate orders with paymentStatus === 'settlement'
+        const ordersPaidCount = updatedData.reduce((acc, doc) => {
+          if (doc.paymentStatus === "settlement" && Array.isArray(doc.orders)) {
+            return acc + doc.orders.length;
+          }
+          return acc;
+        }, 0);
+        setTotalOrdersCount(ordersCount);
+        setTotalOrdersPaidCount(ordersPaidCount);
         setList(updatedData); // Update the state with the new data
         setAllOrders(updatedData);
         handleClose();
         setLoading(false);
       });
+
       return () => unsubscribe();
     } catch (e) {
       console.log(e.message);
