@@ -93,6 +93,8 @@ const OrderList = () => {
   const [loading, setLoading] = useState(true);
   const [allFilters, setAllFilters] = useState([]);
   const [loadingOrder, setLoadingOrder] = useState(false);
+  const [user, setUser] = useState([]);
+  const [warehouse, setWarehouse] = useState([]);
   // filter
   const today = new Date();
   const [startDate, setStartDate] = useState(today);
@@ -101,10 +103,15 @@ const OrderList = () => {
     start: null,
     end: null,
   });
+
+  const findDataUser = user?.find((usr) => usr?.userId === currentUser?.uid);
+
   useEffect(() => {
-    setDateTimestamp(GetDateTimestamp(today, today));
-    filterByDate(today, today);
-  }, []);
+    if (findDataUser?.rules) {
+      setDateTimestamp(GetDateTimestamp(today, today));
+      filterByDate(today, today, findDataUser?.rules);
+    }
+  }, [findDataUser?.rules]);
   const [modalDownload, setModalDownload] = useState({
     open: false,
     data: [],
@@ -130,8 +137,7 @@ const OrderList = () => {
     data: {},
     mode: "add",
   });
-  const [user, setUser] = useState([]);
-  const [warehouse, setWarehouse] = useState([]);
+
   // get settings doc
   // const settingsRef = collection(firestore, "settings");
   const settingsRef = doc(firestore, "settings", "counter");
@@ -164,7 +170,7 @@ const OrderList = () => {
     setLength(e.target.value);
     if (startDate && endDate) {
       // console.log('run')
-      filterByDate(startDate, endDate, e.target.value);
+      filterByDate(startDate, endDate);
     }
     setPage(1);
   };
@@ -303,7 +309,6 @@ const OrderList = () => {
     fetchData();
   }, []);
 
-  const findDataUser = user?.find((usr) => usr?.userId === currentUser?.uid);
   useEffect(() => {
     if (findDataUser?.rules === "agen") {
       setAllFilters([where("warehouse", "==", findDataUser?.warehouse)]);
@@ -393,13 +398,17 @@ const OrderList = () => {
       filterByDate(start, end);
     }
   };
-  const filterByDate = async (start, end) => {
+  const filterByDate = async (start, end, rules) => {
     try {
       setLoadingOrder(true);
       setTotalOrdersCount();
       setTotalOrdersPaidCount();
       setRevenue();
       setTotalOngkir();
+      const filtersRules = [];
+      if (rules === "agen") {
+        filtersRules.push(where("warehouse", "==", findDataUser?.warehouse));
+      }
       const yearStart = start.getFullYear();
       const monthStart = String(start.getMonth() + 1).padStart(2, "0"); // Months are 0-based
       const dayStart = String(start.getDate()).padStart(2, "0");
@@ -419,9 +428,11 @@ const OrderList = () => {
           milliseconds: 999,
         })
       );
+      console.log(findDataUser?.rules);
       const ref = query(
         collection(firestore, "orders"),
         ...allFilters,
+        ...filtersRules,
         where("createdAt", ">=", startTimestamp),
         where("createdAt", "<=", endTimestamp),
         orderBy("createdAt", "desc"),
@@ -438,6 +449,8 @@ const OrderList = () => {
       // orders
       const refOrd = query(
         collection(firestore, "orders"),
+        ...filtersRules,
+        ...allFilters,
         where("createdAt", ">=", startTimestamp),
         where("createdAt", "<=", endTimestamp),
         orderBy("createdAt", "desc")
