@@ -84,6 +84,7 @@ import Loading from "../../components/Loading";
 import PopoverListExample from "./PopupInvoice";
 import DialogAddKuitansi from "./DialogAddKuitansi";
 import GetDateTimestamp from "./GetDateTimestamp";
+import DateRangePicker from "./DatePicker";
 
 const OrderList = () => {
   const { currentUser } = useAuth();
@@ -274,7 +275,7 @@ const OrderList = () => {
   //   // setLoadingOrder(true)
   //   fetchData(dateTimestamp, allFilters);
   // }, [allFilters]);
-  console.log(allFilters);
+  // console.log(allFilters);
   // getUserColl
   useEffect(() => {
     const fetchData = async () => {
@@ -428,7 +429,7 @@ const OrderList = () => {
           milliseconds: 999,
         })
       );
-      console.log(findDataUser?.rules);
+      // console.log(allFilters);
       const ref = query(
         collection(firestore, "orders"),
         ...allFilters,
@@ -1676,16 +1677,7 @@ const OrderList = () => {
           marginBottom: "10px",
         }}
       >
-        <p
-          style={{
-            justifyContent: "center",
-            marginRight: "5px",
-            marginTop: "5px",
-          }}
-        >
-          Date Order
-        </p>
-        <DatePicker
+        {/* <DatePicker
           dateFormat="dd/MM/yyyy"
           style={{ borderRadius: "10px" }}
           selected={startDate}
@@ -1694,8 +1686,15 @@ const OrderList = () => {
           endDate={endDate}
           selectsRange
           showIcon
-          // icon
-          // inline
+         
+        /> */}
+        <DateRangePicker
+          filterByDate={filterByDate}
+          rules={findDataUser?.rules}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
         />
       </div>
       <Row className="mb-4 gy-2 gx-1">

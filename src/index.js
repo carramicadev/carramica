@@ -1,23 +1,23 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { SnackbarProvider } from 'notistack';
-import { AuthProvider } from './AuthContext';
-import SwProvider from './components/SwProvider';
-import FullScreenDialog from './components/Update';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { SnackbarProvider } from "notistack";
+import { AuthProvider } from "./AuthContext";
+import SwProvider from "./components/SwProvider";
+import FullScreenDialog from "./components/Update";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const queryClient = new QueryClient();
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <SwProvider>
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <SnackbarProvider maxSnack={20} autoHideDuration={3000}>
           <AuthProvider>
-
             <App />
           </AuthProvider>
         </SnackbarProvider>

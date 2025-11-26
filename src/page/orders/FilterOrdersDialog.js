@@ -87,14 +87,14 @@ export const FilterDialog = ({
       if (selectedUser) {
         filters.push(where("userId", "==", selectedUser.userId));
       }
-      if (dateTimestamp?.start && dateTimestamp?.end) {
-        if (!endShippingDate && !endDate) {
-          filters.push(
-            where("createdAt", ">=", dateTimestamp?.start),
-            where("createdAt", "<=", dateTimestamp?.end)
-          );
-        }
-      }
+      // if (dateTimestamp?.start && dateTimestamp?.end) {
+      //   if (!endShippingDate && !endDate) {
+      //     filters.push(
+      //       where("createdAt", ">=", dateTimestamp?.start),
+      //       where("createdAt", "<=", dateTimestamp?.end)
+      //     );
+      //   }
+      // }
       if (startDate && endDate) {
         const yearStart = startDate.getFullYear();
         const monthStart = String(startDate.getMonth() + 1).padStart(2, "0"); // Months are 0-based
@@ -153,7 +153,7 @@ export const FilterDialog = ({
         );
       }
       setAllFilters(filters);
-      const ref = query(
+      let ref = query(
         collection(firestore, "orders"),
         ...filters,
         orderBy("createdAt", "desc")
@@ -161,6 +161,18 @@ export const FilterDialog = ({
         // where("createdAt", ">=", startTimestamp),
         // where("createdAt", "<=", endTimestamp)
       );
+      if (dateTimestamp?.start && dateTimestamp?.end) {
+        if (!endShippingDate && !endDate) {
+          ref = query(
+            collection(firestore, "orders"),
+            ...filters,
+            orderBy("createdAt", "desc"),
+            // limit(length)
+            where("createdAt", ">=", dateTimestamp?.start),
+            where("createdAt", "<=", dateTimestamp?.end)
+          );
+        }
+      }
       // console.log(filters)
       // const querySnapshot = await getDocs(ref);
       if (endShippingDate || endDate) {
