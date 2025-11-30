@@ -36,7 +36,7 @@ export default function DateRangePickerPopup({
   const [hoveredDate, setHoveredDate] = useState(null);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  console.log(startDate, endDate);
+  //   console.log(startDate, endDate);
   const applyPreset = (key, move) => {
     const today = new Date();
     let s = today;
