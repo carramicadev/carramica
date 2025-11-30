@@ -36,7 +36,7 @@ export default function DateRangePickerPopup({
   const [hoveredDate, setHoveredDate] = useState(null);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  //   console.log(startDate, endDate, rules);
+  console.log(startDate, endDate);
   const applyPreset = (key, move) => {
     const today = new Date();
     let s = today;
@@ -321,7 +321,7 @@ export default function DateRangePickerPopup({
           <Button variant="secondary" onClick={() => setShow(false)}>
             Batal
           </Button>
-          <Button variant="success" onClick={handleSet}>
+          <Button variant="success" disabled={!endDate} onClick={handleSet}>
             Terapkan
           </Button>
         </Modal.Footer>
