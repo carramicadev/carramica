@@ -10,10 +10,13 @@ import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
 import { firestore } from "../../FirebaseFrovider";
+import htmlDocx from "html-docx-js/dist/html-docx";
+import { saveAs } from "file-saver";
 
 export default function DownloadInvoiceDialog(props) {
   const item = props?.show?.data;
   const [findOrder, setFindOrder] = useState({});
+  const [convertImg, setConvertImg] = useState();
   //   console.log(item);
 
   useEffect(() => {
@@ -160,6 +163,50 @@ export default function DownloadInvoiceDialog(props) {
   // console.log("all product=>", props?.show?.data);
   // console.log(new Date(item?.[0]?.createdAt * 1000));
   // console.log(new Date(item?.[0]?.createdAt * 1000));
+
+  // docx
+  useEffect(() => {
+    async function convert() {
+      const base64Logo = await fetch(logoFull)
+        .then((r) => r.blob())
+        .then(
+          (blob) =>
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            })
+        );
+      setConvertImg(base64Logo);
+    }
+    convert();
+  }, [logoFull]);
+
+  const downloadDocx = () => {
+    if (!printRef.current) return;
+
+    const content = printRef.current.innerHTML;
+
+    // Wrap with full HTML
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #000; padding: 6px; }
+      </style>
+    </head>
+    <body>${content}</body>
+    </html>
+  `;
+
+    const docx = htmlDocx.asBlob(html);
+
+    saveAs(docx, "invoice.docx");
+  };
+  // console.log(convertImg);
   return (
     <div
       className="modal show"
@@ -203,8 +250,10 @@ export default function DownloadInvoiceDialog(props) {
                 <div style={styles.header}>
                   <img
                     style={styles.logo}
-                    src={logoFull}
-                    alt="Carramica Logo"
+                    src={convertImg}
+                    alt="Base64"
+                    width="200"
+                    height="283"
                   />
 
                   <div style={styles.invoiceDetails}>
@@ -439,6 +488,10 @@ export default function DownloadInvoiceDialog(props) {
           <Button onClick={hideModal} variant="secondary">
             Close
           </Button>
+          <button className="button button-blue" onClick={downloadDocx}>
+            Download .docx
+          </button>
+
           <button onClick={handleDownloadPDF} className="button button-primary">
             DownloadPdf
           </button>
