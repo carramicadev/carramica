@@ -36,11 +36,18 @@ const TransactionCart = ({ allOrders }) => {
     const year = date?.getFullYear();
     return `${day}/${month}/${year}`;
   });
-  const groupedDates = allDate?.reduce((acc, date) => {
-    if (date) {
-      // Ignore null values
-      acc[date] = (acc[date] || 0) + 1;
-    }
+  const groupedDates = filterDate?.reduce((acc, item) => {
+    const dateObj = item?.createdAt?.toDate();
+    if (!dateObj) return acc;
+
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+    const date = `${day}/${month}/${year}`;
+
+    const totalOrders = item.orders?.length || 0;
+
+    acc[date] = (acc[date] || 0) + totalOrders;
     return acc;
   }, {});
   const convertDate = Object.entries(groupedDates).reduce(
@@ -70,13 +77,22 @@ const TransactionCart = ({ allOrders }) => {
     const year = date?.getFullYear();
     return `${day}/${month}/${year}`;
   });
-  const groupedDatesPaid = allDatePaid?.reduce((acc, date) => {
-    if (date) {
-      // Ignore null values
-      acc[date] = (acc[date] || 0) + 1;
-    }
+  const groupedDatesPaid = filterDatePaid?.reduce((acc, item) => {
+    const dateObj = item?.createdAt?.toDate();
+    if (!dateObj) return acc;
+
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+    const date = `${day}/${month}/${year}`;
+
+    const totalOrders = item.orders?.length || 0;
+
+    acc[date] = (acc[date] || 0) + totalOrders;
     return acc;
   }, {});
+
+  //   console.log(groupedDatesPaid);
   const convertDatePaid = Object.entries(groupedDatesPaid).reduce(
     (acc, [date, count]) => {
       acc[date] = { count, date };
@@ -153,7 +169,7 @@ const TransactionCart = ({ allOrders }) => {
     },
   };
 
-  return <Line height={100} data={data} options={options} />;
+  return <Line height={245} data={data} options={options} />;
 };
 
 export default TransactionCart;
