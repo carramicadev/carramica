@@ -206,7 +206,7 @@ const Dashboard = ({ profile }) => {
   const totalOmsetNet = arrayTotalNet?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
   }, 0);
-  console.log(arrayTotalNet);
+  // console.log(arrayTotalNet);
 
   // total orders count
   const totalOrdersCount = ordersFilterd?.reduce?.((total, doc) => {
@@ -483,7 +483,7 @@ const Dashboard = ({ profile }) => {
               </Col>
               <Col md={6}>
                 <Row className="mb-4 gy-4">
-                  <Col md={6}>
+                  <Col md={12}>
                     <Card className="shadow-sm">
                       <Card.Body>
                         <Card.Title
@@ -520,7 +520,7 @@ const Dashboard = ({ profile }) => {
                       </Card.Body>
                     </Card>
                   </Col>
-                  <Col md={6}>
+                  <Col md={12}>
                     <Card className="shadow-sm">
                       <Card.Body>
                         <Card.Title
@@ -557,7 +557,7 @@ const Dashboard = ({ profile }) => {
                       </Card.Body>
                     </Card>
                   </Col>
-                  <Col md={6}>
+                  <Col md={12}>
                     <Card className="shadow-sm">
                       <Card.Body>
                         <Card.Title
@@ -588,7 +588,7 @@ const Dashboard = ({ profile }) => {
                       </Card.Body>
                     </Card>
                   </Col>
-                  <Col md={6}>
+                  <Col md={12}>
                     <Card className="shadow-sm">
                       <Card.Body>
                         <Card.Title
