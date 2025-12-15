@@ -247,72 +247,269 @@ export default function DownloadInvoiceDialog(props) {
           <div style={{ padding: "20px" }} ref={printRef}>
             {item?.map((itm) => (
               <div key={itm?.unixId} style={styles.container}>
-                <div style={styles.header}>
-                  <img
-                    style={styles.logo}
-                    src={convertImg}
-                    alt="Base64"
-                    width="200"
-                    height="283"
-                  />
-
-                  <div style={styles.invoiceDetails}>
-                    <div
-                      style={{ display: "flex", justifyContent: "flex-end" }}
+                <table
+                  width="100%"
+                  cellPadding="0"
+                  cellSpacing="0"
+                  style={{
+                    borderCollapse: "collapse",
+                    border: "none",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <tr>
+                    {/* LEFT: LOGO */}
+                    <td
+                      width="35%"
+                      style={{
+                        verticalAlign: "top",
+                        border: "none",
+                        padding: "0px",
+                      }}
                     >
-                      <h2 style={{ color: "#336699" }}>Invoice</h2>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "row" }}>
-                      <div>
-                        <p style={{ marginBottom: "0px" }}>Reference </p>
-                        <p style={{ marginBottom: "0px" }}>Date </p>
-                        <p style={{ marginBottom: "0px" }}>Due Date</p>
-                        <p style={{ marginBottom: "0px" }}>Status Invoice</p>
-                      </div>
-                      <div style={{ marginLeft: "50px" }}>
-                        <p style={{ marginBottom: "0px" }}>{itm?.invoice_id}</p>
-                        <p style={{ marginBottom: "0px" }}>
-                          {typeof itm?.createdAt === "number" ? (
-                            <TimestampToDate timestamp={itm?.createdAt} />
-                          ) : (
-                            formatDate(itm?.createdAt?.toDate())
-                          )}
-                        </p>
-                        <p style={{ marginBottom: "0px" }}>
-                          {" "}
-                          <ReformatDate date={itm?.dueDate ?? formattedDate} />
-                        </p>
-                        <p style={{ marginBottom: "0px" }}>
-                          {itm?.paymentStatus}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                      <img
+                        src={convertImg}
+                        alt="Base64"
+                        width="200"
+                        height="283"
+                        style={{ display: "block" }}
+                      />
+                    </td>
 
-                <div style={styles.section}>
-                  <div style={styles.addressBlock}>
-                    <p style={styles.title}>Our Information</p>
-                    <p style={{ color: "#327eac", fontWeight: "bold" }}>
-                      PT Carramica Kreasi Indonesia
-                    </p>
-                    <p style={styles.info}>
-                      Ruko Foodcity No. 26, Jl. Green Lake City Boulevard,
-                      Jakarta Barat, DKI Jakarta, 11750
-                    </p>
-                    <p style={styles.info}>Phone: 087772041275</p>
-                    <p style={styles.info}>
-                      Email: finance.carramica@gmail.com
-                    </p>
-                  </div>
-                  <div style={styles.addressBlock}>
-                    <p style={styles.title}>Billing For</p>
-                    <p style={{ color: "#327eac", fontWeight: "bold" }}>
-                      {itm?.senderName}
-                    </p>
-                    <p style={styles.info}>Phone: {itm?.senderPhone}</p>
-                  </div>
-                </div>
+                    {/* RIGHT: INVOICE DETAILS */}
+                    <td
+                      width="65%"
+                      style={{
+                        verticalAlign: "top",
+                        border: "none",
+                        padding: "0px",
+                      }}
+                    >
+                      {/* INVOICE TITLE (CENTER) */}
+                      <table
+                        width="100%"
+                        cellPadding="0"
+                        cellSpacing="0"
+                        style={{
+                          borderCollapse: "collapse",
+                          border: "none",
+                          padding: "0px",
+                        }}
+                      >
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: "right",
+                              border: "none",
+                              padding: "0px",
+                            }}
+                          >
+                            <h1
+                              style={{
+                                color: "#336699",
+                                margin: "0 0 12px 0",
+                                textAlign: "right",
+                              }}
+                            >
+                              Invoice
+                            </h1>
+                          </td>
+                        </tr>
+                      </table>
+
+                      {/* INVOICE INFO */}
+                      <table
+                        width="100%"
+                        cellPadding="0"
+                        cellSpacing="0"
+                        style={{
+                          borderCollapse: "collapse",
+                          border: "none",
+                          padding: "0px",
+                        }}
+                      >
+                        <tr>
+                          {/* LABEL */}
+                          <td
+                            style={{
+                              paddingBottom: "0px",
+                              border: "none",
+                              textAlign: "right",
+                              padding: "0px",
+                            }}
+                          >
+                            Reference
+                          </td>
+
+                          {/* VALUE → RIGHT */}
+                          <td
+                            style={{
+                              paddingBottom: "0px",
+                              paddingLeft: "0px",
+                              textAlign: "right",
+                              border: "none",
+                              padding: "0px",
+                            }}
+                          >
+                            {itm?.invoice_id}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td
+                            style={{
+                              paddingBottom: "0px",
+                              border: "none",
+                              textAlign: "right",
+                              padding: "0px",
+                            }}
+                          >
+                            Date
+                          </td>
+                          <td
+                            style={{
+                              paddingBottom: "0px",
+                              paddingLeft: "0px",
+                              textAlign: "right",
+                              border: "none",
+                              padding: "0px",
+                            }}
+                          >
+                            {typeof itm?.createdAt === "number" ? (
+                              <TimestampToDate timestamp={itm?.createdAt} />
+                            ) : (
+                              formatDate(itm?.createdAt?.toDate())
+                            )}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td
+                            style={{
+                              paddingBottom: "0px",
+                              border: "none",
+                              textAlign: "right",
+                              padding: "0px",
+                            }}
+                          >
+                            Due Date
+                          </td>
+                          <td
+                            style={{
+                              paddingBottom: "0px",
+                              paddingLeft: "0px",
+                              textAlign: "right",
+                              border: "none",
+                              padding: "0px",
+                            }}
+                          >
+                            <ReformatDate
+                              date={itm?.dueDate ?? formattedDate}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td
+                            style={{
+                              border: "none",
+                              textAlign: "right",
+                              padding: "0px",
+                            }}
+                          >
+                            Status Invoice
+                          </td>
+                          <td
+                            style={{
+                              paddingLeft: "0px",
+                              textAlign: "right",
+                              border: "none",
+                              padding: "0px",
+                            }}
+                          >
+                            {itm?.paymentStatus}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <table
+                  width="100%"
+                  cellPadding="0"
+                  cellSpacing="0"
+                  style={{
+                    borderCollapse: "collapse",
+                    border: "none",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <tr>
+                    {/* OUR INFORMATION */}
+                    <td
+                      width="50%"
+                      style={{
+                        verticalAlign: "top",
+                        border: "none",
+                        paddingRight: "20px",
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      <p style={styles.title}>Our Information</p>
+
+                      <p
+                        style={{
+                          color: "#327eac",
+                          fontWeight: "bold",
+                          margin: "4px 0",
+                        }}
+                      >
+                        PT Carramica Kreasi Indonesia
+                      </p>
+
+                      <p style={styles.info}>
+                        Ruko Foodcity No. 26, Jl. Green Lake City Boulevard,
+                        Jakarta Barat, DKI Jakarta, 11750
+                      </p>
+
+                      <p style={styles.info}>Phone: 087772041275</p>
+
+                      <p style={styles.info}>
+                        Email: finance.carramica@gmail.com
+                      </p>
+                    </td>
+
+                    {/* BILLING FOR */}
+                    <td
+                      width="50%"
+                      style={{
+                        verticalAlign: "top",
+                        border: "none",
+                        paddingLeft: "20px",
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      <p style={styles.title}>Billing For</p>
+
+                      <p
+                        style={{
+                          color: "#327eac",
+                          fontWeight: "bold",
+                          margin: "4px 0",
+                        }}
+                      >
+                        {itm?.senderName}
+                      </p>
+
+                      <p style={styles.info}>Phone: {itm?.senderPhone}</p>
+                    </td>
+                  </tr>
+                </table>
 
                 <table style={styles.table}>
                   <thead>
@@ -341,112 +538,196 @@ export default function DownloadInvoiceDialog(props) {
                   </tbody>
                 </table>
 
-                <div style={styles.summaryBlock}>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div style={{ marginRight: "100px", lineHeight: "5px" }}>
-                      <p>
-                        <span style={styles.bold}>Sub Total</span>
-                      </p>
-                      <p>
-                        <span style={styles.bold}>Delivery Fee</span>
-                      </p>
-                      <p>
-                        <span style={styles.bold}>Additional Discount</span>
-                      </p>
-                      <p>
-                        <span style={styles.bold}>Total Discount</span>
-                      </p>
-                      <p>
-                        <span style={styles.bold}>Total</span>
-                      </p>
+                <table
+                  width="100%"
+                  cellPadding="0"
+                  cellSpacing="0"
+                  style={{
+                    borderCollapse: "collapse",
+                    border: "none",
+                    marginTop: "20px",
+                    padding: "0px",
+                  }}
+                >
+                  <tr>
+                    {/* LEFT EMPTY SPACE (push summary to the right like your UI) */}
+                    <td
+                      width="50%"
+                      style={{ border: "none", padding: "0px" }}
+                    ></td>
 
-                      {props?.show?.type === "dp" && (
-                        <>
-                          <p>
-                            <span style={styles.bold}>Paid Invoice</span>
-                          </p>
-                          <p>
-                            <span style={styles.bold}>Outstanding Balance</span>
-                          </p>
-                        </>
-                      )}
-                    </div>
-                    <div style={{ lineHeight: "5px" }}>
-                      <p>
-                        <span style={styles.bold}></span> {currency(allGross)}
-                      </p>
-                      <p>
-                        <span style={styles.bold}></span> {currency(allOngkir)}
-                      </p>
-                      <p>
-                        <span style={styles.bold}></span>{" "}
-                        {currency(findOrder?.additionalDiscount)}
-                      </p>
-                      <p style={{ color: "red" }}>
-                        <span style={styles.bold}></span> -
-                        {currency(discreduce + findOrder?.additionalDiscount)}
-                      </p>
-                      <p>
-                        <span style={styles.bold}></span>{" "}
-                        {currency(
-                          parseInt(allGross) +
-                            parseInt(allOngkir) -
-                            (findOrder?.additionalDiscount
-                              ? findOrder?.additionalDiscount
-                              : 0)
-                        )}
-                      </p>
-                      {props?.show?.type === "dp" && (
-                        <>
-                          <p>
-                            <span style={styles.bold}></span>{" "}
-                            {currency(cumulative)}
-                          </p>
-                          <p>
-                            <span style={styles.bold}></span> {currency(sisa)}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <hr
-                  className=" bg-dark"
-                  style={{ height: "2px", marginTop: "5px" }}
-                />
-                <div style={styles.summaryBlock}>
-                  {props?.show?.type !== "dp" && (
-                    <div
+                    {/* SUMMARY BLOCK */}
+                    <td
+                      width="50%"
                       style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
+                        border: "none",
+                        padding: "0px",
                       }}
                     >
-                      <div style={{ marginRight: "100px" }}>
-                        <p>
-                          <span style={styles.bold}>Amount Due</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p>
-                          <span style={styles.bold}></span>{" "}
-                          {currency(
-                            parseInt(allGross) +
-                              parseInt(allOngkir) -
-                              (findOrder?.additionalDiscount
-                                ? findOrder?.additionalDiscount
-                                : 0)
-                          )}
-                        </p>
-                      </div>
-                    </div>
+                      <table
+                        width="100%"
+                        cellPadding="0"
+                        cellSpacing="0"
+                        style={{
+                          borderCollapse: "collapse",
+                          border: "none",
+                          padding: "0px",
+                        }}
+                      >
+                        <tr>
+                          {/* LABELS */}
+                          <td
+                            style={{
+                              border: "none",
+                              paddingRight: "100px",
+                              verticalAlign: "top",
+                              padding: "0px",
+                            }}
+                          >
+                            <p>
+                              <span style={styles.bold}>Sub Total</span>
+                            </p>
+                            <p>
+                              <span style={styles.bold}>Delivery Fee</span>
+                            </p>
+                            <p>
+                              <span style={styles.bold}>
+                                Additional Discount
+                              </span>
+                            </p>
+                            <p>
+                              <span style={styles.bold}>Total Discount</span>
+                            </p>
+                            <p>
+                              <span style={styles.bold}>Total</span>
+                            </p>
+
+                            {props?.show?.type === "dp" && (
+                              <>
+                                <p>
+                                  <span style={styles.bold}>Paid Invoice</span>
+                                </p>
+                                <p>
+                                  <span style={styles.bold}>
+                                    Outstanding Balance
+                                  </span>
+                                </p>
+                              </>
+                            )}
+                          </td>
+
+                          {/* VALUES (RIGHT ALIGNED) */}
+                          <td
+                            style={{
+                              border: "none",
+                              textAlign: "right",
+                              verticalAlign: "top",
+                              padding: "0px",
+                            }}
+                          >
+                            <p>{currency(allGross)}</p>
+                            <p>{currency(allOngkir)}</p>
+                            <p>{currency(findOrder?.additionalDiscount)}</p>
+
+                            <p style={{ color: "red" }}>
+                              -
+                              {currency(
+                                discreduce + findOrder?.additionalDiscount
+                              )}
+                            </p>
+
+                            <p>
+                              {currency(
+                                parseInt(allGross) +
+                                  parseInt(allOngkir) -
+                                  (findOrder?.additionalDiscount || 0)
+                              )}
+                            </p>
+
+                            {props?.show?.type === "dp" && (
+                              <>
+                                <p>{currency(cumulative)}</p>
+                                <p>{currency(sisa)}</p>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <hr className=" bg-dark" style={{ height: "2px" }} />
+                <div style={styles.summaryBlock}>
+                  {props?.show?.type !== "dp" && (
+                    <table
+                      width="100%"
+                      cellPadding="0"
+                      cellSpacing="0"
+                      style={{
+                        borderCollapse: "collapse",
+                        border: "none",
+                        marginTop: "10px",
+                        padding: "0px",
+                      }}
+                    >
+                      <tr>
+                        {/* LEFT EMPTY SPACE (push content right) */}
+                        <td
+                          width="50%"
+                          style={{ border: "none", padding: "0px" }}
+                        ></td>
+
+                        {/* AMOUNT DUE BLOCK */}
+                        <td
+                          width="50%"
+                          style={{ border: "none", padding: "0px" }}
+                        >
+                          <table
+                            width="100%"
+                            cellPadding="0"
+                            cellSpacing="0"
+                            style={{
+                              borderCollapse: "collapse",
+                              border: "none",
+                              padding: "0px",
+                            }}
+                          >
+                            <tr>
+                              {/* LABEL */}
+                              <td
+                                style={{
+                                  border: "none",
+                                  paddingRight: "100px",
+                                  padding: "0px",
+                                }}
+                              >
+                                <p>
+                                  <span style={styles.bold}>Amount Due</span>
+                                </p>
+                              </td>
+
+                              {/* VALUE (RIGHT ALIGNED) */}
+                              <td
+                                style={{
+                                  border: "none",
+                                  textAlign: "right",
+                                  padding: "0px",
+                                }}
+                              >
+                                <p>
+                                  {currency(
+                                    parseInt(allGross) +
+                                      parseInt(allOngkir) -
+                                      (findOrder?.additionalDiscount || 0)
+                                  )}
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
                   )}
                 </div>
                 <div
