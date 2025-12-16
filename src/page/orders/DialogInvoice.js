@@ -2,7 +2,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { usePDF } from "react-to-pdf";
 import "./dialogDownload.css";
-import logoFull from "../../logoFull.png";
+import logoFull from "../../logoFullFixed.png";
 import { doc, onSnapshot } from "firebase/firestore";
 
 import formatDate, { currency, TimestampToDate } from "../../formatter";
@@ -195,7 +195,9 @@ export default function DownloadInvoiceDialog(props) {
       <meta charset="utf-8" />
       <style>
         table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #000; padding: 6px; }
+        th {color: #ffffff;border: 1px solid #6c757d; }, td { border: 1px solid #6c757d; }
+        .td-head { font-size: 15pt; margin-bottom :10px}
+        .td-invoice { margin-bottom:20px}
       </style>
     </head>
     <body>${content}</body>
@@ -204,7 +206,7 @@ export default function DownloadInvoiceDialog(props) {
 
     const docx = htmlDocx.asBlob(html);
 
-    saveAs(docx, "invoice.docx");
+    saveAs(docx, `${item?.[0]?.invoice_id}.docx`);
   };
   // console.log(convertImg);
   return (
@@ -271,7 +273,7 @@ export default function DownloadInvoiceDialog(props) {
                         src={convertImg}
                         alt="Base64"
                         width="200"
-                        height="283"
+                        height="205"
                         style={{ display: "block" }}
                       />
                     </td>
@@ -293,7 +295,7 @@ export default function DownloadInvoiceDialog(props) {
                         style={{
                           borderCollapse: "collapse",
                           border: "none",
-                          padding: "0px",
+                          // padding: "0px",
                         }}
                       >
                         <tr>
@@ -303,6 +305,7 @@ export default function DownloadInvoiceDialog(props) {
                               border: "none",
                               padding: "0px",
                             }}
+                            className="td-invoice"
                           >
                             <h1
                               style={{
@@ -336,7 +339,9 @@ export default function DownloadInvoiceDialog(props) {
                               border: "none",
                               textAlign: "right",
                               padding: "0px",
+                              // fontSize: "16px",
                             }}
+                            className="td-head"
                           >
                             Reference
                           </td>
@@ -350,6 +355,7 @@ export default function DownloadInvoiceDialog(props) {
                               border: "none",
                               padding: "0px",
                             }}
+                            className="td-head"
                           >
                             {itm?.invoice_id}
                           </td>
@@ -363,6 +369,7 @@ export default function DownloadInvoiceDialog(props) {
                               textAlign: "right",
                               padding: "0px",
                             }}
+                            className="td-head"
                           >
                             Date
                           </td>
@@ -374,6 +381,7 @@ export default function DownloadInvoiceDialog(props) {
                               border: "none",
                               padding: "0px",
                             }}
+                            className="td-head"
                           >
                             {typeof itm?.createdAt === "number" ? (
                               <TimestampToDate timestamp={itm?.createdAt} />
@@ -391,6 +399,7 @@ export default function DownloadInvoiceDialog(props) {
                               textAlign: "right",
                               padding: "0px",
                             }}
+                            className="td-head"
                           >
                             Due Date
                           </td>
@@ -402,6 +411,7 @@ export default function DownloadInvoiceDialog(props) {
                               border: "none",
                               padding: "0px",
                             }}
+                            className="td-head"
                           >
                             <ReformatDate
                               date={itm?.dueDate ?? formattedDate}
@@ -416,6 +426,7 @@ export default function DownloadInvoiceDialog(props) {
                               textAlign: "right",
                               padding: "0px",
                             }}
+                            className="td-head"
                           >
                             Status Invoice
                           </td>
@@ -426,6 +437,7 @@ export default function DownloadInvoiceDialog(props) {
                               border: "none",
                               padding: "0px",
                             }}
+                            className="td-head"
                           >
                             {itm?.paymentStatus}
                           </td>
