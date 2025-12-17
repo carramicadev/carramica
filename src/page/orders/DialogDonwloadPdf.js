@@ -292,43 +292,42 @@ export default function DownloadPdfDialog(props) {
   const downloadPdf = async () => {
     try {
       await Promise.all(
-        item?.map?.(async (data) => {
-          const indexOrder = parseInt(data?.unixId?.split("_")?.[1], 10);
-          const getDocOrd = doc(firestore, "orders", data?.id);
+        item.map(async (data) => {
+          const getDocOrd = doc(firestore, "orders", data.id);
 
-          // Use Firestore transaction to ensure consistent updates
           await runTransaction(firestore, async (transaction) => {
-            const getDataOrd = await transaction.get(getDocOrd);
-
-            if (!getDataOrd.exists()) {
-              throw new Error(`Document with ID ${data?.id} does not exist`);
+            const snap = await transaction.get(getDocOrd);
+            if (!snap.exists()) {
+              throw new Error(`Document ${data.id} not found`);
             }
 
-            const arrayField = getDataOrd.data().orders;
+            const orders = [...(snap.data().orders || [])];
 
-            // Update only if the array element is not already marked as downloaded
-            if (!arrayField[indexOrder]?.isDownloaded) {
-              arrayField[indexOrder] = {
-                ...arrayField[indexOrder],
+            // 🔥 FIND BY UNIQUE KEY (NOT INDEX)
+            const orderIndex = orders.findIndex(
+              (o) => o.orderId === data.ordId
+            );
+
+            if (orderIndex === -1) return;
+
+            if (!orders[orderIndex].isDownloaded) {
+              orders[orderIndex] = {
+                ...orders[orderIndex],
                 isDownloaded: true,
                 downloadedBy: props?.show?.userId ?? "",
               };
 
-              // console.log('Updated orders array:', arrayField);
-
-              // Perform the update within the transaction
-              transaction.update(getDocOrd, { orders: arrayField });
+              transaction.update(getDocOrd, { orders });
             }
           });
-
-          // Trigger UI updates
-          props?.setUpdate((prevValue) => !prevValue);
-          props?.onHide();
-          // setLoading(true)
         })
       );
+
+      // ✅ UI updates only ONCE after all transactions finish
+      props?.setUpdate((prev) => !prev);
+      props?.onHide();
     } catch (e) {
-      console.log(`Error updating document: ${e.message}`);
+      console.error("Error updating document:", e);
     }
   };
 
