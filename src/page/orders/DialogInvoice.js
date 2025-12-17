@@ -596,30 +596,30 @@ export default function DownloadInvoiceDialog(props) {
                               padding: "0px",
                             }}
                           >
-                            <p>
+                            <p style={{ margin: "0px" }}>
                               <span style={styles.bold}>Sub Total</span>
                             </p>
-                            <p>
+                            <p style={{ margin: "0px" }}>
                               <span style={styles.bold}>Delivery Fee</span>
                             </p>
-                            <p>
+                            <p style={{ margin: "0px" }}>
                               <span style={styles.bold}>
                                 Additional Discount
                               </span>
                             </p>
-                            <p>
+                            <p style={{ margin: "0px" }}>
                               <span style={styles.bold}>Total Discount</span>
                             </p>
-                            <p>
+                            <p style={{ margin: "0px" }}>
                               <span style={styles.bold}>Total</span>
                             </p>
 
                             {props?.show?.type === "dp" && (
                               <>
-                                <p>
+                                <p style={{ margin: "0px" }}>
                                   <span style={styles.bold}>Paid Invoice</span>
                                 </p>
-                                <p>
+                                <p style={{ margin: "0px" }}>
                                   <span style={styles.bold}>
                                     Outstanding Balance
                                   </span>
@@ -637,18 +637,24 @@ export default function DownloadInvoiceDialog(props) {
                               padding: "0px",
                             }}
                           >
-                            <p>{currency(allGross)}</p>
-                            <p>{currency(allOngkir)}</p>
-                            <p>{currency(findOrder?.additionalDiscount)}</p>
+                            <p style={{ margin: "0px" }}>
+                              {currency(allGross)}
+                            </p>
+                            <p style={{ margin: "0px" }}>
+                              {currency(allOngkir)}
+                            </p>
+                            <p style={{ margin: "0px" }}>
+                              {currency(findOrder?.additionalDiscount)}
+                            </p>
 
-                            <p style={{ color: "red" }}>
+                            <p style={{ color: "red", margin: "0px" }}>
                               -
                               {currency(
                                 discreduce + findOrder?.additionalDiscount
                               )}
                             </p>
 
-                            <p>
+                            <p style={{ margin: "0px" }}>
                               {currency(
                                 parseInt(allGross) +
                                   parseInt(allOngkir) -
@@ -658,8 +664,12 @@ export default function DownloadInvoiceDialog(props) {
 
                             {props?.show?.type === "dp" && (
                               <>
-                                <p>{currency(cumulative)}</p>
-                                <p>{currency(sisa)}</p>
+                                <p style={{ margin: "0px" }}>
+                                  {currency(cumulative)}
+                                </p>
+                                <p style={{ margin: "0px" }}>
+                                  {currency(sisa)}
+                                </p>
                               </>
                             )}
                           </td>
@@ -679,7 +689,7 @@ export default function DownloadInvoiceDialog(props) {
                       style={{
                         borderCollapse: "collapse",
                         border: "none",
-                        marginTop: "10px",
+                        marginTop: "0px",
                         padding: "0px",
                       }}
                     >
@@ -714,7 +724,7 @@ export default function DownloadInvoiceDialog(props) {
                                   padding: "0px",
                                 }}
                               >
-                                <p>
+                                <p style={{ margin: "0px" }}>
                                   <span style={styles.bold}>Amount Due</span>
                                 </p>
                               </td>
@@ -727,7 +737,7 @@ export default function DownloadInvoiceDialog(props) {
                                   padding: "0px",
                                 }}
                               >
-                                <p>
+                                <p style={{ margin: "0px" }}>
                                   {currency(
                                     parseInt(allGross) +
                                       parseInt(allOngkir) -
@@ -873,7 +883,7 @@ const styles = {
   },
   footer: {
     textAlign: "center",
-    marginTop: "40px",
+    marginTop: "0px",
     fontSize: "14px",
     width: "30%",
     // marginLeft: '10px'
@@ -882,7 +892,7 @@ const styles = {
   footerNotes: {
     width: "70%",
     textAlign: "left",
-    marginTop: "40px",
+    marginTop: "0px",
     fontSize: "14px",
     // borderBottom: '2px solid #ccc'
   },
