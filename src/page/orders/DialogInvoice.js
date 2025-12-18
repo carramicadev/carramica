@@ -256,7 +256,7 @@ export default function DownloadInvoiceDialog(props) {
                   style={{
                     borderCollapse: "collapse",
                     border: "none",
-                    marginBottom: "20px",
+                    // marginBottom: "20px",
                   }}
                 >
                   <tr>
@@ -777,7 +777,7 @@ export default function DownloadInvoiceDialog(props) {
                     <p>
                       <FormatFirestoreTimestamp timestamp={itm?.createdAt} />
                     </p>
-                    <p style={{ marginTop: "80px", fontWeight: "bold" }}>
+                    <p style={{ marginTop: "60px", fontWeight: "bold" }}>
                       PT CARRAMICA KREASI INDONESIA
                     </p>
                   </div>
