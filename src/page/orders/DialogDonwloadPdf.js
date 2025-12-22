@@ -29,6 +29,7 @@ import {
 import { useEffect, useState } from "react";
 import { firestore } from "../../FirebaseFrovider";
 import formatDate, { TimestampToDate } from "../../formatter";
+import { useSnackbar } from "notistack";
 
 Font.register({
   family: "chinese",
@@ -287,6 +288,7 @@ function MyDoc({ item, setLoading }) {
 export default function DownloadPdfDialog(props) {
   const { toPDF, targetRef } = usePDF({ filename: "page.pdf" });
   const item = props?.show?.data;
+  const { enqueueSnackbar } = useSnackbar();
   // console.log(props?.show?.userId)
   // console.log(item)
   const downloadPdf = async () => {
@@ -327,6 +329,9 @@ export default function DownloadPdfDialog(props) {
       props?.setUpdate((prev) => !prev);
       props?.onHide();
     } catch (e) {
+      enqueueSnackbar(`gagal mendownload invoice ${e.message}`, {
+        variant: "error",
+      });
       console.error("Error updating document:", e);
     }
   };
