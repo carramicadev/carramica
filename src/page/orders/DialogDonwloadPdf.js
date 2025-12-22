@@ -21,6 +21,7 @@ import {
   Font,
   Image,
   Page,
+  pdf,
   PDFDownloadLink,
   StyleSheet,
   Text,
@@ -30,6 +31,7 @@ import { useEffect, useState } from "react";
 import { firestore } from "../../FirebaseFrovider";
 import formatDate, { TimestampToDate } from "../../formatter";
 import { useSnackbar } from "notistack";
+import { saveAs } from "file-saver";
 
 Font.register({
   family: "chinese",
@@ -289,8 +291,31 @@ export default function DownloadPdfDialog(props) {
   const { toPDF, targetRef } = usePDF({ filename: "page.pdf" });
   const item = props?.show?.data;
   const { enqueueSnackbar } = useSnackbar();
+  const [blob, setBlob] = useState();
   // console.log(props?.show?.userId)
   // console.log(item)
+  const nameOfPdf =
+    item?.length > 1
+      ? new Date()
+          .toLocaleString()
+          .replace(/ /g, "_")
+          .replace(",", "")
+          .replace("/", "-")
+          .replace("/", "-")
+          .replace(/:/g, "-")
+      : item?.[0]?.unixId;
+
+  useEffect(() => {
+    async function MakePdf() {
+      try {
+        const blobMake = await pdf(
+          <MyDoc item={item} setLoading={props?.setLoading} />
+        ).toBlob();
+        setBlob(blobMake);
+      } catch (e) {}
+    }
+    MakePdf();
+  }, [item, props?.setLoading]);
   const downloadPdf = async () => {
     try {
       await Promise.all(
@@ -325,10 +350,45 @@ export default function DownloadPdfDialog(props) {
         })
       );
 
+      // 2️⃣ Generate PDF ONLY if update succeeds
+
+      // 3️⃣ Download
+      saveAs(blob, `CRM-${nameOfPdf}.pdf`);
       // ✅ UI updates only ONCE after all transactions finish
       props?.setUpdate((prev) => !prev);
       props?.onHide();
     } catch (e) {
+      await Promise.all(
+        item.map(async (data) => {
+          const getDocOrd = doc(firestore, "orders", data.id);
+
+          await runTransaction(firestore, async (transaction) => {
+            const snap = await transaction.get(getDocOrd);
+            if (!snap.exists()) {
+              throw new Error(`Document ${data.id} not found`);
+            }
+
+            const orders = [...(snap.data().orders || [])];
+
+            // 🔥 FIND BY UNIQUE KEY (NOT INDEX)
+            const orderIndex = orders.findIndex(
+              (o) => o.orderId === data.ordId
+            );
+
+            if (orderIndex === -1) return;
+
+            if (orders[orderIndex].isDownloaded) {
+              orders[orderIndex] = {
+                ...orders[orderIndex],
+                isDownloaded: false,
+                downloadedBy: props?.show?.userId ?? "",
+              };
+
+              transaction.update(getDocOrd, { orders });
+            }
+          });
+        })
+      );
       enqueueSnackbar(`gagal mendownload invoice ${e.message}`, {
         variant: "error",
       });
@@ -337,16 +397,7 @@ export default function DownloadPdfDialog(props) {
   };
 
   // const arrayId = item?.map((ord) => ord?.unixId);
-  const nameOfPdf =
-    item?.length > 1
-      ? new Date()
-          .toLocaleString()
-          .replace(/ /g, "_")
-          .replace(",", "")
-          .replace("/", "-")
-          .replace("/", "-")
-          .replace(/:/g, "-")
-      : item?.[0]?.unixId;
+
   // console.log(new Date().toLocaleString().replace(/ /g, '_').replace(',', '').replace('/', '-').replace('/', '-'))
 
   return (
@@ -567,7 +618,7 @@ export default function DownloadPdfDialog(props) {
             Close
           </Button>
           {/* <button onClick={downloadPdf} className="button button-primary" >DownloadPdf</button> */}
-          <PDFDownloadLink
+          <Button
             className="button button-primary"
             style={
               item?.length < 1
@@ -577,11 +628,11 @@ export default function DownloadPdfDialog(props) {
                 : styles.allowedButton
             }
             onClick={downloadPdf}
-            document={<MyDoc item={item} setLoading={props?.setLoading} />}
-            fileName={`CRM-${nameOfPdf}.pdf`}
+            // document={<MyDoc item={item} setLoading={props?.setLoading} />}
+            // fileName={`CRM-${nameOfPdf}.pdf`}
           >
             {props?.loading ? "Loading document..." : "Download PDF"}
-          </PDFDownloadLink>
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>
