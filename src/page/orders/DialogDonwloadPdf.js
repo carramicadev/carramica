@@ -381,7 +381,7 @@ export default function DownloadPdfDialog(props) {
               orders[orderIndex] = {
                 ...orders[orderIndex],
                 isDownloaded: false,
-                downloadedBy: props?.show?.userId ?? "",
+                downloadedBy: "",
               };
 
               transaction.update(getDocOrd, { orders });
