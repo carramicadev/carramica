@@ -10,6 +10,9 @@ import {
   isWithinInterval,
   isSameDay,
   format,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
 } from "date-fns";
 import { id as localeID } from "date-fns/locale";
 import { Modal, Button } from "react-bootstrap";
@@ -125,22 +128,26 @@ export default function DateRangePickerPopup({
   };
 
   const renderCalendar = (monthDate) => {
-    const start = startOfMonth(monthDate);
-    const end = endOfMonth(monthDate);
-    const days = eachDayOfInterval({ start, end });
+    const monthStart = startOfMonth(monthDate);
+    const monthEnd = endOfMonth(monthDate);
+
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+    const days = eachDayOfInterval({
+      start: calendarStart,
+      end: calendarEnd,
+    });
 
     return (
       <div style={{ width: "100%" }}>
-        <h5 className="text-center mb-2">
+        <h6 className="text-center mb-2">
           {format(monthDate, "MMMM yyyy", { locale: localeID })}
-        </h5>
+        </h6>
 
         <div
           className="d-grid text-center"
-          style={{
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: 4,
-          }}
+          style={{ gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}
         >
           {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
             <div key={d} className="fw-bold small text-secondary">
@@ -149,8 +156,9 @@ export default function DateRangePickerPopup({
           ))}
 
           {days.map((day) => {
-            let inRange = false;
+            const isCurrentMonth = isSameMonth(day, monthDate);
 
+            let inRange = false;
             if (startDate && endDate) {
               inRange = isWithinInterval(day, {
                 start: startDate,
@@ -163,6 +171,7 @@ export default function DateRangePickerPopup({
                 startDate < hoveredDate ? startDate : hoveredDate;
               const rangeEnd =
                 startDate > hoveredDate ? startDate : hoveredDate;
+
               inRange = isWithinInterval(day, {
                 start: rangeStart,
                 end: rangeEnd,
@@ -172,18 +181,19 @@ export default function DateRangePickerPopup({
             const isStart = startDate && isSameDay(day, startDate);
             const isEnd = endDate && isSameDay(day, endDate);
 
-            const className = `
-  py-2 rounded 
-  ${inRange ? "bg-success bg-opacity-25" : ""}
-  ${isStart || isEnd ? "bg-success text-white fw-bold" : ""}
-`;
-
             return (
               <div
                 key={day.toISOString()}
-                className={className}
-                style={{ cursor: "pointer" }}
-                onClick={() => onDateClick(day)}
+                className={`
+                  py-2 rounded
+                  ${!isCurrentMonth ? "text-muted opacity-50" : ""}
+                  ${inRange ? "bg-success bg-opacity-25" : ""}
+                  ${isStart || isEnd ? "bg-success text-white fw-bold" : ""}
+                `}
+                style={{
+                  cursor: isCurrentMonth ? "pointer" : "default",
+                }}
+                onClick={() => isCurrentMonth && onDateClick(day)}
                 onMouseEnter={() => setHoveredDate(day)}
                 onMouseLeave={() => setHoveredDate(null)}
               >
