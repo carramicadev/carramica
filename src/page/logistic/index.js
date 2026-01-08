@@ -45,7 +45,7 @@ const Logistik = () => {
   const [allOrders, setAllOrders] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [year, setYear] = useState("2025");
+  const [year, setYear] = useState(() => new Date().getFullYear().toString());
   const [page, setPage] = useState(1);
   const [length, setLength] = useState(20);
   const [ordersByMonth, setOrderByMont] = useState({});
