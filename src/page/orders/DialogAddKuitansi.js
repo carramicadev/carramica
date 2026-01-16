@@ -170,17 +170,20 @@ export default function DialogAddKuitansi(props) {
             0
           );
           //   console.log(cumulative);
-          await setDoc(
-            orderRef,
-            {
-              kuitansi: [...existing, newItem],
-              paymentStatus:
-                cumulative >= findOrder?.totalAfterDiskonDanOngkir
-                  ? "settlement"
-                  : "partially paid",
-            },
-            { merge: true }
-          );
+          const isFullyPaid =
+            cumulative >= findOrder?.totalAfterDiskonDanOngkir;
+
+          const updateData = {
+            kuitansi: [...existing, newItem],
+            paymentStatus: isFullyPaid ? "settlement" : "partially paid",
+          };
+
+          // only set paidDate if fully paid AND not already set
+          if (isFullyPaid && !findOrder?.paidDate) {
+            updateData.paidDate = serverTimestamp();
+          }
+
+          await setDoc(orderRef, updateData, { merge: true });
 
           //   await setDoc(
           //     doc(firestore, "product", tambahProduk?.id),
