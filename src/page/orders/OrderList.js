@@ -501,6 +501,13 @@ const OrderList = () => {
     const searchOrders = async () => {
       try {
         // console.log('run-types')
+        const query = {
+          q: searchTerm,
+          query_by: "senderName,senderPhone,invoice_id,warehouse",
+        };
+        if (findDataUser?.rules === "agen") {
+          query.filter_by = `warehouse:${findDataUser?.warehouse}`;
+        }
         const colltyps =
           process.env.REACT_APP_ENVIRONMENT === "production"
             ? "orders-prod"
@@ -508,12 +515,9 @@ const OrderList = () => {
         const response = await typesense
           .collections(colltyps)
           .documents()
-          .search({
-            q: searchTerm,
-            query_by: "senderName,senderPhone,invoice_id",
-          });
+          .search(query);
         // console.log(response?.hits?.map((hit) => hit?.document));
-
+        // console.log(query);
         const hitResult = response?.hits?.map((hit) => hit?.document);
         setList(hitResult);
       } catch (e) {
@@ -528,7 +532,7 @@ const OrderList = () => {
     }
 
     return () => clearTimeout(timeoutId); // Cleanup timeout
-  }, [searchTerm]);
+  }, [searchTerm, findDataUser?.rules, findDataUser?.warehouse]);
   const TruncatedText = ({ text, maxLength }) => {
     // If the text is longer than maxLength, truncate it and add ellipsis
     const truncated =
