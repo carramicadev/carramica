@@ -17,7 +17,7 @@ export default function DownloadInvoiceDialog(props) {
   const item = props?.show?.data;
   const [findOrder, setFindOrder] = useState({});
   const [convertImg, setConvertImg] = useState();
-  //   console.log(item);
+  console.log(item);
 
   useEffect(() => {
     if (item?.[0]?.id) {
