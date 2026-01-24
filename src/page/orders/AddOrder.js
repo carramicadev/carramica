@@ -306,7 +306,7 @@ const AddOrder = () => {
     return newErrors;
   };
 
-  console.log(koordinateOrigin);
+  // console.log(orders);
   // query coll product
   useEffect(() => {
     // define query
@@ -442,10 +442,11 @@ const AddOrder = () => {
                         height: e?.[0]?.height,
                         width: e?.[0]?.width,
                         length: e?.[0]?.length,
-                        amount: e?.[0]?.harga,
+                        amount: e?.[0]?.harga * product?.quantity,
                         sku: e?.[0]?.sku,
                         id: e?.[0]?.id,
                         stock: e?.[0]?.stok,
+                        // quantity: e?.[0]?.quantity,
                         discount: 0,
                       }
                     : name === "quantity"
