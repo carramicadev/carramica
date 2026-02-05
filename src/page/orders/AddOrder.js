@@ -863,21 +863,21 @@ const AddOrder = () => {
   const productMap = orders.map((ord) =>
     ord.products.map((prod) => {
       product.push({
-        name: prod.nama,
+        name: prod.nama?.slice(0, 40),
         id: prod?.sku,
         price: prod.price,
         quantity: prod.quantity,
       });
       if (prod.discount > 0 && prod?.discount_type == "%") {
         product.push({
-          name: `discount-${prod.nama}`,
+          name: `discount-${prod.nama?.slice(0, 40)}`,
           id: prod?.sku,
           price: -((prod.discount / 100) * prod.price),
           quantity: 1,
         });
       } else if (prod.discount > 0 && prod?.discount_type == "Rp") {
         product.push({
-          name: `discount-${prod.nama}`,
+          name: `discount-${prod.nama?.slice(0, 40)}`,
           id: prod?.sku,
           price: -prod.discount,
           quantity: 1,
@@ -1193,7 +1193,7 @@ const AddOrder = () => {
 
       console.log("error", e);
       setLoading(false);
-      window.location.reload();
+      // window.location.reload();
     }
   };
 
