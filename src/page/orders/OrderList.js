@@ -551,7 +551,9 @@ const OrderList = () => {
       const allDiscount = discount?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang;
       }, 0);
-      const gross = ord?.products?.map((prod) => parseInt(prod?.price));
+      const gross = ord?.products?.map((prod) =>
+        parseInt(prod?.price * prod?.quantity)
+      );
       const allGross = gross?.reduce((val, nilaiSekarang) => {
         return val + nilaiSekarang;
       }, 0);
