@@ -206,7 +206,6 @@ const Dashboard = ({ profile }) => {
   const totalOmsetNet = arrayTotalNet?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
   }, 0);
-  // console.log(arrayTotalNet);
 
   // total orders count
   const totalOrdersCount = ordersFilterd?.reduce?.((total, doc) => {
