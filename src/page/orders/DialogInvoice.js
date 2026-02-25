@@ -51,7 +51,7 @@ export default function DownloadInvoiceDialog(props) {
     const element = printRef.current;
     const opt = {
       margin: [10, 10, 10, 10], // top, right, bottom, left
-      filename: `${findOrder?.id}.pdf`,
+      filename: `${findOrder?.invoice_id}.pdf`,
       html2canvas: { scale: 2 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       pagebreak: { mode: ["css", "legacy"] }, // Enable pagination by CSS
@@ -162,7 +162,7 @@ export default function DownloadInvoiceDialog(props) {
     cumulative;
   // console.log("all product=>", props?.show?.data);
   // console.log(new Date(item?.[0]?.createdAt * 1000));
-  // console.log(new Date(item?.[0]?.createdAt * 1000));
+  // console.log(item?.[0]?.invoice_id);
 
   // docx
   useEffect(() => {
@@ -738,11 +738,13 @@ export default function DownloadInvoiceDialog(props) {
                                 }}
                               >
                                 <p style={{ margin: "0px" }}>
-                                  {currency(
-                                    parseInt(allGross) +
-                                      parseInt(allOngkir) -
-                                      (findOrder?.additionalDiscount || 0)
-                                  )}
+                                  {itm?.paymentStatus === "settlement"
+                                    ? currency(0)
+                                    : currency(
+                                        parseInt(allGross) +
+                                          parseInt(allOngkir) -
+                                          (findOrder?.additionalDiscount || 0)
+                                      )}
                                 </p>
                               </td>
                             </tr>
