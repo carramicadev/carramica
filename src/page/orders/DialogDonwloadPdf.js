@@ -444,7 +444,7 @@ export default function DownloadPdfDialog(props) {
             <div ref={targetRef}>
               <div className="">
                 {item?.map?.((data, index) => {
-                  // console.log(data?.nama)
+                  // console.log(data);
                   return (
                     <>
                       <table key={index} className="gift-card-table">

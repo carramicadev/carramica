@@ -420,7 +420,14 @@ const OrderList = () => {
       const dayEnd = String(end.getDate()).padStart(2, "0");
       const formattedDateEnd = `${yearEnd}-${monthEnd}-${dayEnd}`;
       //
-      const startTimestamp = Timestamp.fromDate(new Date(formattedDateStart));
+      const startTimestamp = Timestamp.fromDate(
+        set(new Date(formattedDateStart), {
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        })
+      );
       const endTimestamp = Timestamp.fromDate(
         set(new Date(formattedDateEnd), {
           hours: 23,
