@@ -7,6 +7,7 @@ import {
   arrayRemove,
   collection,
   doc,
+  increment,
   onSnapshot,
   orderBy,
   query,
@@ -286,10 +287,15 @@ export default function DetailProduct() {
       setError(findErros);
     } else {
       try {
-        await setDoc(doc(firestore, "product", productId), {
-          ...form,
-          updatedAt: serverTimestamp(),
-        });
+        await setDoc(
+          doc(firestore, "product", productId),
+          {
+            ...form,
+            stok: increment(parseInt(form?.stok)),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
         // console.log("Document written with ID: ",);
         enqueueSnackbar(`sukses mengedit product ${form?.nama}`, {
           variant: "success",
