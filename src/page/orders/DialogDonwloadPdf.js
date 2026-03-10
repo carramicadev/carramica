@@ -7,11 +7,14 @@ import sap from "../../sap.png";
 import paxel from "../../paxel.png";
 import lalamove from "../../lalamove.png";
 import {
+  addDoc,
   arrayUnion,
+  collection,
   doc,
   getDoc,
   onSnapshot,
   runTransaction,
+  serverTimestamp,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
@@ -293,7 +296,7 @@ export default function DownloadPdfDialog(props) {
   const { enqueueSnackbar } = useSnackbar();
   const [blob, setBlob] = useState();
   // console.log(props?.show?.userId)
-  // console.log(item)
+  console.log(item);
   const nameOfPdf =
     item?.length > 1
       ? new Date()
@@ -330,7 +333,6 @@ export default function DownloadPdfDialog(props) {
 
             const orders = [...(snap.data().orders || [])];
 
-            // 🔥 FIND BY UNIQUE KEY (NOT INDEX)
             const orderIndex = orders.findIndex(
               (o) => o.orderId === data.ordId
             );
@@ -350,11 +352,16 @@ export default function DownloadPdfDialog(props) {
         })
       );
 
-      // 2️⃣ Generate PDF ONLY if update succeeds
+      // ✅ Generate PDF AFTER successful update
+      const blobMake = await pdf(
+        <MyDoc item={item} setLoading={props?.setLoading} />
+      ).toBlob();
 
-      // 3️⃣ Download
-      saveAs(blob, `CRM-${nameOfPdf}.pdf`);
-      // ✅ UI updates only ONCE after all transactions finish
+      setBlob(blobMake);
+
+      // ✅ Download
+      saveAs(blobMake, `CRM-${nameOfPdf}.pdf`);
+
       props?.setUpdate((prev) => !prev);
       props?.onHide();
     } catch (e) {
@@ -388,6 +395,13 @@ export default function DownloadPdfDialog(props) {
             }
           });
         })
+      );
+      await addDoc(
+        collection(firestore, "error-data", "FE", "download-shipping"),
+        {
+          message: e.message,
+          createdAt: serverTimestamp(),
+        }
       );
       enqueueSnackbar(`gagal mendownload invoice ${e.message}`, {
         variant: "error",

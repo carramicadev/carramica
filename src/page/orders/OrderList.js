@@ -826,7 +826,7 @@ const OrderList = () => {
   const filterForDownloadAll = selectedData.filter(
     (item) => !item.isDownloaded && item.paymentStatus === "settlement"
   );
-  // console.log(list);
+  console.log(list);
   const selectedExcel = selectedData?.map((data) => {
     return {
       ...data,
@@ -1573,8 +1573,6 @@ const OrderList = () => {
     ),
     style: {},
   };
-
-  const findUser = user.find((itm) => itm.userId === currentUser?.uid);
 
   const [selectColumn, setSelectColumn] = useState(column);
 
