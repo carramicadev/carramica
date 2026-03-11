@@ -296,7 +296,7 @@ export default function DownloadPdfDialog(props) {
   const { enqueueSnackbar } = useSnackbar();
   const [blob, setBlob] = useState();
   // console.log(props?.show?.userId)
-  console.log(item);
+  // console.log(item);
   const nameOfPdf =
     item?.length > 1
       ? new Date()

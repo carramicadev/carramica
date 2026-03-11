@@ -108,11 +108,13 @@ const OrderList = () => {
   const findDataUser = user?.find((usr) => usr?.userId === currentUser?.uid);
 
   useEffect(() => {
-    if (findDataUser?.rules) {
+    if (findDataUser?.rules && searchTerm === "") {
       setDateTimestamp(GetDateTimestamp(today, today));
+      setStartDate(today);
+      setEndDate(today);
       filterByDate(today, today, findDataUser?.rules);
     }
-  }, [findDataUser?.rules]);
+  }, [findDataUser?.rules, searchTerm]);
   const [modalDownload, setModalDownload] = useState({
     open: false,
     data: [],
@@ -827,7 +829,7 @@ const OrderList = () => {
   const filterForDownloadAll = selectedData.filter(
     (item) => !item.isDownloaded && item.paymentStatus === "settlement"
   );
-  console.log(list);
+  // console.log(list);
   const selectedExcel = selectedData?.map((data) => {
     return {
       ...data,
