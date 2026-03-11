@@ -510,7 +510,8 @@ const OrderList = () => {
         // console.log('run-types')
         const query = {
           q: searchTerm,
-          query_by: "senderName,senderPhone,invoice_id,warehouse",
+          query_by:
+            "senderName,senderPhone,invoice_id,warehouse,orders.receiverName,orders.receiverPhone",
         };
         if (findDataUser?.rules === "agen") {
           query.filter_by = `warehouse:${findDataUser?.warehouse}`;
