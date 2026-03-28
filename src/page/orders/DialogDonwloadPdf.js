@@ -296,7 +296,7 @@ export default function DownloadPdfDialog(props) {
   const { enqueueSnackbar } = useSnackbar();
   const [blob, setBlob] = useState();
   // console.log(props?.show?.userId)
-  // console.log(item);
+  // console.log(item)
   const nameOfPdf =
     item?.length > 1
       ? new Date()
@@ -333,6 +333,7 @@ export default function DownloadPdfDialog(props) {
 
             const orders = [...(snap.data().orders || [])];
 
+            // 🔥 FIND BY UNIQUE KEY (NOT INDEX)
             const orderIndex = orders.findIndex(
               (o) => o.orderId === data.ordId
             );
@@ -352,16 +353,11 @@ export default function DownloadPdfDialog(props) {
         })
       );
 
-      // ✅ Generate PDF AFTER successful update
-      const blobMake = await pdf(
-        <MyDoc item={item} setLoading={props?.setLoading} />
-      ).toBlob();
+      // 2️⃣ Generate PDF ONLY if update succeeds
 
-      setBlob(blobMake);
-
-      // ✅ Download
-      saveAs(blobMake, `CRM-${nameOfPdf}.pdf`);
-
+      // 3️⃣ Download
+      saveAs(blob, `CRM-${nameOfPdf}.pdf`);
+      // ✅ UI updates only ONCE after all transactions finish
       props?.setUpdate((prev) => !prev);
       props?.onHide();
     } catch (e) {
@@ -387,8 +383,8 @@ export default function DownloadPdfDialog(props) {
             if (orders[orderIndex].isDownloaded) {
               orders[orderIndex] = {
                 ...orders[orderIndex],
-                isDownloaded: false,
-                downloadedBy: "",
+                isDownloaded: true,
+                downloadedBy: props?.show?.userId ?? "",
               };
 
               transaction.update(getDocOrd, { orders });
