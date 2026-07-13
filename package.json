@@ -55,7 +55,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:production": "CI=false env-cmd -f .env.production react-app-rewired build",
-    "start:production": "env-cmd -f .env.production react-app-rewired start"
+    "start:production": "env-cmd -f .env.production react-app-rewired start",
+    "next:dev": "next dev",
+    "next:build": "next build",
+    "next:start": "next start"
   },
   "eslintConfig": {
     "extends": [
