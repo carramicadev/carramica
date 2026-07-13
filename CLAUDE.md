@@ -49,6 +49,27 @@ Do NOT change:
 
 unless I explicitly approve the change.
 
+## Execution Rules
+
+Do not generate implementation plans.
+
+Do not generate roadmaps.
+
+Do not generate migration strategies.
+
+Do not generate architecture proposals.
+
+Assume all planning is complete.
+
+When I assign a task:
+
+1. Implement it.
+2. Verify it.
+3. Report the result.
+4. Stop and wait for the next task.
+
+Never implement more than one task at a time.
+
 ---
 
 # Primary Goals
