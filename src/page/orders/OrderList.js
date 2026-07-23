@@ -1107,6 +1107,7 @@ const OrderList = () => {
   };
 
   // Get data for rapin export (based on selection or all visible data)
+  // Only export orders with paymentStatus "settlement"
   const getRapinData = () => {
     let ordersToExport = [];
 
@@ -1118,9 +1119,9 @@ const OrderList = () => {
           selectedOrderIds.add(item.id);
         }
       });
-      ordersToExport = allOrders.filter(o => selectedOrderIds.has(o.id));
+      ordersToExport = allOrders.filter(o => selectedOrderIds.has(o.id) && o.paymentStatus === "settlement");
     } else {
-      ordersToExport = list;
+      ordersToExport = list.filter(o => o.paymentStatus === "settlement");
     }
 
     const data = transformDataForRapin(ordersToExport);
