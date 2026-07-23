@@ -13,6 +13,7 @@ import {
   ListGroup,
 } from "react-bootstrap";
 import { CSVLink } from "react-csv";
+import * as XLSX from "xlsx";
 // import Header from './Header';
 import {
   useFirestoreQuery,
@@ -180,6 +181,20 @@ const OrderList = () => {
 
   const [filterDialog, setFilterDialog] = useState(false);
   const [filterColomDialog, setFilterColomDialog] = useState(false);
+  const [rapinExportDropdown, setRapinExportDropdown] = useState(false);
+
+  // Close rapin dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (rapinExportDropdown && !event.target.closest('[data-rapin-dropdown]')) {
+        setRapinExportDropdown(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [rapinExportDropdown]);
+
   // get total order
   const [allOrders, setAllOrders] = useState([]);
   const lengthAll = allOrders.length;
@@ -897,6 +912,402 @@ const OrderList = () => {
     selectedData.length > 0
       ? transformDataForCSV(selectedExcel)
       : transformDataForCSV(madDataExcel);
+
+  // ========== EXPORT RAPIN FUNCTIONS ==========
+
+  // Format date for rapin (YYYY-MM-DD)
+  const formatDateForRapin = (date) => {
+    if (!date) return "";
+    let d;
+    if (date instanceof Date) {
+      d = date;
+    } else if (date?.toDate) {
+      d = date.toDate();
+    } else if (typeof date === "string" || typeof date === "number") {
+      d = new Date(date);
+    } else {
+      return "";
+    }
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().split("T")[0];
+  };
+
+  // Transform order data to rapin format
+  // One row per INVOICE (one invoice may have multiple orders with multiple products)
+  // Products are added HORIZONTALLY as separate product blocks
+  const transformDataForRapin = (ordersData) => {
+    const rapinData = [];
+
+    ordersData.forEach((item) => {
+      // Get payment date (from settlement_time, or shippingDate, or createdAt)
+      let paymentDate;
+      if (item?.midtransRes?.settlement_time) {
+        paymentDate = new Date(item?.midtransRes?.settlement_time);
+      } else if (item?.shippingDate) {
+        paymentDate = item.shippingDate?.toDate ? item.shippingDate.toDate() : new Date(item.shippingDate);
+      } else if (item?.createdAt) {
+        paymentDate = item.createdAt?.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+      }
+
+      // Get warehouse name
+      const warehouseData = warehouse.find((wh) => wh?.id === item?.warehouse);
+      const warehouseName = warehouseData?.name || item?.warehouse || "";
+
+      // Get sales staff info
+      const salesStaff = user.find((usr) => usr?.userId === item?.userId);
+      const salesName = salesStaff ? `${salesStaff.firstName || ""} ${salesStaff.lastName || ""}`.trim() : "";
+      const salesCode = item?.userId || "";
+
+      // Calculate discount percentage
+      const grossAmount = item?.totalHargaProduk || 0;
+      const additionalDiscount = item?.additionalDiscount || 0;
+      const totalDiscount = item?.discount || 0;
+      const discountPercent = grossAmount > 0
+        ? Math.round(((additionalDiscount + totalDiscount) / grossAmount) * 100 * 100) / 100
+        : 0;
+
+      // Collect ALL products from ALL order items in this invoice
+      // (One invoice can have multiple order items, but we flatten them to horizontal product blocks)
+      const allProducts = [];
+
+      // Calculate TOTAL shipping cost
+      // Use item.totalOngkir if available, otherwise sum ongkir from each order item
+      let totalShippingCost = item?.totalOngkir || 0;
+
+      // If totalOngkir is 0 or undefined, calculate from order items
+      if (totalShippingCost === 0) {
+        item?.orders?.forEach((ord) => {
+          const ongkir = ord?.ongkir || 0;
+          totalShippingCost += ongkir;
+        });
+      }
+
+      item?.orders?.forEach((ord) => {
+        const products = ord?.products || [];
+
+        if (products.length > 0) {
+          products.forEach((prod) => {
+            allProducts.push({
+              sku: prod?.id || prod?.sku || "",
+              nama: prod?.nama || "",
+              varian: "",
+              quantity: prod?.quantity || 0,
+              harga: prod?.price || 0,
+              diskon: "",
+              catatan: "",
+            });
+          });
+        }
+      });
+
+      // Build base row object with fixed columns (A-L)
+      const baseRow = {
+        cabang: warehouseName,
+        tanggal: formatDateForRapin(paymentDate),
+        namaPelanggan: item?.senderName || "",
+        kodePelanggan: item?.invoice_id || "",
+        namaStafPenjual: salesName,
+        kodeStafPenjual: salesCode,
+        deskripsi: "",
+        namaKasBank: "",
+        kodeKasBank: "",
+        diskonInvoice: discountPercent,
+        layanan: "",
+        pajak: "",
+      };
+
+      // Add single OI block with TOTAL shipping cost (only one OI block needed)
+      // OI: Pendapatan Lain-lain = Total Shipping Cost
+      baseRow.oiKodeSubAkun = totalShippingCost > 0 ? "001" : "";
+      baseRow.oiNamaSubAkun = totalShippingCost > 0 ? "Pengiriman" : "";
+      baseRow.oiNilai = totalShippingCost > 0 ? totalShippingCost : "";
+
+      // Add product blocks horizontally (each block: Kode SKU, Nama Produk, Varian, Kuantitas, Harga Satuan, % Diskon, Catatan)
+      const productBlocks = [];
+      allProducts.forEach((prod) => {
+        productBlocks.push({
+          kodeSku: prod.sku,
+          namaProduk: prod.nama,
+          varian: prod.varian,
+          kuantitas: prod.quantity,
+          hargaSatuan: prod.harga,
+          diskonProduk: prod.diskon,
+          catatan: prod.catatan,
+        });
+      });
+
+      // Combine into flat row object
+      const row = { ...baseRow };
+
+      // Add product blocks
+      productBlocks.forEach((prod, idx) => {
+        row[`p${idx + 1}KodeSku`] = prod.kodeSku;
+        row[`p${idx + 1}NamaProduk`] = prod.namaProduk;
+        row[`p${idx + 1}Varian`] = prod.varian;
+        row[`p${idx + 1}Kuantitas`] = prod.kuantitas;
+        row[`p${idx + 1}HargaSatuan`] = prod.hargaSatuan;
+        row[`p${idx + 1}Diskon`] = prod.diskonProduk;
+        row[`p${idx + 1}Catatan`] = prod.catatan;
+      });
+
+      rapinData.push(row);
+    });
+
+    return rapinData;
+  };
+
+  // Get dynamic headers for rapin export (based on max number of products)
+  const getRapinHeaders = (data) => {
+    const baseHeaders = [
+      { label: "Cabang", key: "cabang" },
+      { label: "Tanggal", key: "tanggal" },
+      { label: "Nama Pelanggan", key: "namaPelanggan" },
+      { label: "Kode Pelanggan", key: "kodePelanggan" },
+      { label: "Nama Staf Penjual", key: "namaStafPenjual" },
+      { label: "Kode Staf Penjual", key: "kodeStafPenjual" },
+      { label: "Deskripsi", key: "deskripsi" },
+      { label: "Nama Kas/Bank", key: "namaKasBank" },
+      { label: "Kode Kas/Bank", key: "kodeKasBank" },
+      { label: "% Diskon Invoice", key: "diskonInvoice" },
+      { label: "% Layanan", key: "layanan" },
+      { label: "% Pajak", key: "pajak" },
+      { label: "Kode Sub Akun", key: "oiKodeSubAkun" },
+      { label: "Nama Sub Akun", key: "oiNamaSubAkun" },
+      { label: "Nilai (Rp)", key: "oiNilai" },
+    ];
+
+    // Find max number of product blocks
+    let maxProductBlocks = 0;
+    data.forEach(row => {
+      let count = 0;
+      let pIdx = 1;
+      while (row[`p${pIdx}KodeSku`] !== undefined) {
+        count++;
+        pIdx++;
+      }
+      if (count > maxProductBlocks) maxProductBlocks = count;
+    });
+
+    // Add product headers
+    const productHeaders = [];
+    for (let i = 0; i < maxProductBlocks; i++) {
+      const suffix = i + 1;
+      productHeaders.push(
+        { label: `Kode SKU`, key: `p${suffix}KodeSku` },
+        { label: `Nama Produk`, key: `p${suffix}NamaProduk` },
+        { label: `Varian`, key: `p${suffix}Varian` },
+        { label: `Kuantitas`, key: `p${suffix}Kuantitas` },
+        { label: `Harga Satuan (Rp)`, key: `p${suffix}HargaSatuan` },
+        { label: `% Diskon`, key: `p${suffix}Diskon` },
+        { label: `Catatan`, key: `p${suffix}Catatan` }
+      );
+    }
+
+    return [...baseHeaders, ...productHeaders];
+  };
+
+  // Get data for rapin export (based on selection or all visible data)
+  const getRapinData = () => {
+    let ordersToExport = [];
+
+    if (selectedRows.length > 0) {
+      const selectedOrderIds = new Set();
+      selectedRows.forEach(index => {
+        const item = mapData[index];
+        if (item?.id) {
+          selectedOrderIds.add(item.id);
+        }
+      });
+      ordersToExport = allOrders.filter(o => selectedOrderIds.has(o.id));
+    } else {
+      ordersToExport = list;
+    }
+
+    const data = transformDataForRapin(ordersToExport);
+
+    // Sort by date (earliest to latest)
+    data.sort((a, b) => {
+      const dateA = a.tanggal || "";
+      const dateB = b.tanggal || "";
+      return dateA.localeCompare(dateB);
+    });
+
+    return data;
+  };
+
+  // Export as XLSX using xlsx library
+  const exportRapinXLSX = () => {
+    const data = getRapinData();
+    if (data.length === 0) {
+      enqueueSnackbar("Tidak ada data untuk di-export", { variant: "warning" });
+      return;
+    }
+
+    // Count max product blocks across all rows
+    let maxProductBlocks = 0;
+    data.forEach(row => {
+      let count = 0;
+      let idx = 1;
+      while (row["p" + idx + "KodeSku"] !== undefined) {
+        count++;
+        idx++;
+      }
+      if (count > maxProductBlocks) maxProductBlocks = count;
+    });
+
+    // Row 1: Group headers
+    const row1 = [];
+    // Columns 1-12: Base column names
+    row1.push("Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan", "Nama Staf Penjual", "Kode Staf Penjual", "Deskripsi", "Nama Kas/Bank", "Kode Kas/Bank", "% Diskon Invoice", "% Layanan", "% Pajak");
+    // Columns 13-15: OI group header
+    row1.push("OI: Pendapatan Lain-Lain", "", "");
+    // Columns 16+: Product group headers
+    for (let i = 0; i < maxProductBlocks; i++) {
+      row1.push("P: Produk", "", "", "", "", "", "");
+    }
+
+    // Row 2: Sub-headers
+    const row2 = [];
+    for (let i = 0; i < 12; i++) row2.push("");
+    row2.push("Kode Sub Akun", "Nama Sub Akun", "Nilai (Rp)");
+    for (let i = 0; i < maxProductBlocks; i++) {
+      row2.push("Kode SKU", "Nama Produk", "Varian", "Kuantitas", "Harga Satuan (Rp)", "% Diskon", "Catatan");
+    }
+
+    // Data rows (starting from row 3)
+    const dataRows = data.map(row => {
+      const r = [];
+      // Base columns 1-12
+      r.push(row.cabang || "", row.tanggal || "", row.namaPelanggan || "", row.kodePelanggan || "", row.namaStafPenjual || "", row.kodeStafPenjual || "", row.deskripsi || "", row.namaKasBank || "", row.kodeKasBank || "", row.diskonInvoice || "", row.layanan || "", row.pajak || "");
+      // OI columns 13-15
+      r.push(row.oiKodeSubAkun || "", row.oiNamaSubAkun || "", row.oiNilai || "");
+      // Product columns 16+
+      let idx = 1;
+      while (row["p" + idx + "KodeSku"] !== undefined) {
+        r.push(row["p" + idx + "KodeSku"] || "", row["p" + idx + "NamaProduk"] || "", row["p" + idx + "Varian"] || "", row["p" + idx + "Kuantitas"] || "", row["p" + idx + "HargaSatuan"] || "", row["p" + idx + "Diskon"] || "", row["p" + idx + "Catatan"] || "");
+        idx++;
+      }
+      while (idx <= maxProductBlocks) {
+        r.push("", "", "", "", "", "", "");
+        idx++;
+      }
+      return r;
+    });
+
+    const allRows = [row1, row2, ...dataRows];
+
+    const ws = XLSX.utils.aoa_to_sheet(allRows);
+    const colWidths = allRows[0].map(() => ({ wch: 18 }));
+    ws['!cols'] = colWidths;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Rapin Export");
+
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellDates: false });
+
+    const blob = new Blob([new Uint8Array(wbout)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = "rapin_export_" + new Date().toISOString().split('T')[0] + ".xlsx";
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+    enqueueSnackbar("Berhasil export " + data.length + " baris data", { variant: "success" });
+    setRapinExportDropdown(false);
+  };
+
+
+  // Export as CSV (compatible with Excel)
+  const exportRapinCSV = () => {
+    const data = getRapinData();
+    if (data.length === 0) {
+      enqueueSnackbar("Tidak ada data untuk di-export", { variant: "warning" });
+      return;
+    }
+
+    // Get dynamic headers based on data
+    const headers = getRapinHeaders(data);
+
+    // Count product blocks
+    let productBlockCount = 0;
+    data.forEach(row => {
+      let prodCount = 0;
+      let pIdx = 1;
+      while (row[`p${pIdx}KodeSku`] !== undefined) {
+        prodCount++;
+        pIdx++;
+      }
+      if (prodCount > productBlockCount) productBlockCount = prodCount;
+    });
+
+    // Build row 1: Headers - columns 1-12 same as row 2, then OI and P:Produk group headers
+    const baseColumnLabels = [
+      "Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan",
+      "Nama Staf Penjual", "Kode Staf Penjual", "Deskripsi",
+      "Nama Kas/Bank", "Kode Kas/Bank", "% Diskon Invoice", "% Layanan", "% Pajak"
+    ];
+    const groupHeaderRow = [...baseColumnLabels];
+    // OI: Pendapatan Lain-lain (3 columns)
+    groupHeaderRow.push("OI: Pendapatan Lain-lain");
+    groupHeaderRow.push("");
+    groupHeaderRow.push("");
+    // P: Produk (7 columns per product)
+    for (let i = 0; i < productBlockCount; i++) {
+      groupHeaderRow.push("P: Produk");
+      groupHeaderRow.push("");
+      groupHeaderRow.push("");
+      groupHeaderRow.push("");
+      groupHeaderRow.push("");
+      groupHeaderRow.push("");
+      groupHeaderRow.push("");
+    }
+
+    // Create CSV content with BOM for Excel UTF-8 compatibility
+    const BOM = "﻿";
+
+    // Helper to escape CSV values
+    const escapeCsv = (val) => {
+      if (val === undefined || val === null) return "";
+      const str = String(val);
+      if (str.includes(";") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    // Row 1: Group headers
+    const groupRow = groupHeaderRow.map(escapeCsv).join(";");
+    // Row 2: Column headers
+    const headerRow = headers.map(h => escapeCsv(h.label)).join(";");
+    // Data rows
+    const dataRows = data.map(row =>
+      headers.map(h => escapeCsv(row[h.key] ?? "")).join(";")
+    );
+
+    const csvContent = BOM + groupRow + "\n" + headerRow + "\n" + dataRows.join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `rapin_export_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    enqueueSnackbar(`Berhasil export ${data.length} baris data`, { variant: "success" });
+    setRapinExportDropdown(false);
+  };
+
+  // Handle rapin export with format selection
+  const handleRapinExport = (format) => {
+    if (format === "csv") {
+      exportRapinCSV();
+    } else if (format === "xlsx") {
+      exportRapinXLSX();
+    }
+  };
   // change resi
   const handleChange = async (e, unixId) => {
     try {
@@ -1984,6 +2395,71 @@ const OrderList = () => {
           >
             <CloudArrowDown /> Export As CSV
           </CSVLink>
+          {/* Export Rapin Button with Dropdown */}
+          <div style={{ position: "relative", display: "inline-block" }} data-rapin-dropdown>
+            <button
+              onClick={() => setRapinExportDropdown(!rapinExportDropdown)}
+              className="btn btn-success"
+              style={{
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+            >
+              <JournalPlus /> Export Rapin
+            </button>
+            {rapinExportDropdown && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  zIndex: 1000,
+                  backgroundColor: "white",
+                  border: "1px solid #ddd",
+                  borderRadius: "5px",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                  marginTop: "5px",
+                  minWidth: "150px",
+                }}
+              >
+                <button
+                  onClick={() => handleRapinExport("csv")}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px 15px",
+                    border: "none",
+                    backgroundColor: "transparent",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    borderBottom: "1px solid #eee",
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = "#f5f5f5"}
+                  onMouseOut={(e) => e.target.style.backgroundColor = "transparent"}
+                >
+                  Export as CSV
+                </button>
+                <button
+                  onClick={() => handleRapinExport("xlsx")}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px 15px",
+                    border: "none",
+                    backgroundColor: "transparent",
+                    textAlign: "left",
+                    cursor: "pointer",
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = "#f5f5f5"}
+                  onMouseOut={(e) => e.target.style.backgroundColor = "transparent"}
+                >
+                  Export as XLSX
+                </button>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => {
               setLoading(true);
