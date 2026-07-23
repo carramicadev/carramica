@@ -988,7 +988,7 @@ const OrderList = () => {
         if (products.length > 0) {
           products.forEach((prod) => {
             allProducts.push({
-              sku: prod?.id || prod?.sku || "",
+              sku: prod?.sku || prod?.id || "",
               nama: prod?.nama || "",
               varian: "",
               quantity: prod?.quantity || 0,
@@ -1005,7 +1005,7 @@ const OrderList = () => {
         cabang: warehouseName,
         tanggal: formatDateForRapin(paymentDate),
         namaPelanggan: item?.senderName || "",
-        kodePelanggan: item?.invoice_id || "",
+        kodePelanggan: "",
         namaStafPenjual: salesName,
         kodeStafPenjual: salesCode,
         deskripsi: "",
@@ -1018,9 +1018,10 @@ const OrderList = () => {
 
       // Add single OI block with TOTAL shipping cost (only one OI block needed)
       // OI: Pendapatan Lain-lain = Total Shipping Cost
-      baseRow.oiKodeSubAkun = totalShippingCost > 0 ? "001" : "";
-      baseRow.oiNamaSubAkun = totalShippingCost > 0 ? "Pengiriman" : "";
-      baseRow.oiNilai = totalShippingCost > 0 ? totalShippingCost : "";
+      // Kode Sub Akun and Nama Sub Akun always filled, Nilai is 0 if no shipping cost
+      baseRow.oiKodeSubAkun = "001";
+      baseRow.oiNamaSubAkun = "Pengiriman";
+      baseRow.oiNilai = totalShippingCost > 0 ? totalShippingCost : 0;
 
       // Add product blocks horizontally (each block: Kode SKU, Nama Produk, Varian, Kuantitas, Harga Satuan, % Diskon, Catatan)
       const productBlocks = [];
@@ -1156,51 +1157,130 @@ const OrderList = () => {
       if (count > maxProductBlocks) maxProductBlocks = count;
     });
 
-    // Row 1: Group headers
-    const row1 = [];
-    // Columns 1-12: Base column names
-    row1.push("Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan", "Nama Staf Penjual", "Kode Staf Penjual", "Deskripsi", "Nama Kas/Bank", "Kode Kas/Bank", "% Diskon Invoice", "% Layanan", "% Pajak");
-    // Columns 13-15: OI group header
-    row1.push("OI: Pendapatan Lain-Lain", "", "");
-    // Columns 16+: Product group headers
+    // Column positions (0-indexed)
+    const oiColStart = 12; // M
+    const oiColEnd = 14; // O
+    const productColStart = 15; // P
+
+    // Create empty worksheet
+    const ws = {};
+
+    // Set column widths
+    const numCols = 12 + 3 + (maxProductBlocks * 7);
+    const colWidths = [];
+    for (let i = 0; i < numCols; i++) {
+      colWidths.push({ wch: 15 });
+    }
+    ws['!cols'] = colWidths;
+
+    // Style for headers (bold, center)
+    const headerStyle = { font: { bold: true }, alignment: { horizontal: "center", vertical: "center" } };
+
+    // Helper to create cell reference
+    const cellRef = (row, col) => XLSX.utils.encode_cell({ r: row, c: col });
+
+    // Build merge ranges
+    const merges = [];
+
+    // Row 1: Headers - Columns 0-11 (Base headers)
+    const baseHeaders = ["Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan", "Nama Staf Penjual", "Kode Staf Penjual", "Deskripsi", "Nama Kas/Bank", "Kode Kas/Bank", "% Diskon Invoice", "% Layanan", "% Pajak"];
+    for (let c = 0; c < 12; c++) {
+      ws[cellRef(0, c)] = { v: baseHeaders[c], t: "s" };
+      ws[cellRef(0, c)].s = headerStyle;
+    }
+
+    // OI: Pendapatan Lain-Lain merge (columns 12, 13, 14)
+    ws[cellRef(0, 12)] = { v: "OI: Pendapatan Lain-Lain", t: "s" };
+    ws[cellRef(0, 12)].s = headerStyle;
+    ws[cellRef(0, 13)] = { v: "", t: "s" };
+    ws[cellRef(0, 14)] = { v: "", t: "s" };
+    merges.push({ s: { r: 0, c: 12 }, e: { r: 0, c: 14 } });
+
+    // P: Produk per block
     for (let i = 0; i < maxProductBlocks; i++) {
-      row1.push("P: Produk", "", "", "", "", "", "");
+      const startCol = productColStart + (i * 7);
+      const endCol = startCol + 6;
+      ws[cellRef(0, startCol)] = { v: "P: Produk", t: "s" };
+      ws[cellRef(0, startCol)].s = headerStyle;
+      for (let c = startCol + 1; c <= endCol; c++) {
+        ws[cellRef(0, c)] = { v: "", t: "s" };
+      }
+      merges.push({ s: { r: 0, c: startCol }, e: { r: 0, c: endCol } });
     }
 
     // Row 2: Sub-headers
-    const row2 = [];
-    for (let i = 0; i < 12; i++) row2.push("");
-    row2.push("Kode Sub Akun", "Nama Sub Akun", "Nilai (Rp)");
+    for (let c = 0; c < 12; c++) {
+      ws[cellRef(1, c)] = { v: "", t: "s" };
+    }
+    ws[cellRef(1, 12)] = { v: "Kode Sub Akun", t: "s" };
+    ws[cellRef(1, 13)] = { v: "Nama Sub Akun", t: "s" };
+    ws[cellRef(1, 14)] = { v: "Nilai (Rp)", t: "s" };
     for (let i = 0; i < maxProductBlocks; i++) {
-      row2.push("Kode SKU", "Nama Produk", "Varian", "Kuantitas", "Harga Satuan (Rp)", "% Diskon", "Catatan");
+      const startCol = productColStart + (i * 7);
+      ws[cellRef(1, startCol)] = { v: "Kode SKU", t: "s" };
+      ws[cellRef(1, startCol + 1)] = { v: "Nama Produk", t: "s" };
+      ws[cellRef(1, startCol + 2)] = { v: "Varian", t: "s" };
+      ws[cellRef(1, startCol + 3)] = { v: "Kuantitas", t: "s" };
+      ws[cellRef(1, startCol + 4)] = { v: "Harga Satuan (Rp)", t: "s" };
+      ws[cellRef(1, startCol + 5)] = { v: "% Diskon", t: "s" };
+      ws[cellRef(1, startCol + 6)] = { v: "Catatan", t: "s" };
     }
 
-    // Data rows (starting from row 3)
-    const dataRows = data.map(row => {
-      const r = [];
-      // Base columns 1-12
-      r.push(row.cabang || "", row.tanggal || "", row.namaPelanggan || "", row.kodePelanggan || "", row.namaStafPenjual || "", row.kodeStafPenjual || "", row.deskripsi || "", row.namaKasBank || "", row.kodeKasBank || "", row.diskonInvoice || "", row.layanan || "", row.pajak || "");
-      // OI columns 13-15
-      r.push(row.oiKodeSubAkun || "", row.oiNamaSubAkun || "", row.oiNilai || "");
-      // Product columns 16+
-      let idx = 1;
-      while (row["p" + idx + "KodeSku"] !== undefined) {
-        r.push(row["p" + idx + "KodeSku"] || "", row["p" + idx + "NamaProduk"] || "", row["p" + idx + "Varian"] || "", row["p" + idx + "Kuantitas"] || "", row["p" + idx + "HargaSatuan"] || "", row["p" + idx + "Diskon"] || "", row["p" + idx + "Catatan"] || "");
-        idx++;
+    // Data rows (starting from row 3 = index 2)
+    data.forEach((row, rowIdx) => {
+      const r = rowIdx + 2; // Excel row (0-indexed)
+      let c = 0;
+
+      // Columns 0-11: Base data
+      ws[cellRef(r, c++)] = { v: row.cabang || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.tanggal || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.namaPelanggan || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.kodePelanggan || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.namaStafPenjual || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.kodeStafPenjual || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.deskripsi || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.namaKasBank || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.kodeKasBank || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.diskonInvoice || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.layanan || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.pajak || "", t: "s" };
+
+      // OI columns
+      ws[cellRef(r, c++)] = { v: row.oiKodeSubAkun || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.oiNamaSubAkun || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.oiNilai || 0, t: "n" };
+
+      // Product columns
+      let prodIdx = 1;
+      while (row["p" + prodIdx + "KodeSku"] !== undefined) {
+        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "KodeSku"] || "", t: "s" };
+        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "NamaProduk"] || "", t: "s" };
+        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Varian"] || "", t: "s" };
+        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Kuantitas"] || 0, t: "n" };
+        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "HargaSatuan"] || 0, t: "n" };
+        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Diskon"] || "", t: "s" };
+        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Catatan"] || "", t: "s" };
+        prodIdx++;
       }
-      while (idx <= maxProductBlocks) {
-        r.push("", "", "", "", "", "", "");
-        idx++;
+      // Fill empty product slots
+      while (prodIdx <= maxProductBlocks) {
+        for (let j = 0; j < 7; j++) {
+          ws[cellRef(r, c++)] = { v: "", t: "s" };
+        }
+        prodIdx++;
       }
-      return r;
     });
 
-    const allRows = [row1, row2, ...dataRows];
+    // Set merges
+    ws['!merges'] = merges;
 
-    const ws = XLSX.utils.aoa_to_sheet(allRows);
-    const colWidths = allRows[0].map(() => ({ wch: 18 }));
-    ws['!cols'] = colWidths;
+    // Set data range
+    ws['!ref'] = XLSX.utils.encode_range({
+      s: { r: 0, c: 0 },
+      e: { r: 2 + data.length - 1, c: numCols - 1 }
+    });
 
+    // Create workbook
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Rapin Export");
 
