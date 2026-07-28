@@ -14,7 +14,7 @@ import {
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup, Card, Col, Row } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Dropdown, Row } from "react-bootstrap";
 import {
   BoxFill,
   CloudArrowDown,
@@ -25,7 +25,6 @@ import {
   TrashFill,
   XCircleFill,
 } from "react-bootstrap-icons";
-import { CSVLink } from "react-csv";
 import DatePicker from "react-datepicker";
 import DialogAddContact from "./DialogAddContact";
 import { firestore } from "../../FirebaseFrovider";
@@ -46,6 +45,7 @@ const Contact = () => {
     mode: "add",
   });
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   // query order
   const [allOrders, setAllOrders] = useState([]);
   useEffect(() => {
@@ -277,6 +277,81 @@ const Contact = () => {
     } else {
     }
   };
+
+  // Fetch all contacts for export (no pagination)
+  const fetchAllContactsForExport = async (type) => {
+    try {
+      setIsExporting(true);
+
+      // Fetch all contacts first
+      const getDoc = query(
+        collection(firestore, "contact"),
+        orderBy("createdAt", "desc")
+      );
+
+      const documentSnapshots = await getDocs(getDoc);
+      var items = [];
+
+      documentSnapshots.forEach((doc) => {
+        const data = doc.data();
+        // Filter by type if not "all"
+        if (type === "all" || data.type === type) {
+          items.push({
+            id: doc.id,
+            type: data.type || "",
+            createdAt: data.createdAt ? formatDate(data.createdAt.toDate()) : "",
+            email: data.email || "",
+            nama: data.nama || "",
+            phone: data.phone || "",
+          });
+        }
+      });
+
+      // Create CSV content
+      const csvContent = [
+        ["ID", "Type", "Created At", "Email", "Nama", "Phone"],
+        ...items.map(item => [
+          item.id,
+          item.type,
+          item.createdAt,
+          item.email,
+          item.nama,
+          item.phone
+        ])
+      ].map(row => row.join(";")).join("\n");
+
+      // Generate filename
+      const timestamp = new Date().toISOString().split("T")[0];
+      let filename = `contact_all_${timestamp}.csv`;
+      if (type === "sender") {
+        filename = `contact_sender_${timestamp}.csv`;
+      } else if (type === "receiver") {
+        filename = `contact_receiver_${timestamp}.csv`;
+      }
+
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setIsExporting(false);
+    } catch (e) {
+      console.log("Export error:", e.message);
+      setIsExporting(false);
+    }
+  };
+
+  // Handle export option selection
+  const handleExportSelect = (eventKey) => {
+    fetchAllContactsForExport(eventKey);
+  };
   console.log(loading);
 
   return (
@@ -438,19 +513,31 @@ const Contact = () => {
         }}
       >
         <div style={{ display: "flex" }}>
-          <CSVLink
-            style={{
-              width: "150px",
-              marginRight: "10px",
-              whiteSpace: "nowrap",
-            }}
-            data={allContacts}
-            separator={";"}
-            filename={"contact.csv"}
-            className="btn btn-outline-secondary"
-          >
-            <CloudArrowDown /> Export As CSV
-          </CSVLink>
+          <Dropdown onSelect={handleExportSelect} style={{ marginRight: "10px" }}>
+            <Dropdown.Toggle
+              variant="outline-secondary"
+              id="dropdown-export"
+              disabled={isExporting}
+              style={{
+                width: "180px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <CloudArrowDown /> {isExporting ? "Exporting..." : "Export As CSV"}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item eventKey="sender">
+                Download Data Sender
+              </Dropdown.Item>
+              <Dropdown.Item eventKey="receiver">
+                Download Data Receiver
+              </Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item eventKey="all">
+                Download All
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
           <button
             onClick={() => setDialogAdd({ open: true, data: {}, mode: "add" })}
             style={{
