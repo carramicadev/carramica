@@ -24,7 +24,13 @@ import {
   uploadString,
 } from "firebase/storage";
 import { Button } from "react-bootstrap";
-import { Border, PlusLg, XCircle, XCircleFill } from "react-bootstrap-icons";
+import {
+  ArrowLeft,
+  Border,
+  PlusLg,
+  XCircle,
+  XCircleFill,
+} from "react-bootstrap-icons";
 import { useSnackbar } from "notistack";
 import Header from "../../components/Header";
 
@@ -312,308 +318,302 @@ export default function DetailProduct() {
 
   console.log(form);
   return (
-    <div className="container">
+    <div className="container" style={{ paddingTop: "80px", paddingBottom: "40px" }}>
       <Header />
-      <div className="card" style={{ padding: "20px" }}>
-        <h2 style={{ fontWeight: "bold" }}>Edit Product</h2>
-        <form style={{ padding: "10px" }}>
-          <div
-            className="card"
-            style={{ padding: "20px", marginBottom: "20px" }}
-          >
-            <div className="section-title">
-              <h5 style={{ fontWeight: "bold" }}>Product Information</h5>
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="sku">
-                SKU
-              </label>
-              <div className="" style={{ width: "70%" }}>
-                <input
-                  disabled
-                  className="form-control"
-                  id="sku"
-                  readonly=""
-                  type="text"
-                  value={form?.sku}
-                />
 
-                <p style={{ fontSize: "10px", color: "red" }}>
-                  {" "}
-                  SKU tidak bisa di edit setelah terjadi pembelian
-                </p>
-              </div>
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="name">
-                Name
-              </label>
-              <input
-                onChange={handleFormChange}
-                name="nama"
-                style={{ width: "70%" }}
-                className="form-control"
-                id="name"
-                type="text"
-                value={form?.nama}
-              />
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="category">
-                Category
-              </label>
-              <div style={{ width: "70%" }}>
-                <select
-                  style={{}}
-                  className="form-select"
-                  id="category"
-                  name="category"
-                  onChange={handleFormChange}
-                  value={form?.category?.id || ""}
-                >
-                  <option selected hidden>
-                    Category
-                  </option>
+      {/* Back Button */}
+      <div style={{ marginBottom: "20px", marginTop: "20px" }}>
+        <button
+          onClick={() => navigate("/products")}
+          style={{
+            backgroundColor: "transparent",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+            color: "#666",
+            fontSize: "14px",
+            padding: "8px 0",
+          }}
+        >
+          <ArrowLeft size={20} />
+          <span>Kembali ke Products</span>
+        </button>
+      </div>
 
-                  {dataKategori?.map((kur) => {
-                    return (
-                      <option key={kur?.id} value={kur?.id}>
-                        {kur?.nama}
-                      </option>
-                    );
-                  })}
-                </select>
-                {/* <p style={{ fontSize: '10px', color: 'red' }}> Belum tersedia</p> */}
-              </div>
-            </div>
+      {/* Page Title */}
+      <div style={{ marginBottom: "24px" }}>
+        <h2 style={{ fontWeight: "bold", marginBottom: "4px" }}>Edit Product</h2>
+        <p style={{ color: "#888", margin: 0, fontSize: "14px" }}>
+          Update informasi produk dan detail lainnya
+        </p>
+      </div>
+
+      <form>
+        {/* Product Information Card */}
+        <div
+          className="card shadow-sm"
+          style={{
+            padding: "24px",
+            marginBottom: "20px",
+            borderRadius: "12px",
+            border: "none"
+          }}
+        >
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ fontWeight: "bold", color: "#333" }}>Informasi Produk</h5>
           </div>
-          <div
-            className="card"
-            style={{ padding: "20px", marginBottom: "20px" }}
-          >
-            <div className="section-title">
-              <h5 style={{ fontWeight: "bold" }}>Product Detail</h5>
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
+
+          {/* SKU Field */}
+          <div className="mb-4">
+            <label className="form-label fw-medium" for="sku" style={{ marginBottom: "8px" }}>
+              SKU
+            </label>
+            <input
+              disabled
+              className="form-control"
+              id="sku"
+              readonly=""
+              type="text"
+              value={form?.sku}
+              style={{ backgroundColor: "#f5f5f5" }}
+            />
+            <p style={{ fontSize: "12px", color: "#888", marginTop: "6px", marginBottom: 0 }}>
+              SKU tidak bisa diedit setelah terjadi pembelian
+            </p>
+          </div>
+
+          {/* Name Field */}
+          <div className="mb-4">
+            <label className="form-label fw-medium" for="name" style={{ marginBottom: "8px" }}>
+              Nama Produk <span style={{ color: "red" }}>*</span>
+            </label>
+            <input
+              onChange={handleFormChange}
+              name="nama"
+              className={`form-control ${error.nama ? "is-invalid" : ""}`}
+              id="name"
+              type="text"
+              value={form?.nama}
+              placeholder="Masukkan nama produk"
+            />
+            {error.nama && <div className="invalid-feedback">{error.nama}</div>}
+          </div>
+
+          {/* Category Field */}
+          <div className="mb-4">
+            <label className="form-label fw-medium" for="category" style={{ marginBottom: "8px" }}>
+              Kategori
+            </label>
+            <select
+              className="form-select"
+              id="category"
+              name="category"
+              onChange={handleFormChange}
+              value={form?.category?.id || ""}
             >
-              <label className="form-label" for="product-photo">
-                Product photo
-              </label>
-              <div id="product-photo" style={{ width: "70%" }}>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div
+              <option value="">Pilih Kategori</option>
+              {dataKategori?.map((kur) => (
+                <option key={kur?.id} value={kur?.id}>
+                  {kur?.nama}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Product Photo & Description Card */}
+        <div
+          className="card shadow-sm"
+          style={{
+            padding: "24px",
+            marginBottom: "20px",
+            borderRadius: "12px",
+            border: "none"
+          }}
+        >
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ fontWeight: "bold", color: "#333" }}>Foto & Deskripsi</h5>
+          </div>
+
+          {/* Product Photo */}
+          <div className="mb-4">
+            <label className="form-label fw-medium" style={{ marginBottom: "12px" }}>
+              Foto Produk
+            </label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+              {form.thumbnail?.map((thumb) => (
+                <div
+                  key={thumb}
+                  style={{
+                    position: "relative",
+                    width: "100px",
+                    height: "100px"
+                  }}
+                >
+                  <img
+                    src={thumb}
+                    width="100px"
+                    height="100px"
+                    alt=""
+                    style={{ borderRadius: "8px", objectFit: "cover" }}
+                  />
+                  <button
+                    onClick={handleDeleteThumb(thumb)}
                     style={{
+                      position: "absolute",
+                      top: "-8px",
+                      right: "-8px",
+                      backgroundColor: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "24px",
+                      height: "24px",
                       display: "flex",
-                      justifyContent: "flex-start",
-                      flexWrap: "wrap",
-                      marginBottom: "4px",
-                      marginTop: "2px",
-                      "& img": {
-                        padding: 3,
-                        // margin: '20px'
-                      },
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
                     }}
                   >
-                    {form.thumbnail?.map((thumb) => {
-                      const position = thumb?.lastIndexOf?.(".");
-                      const thumbnail300 =
-                        thumb?.substring(0, position) +
-                        "_300x300" +
-                        thumb?.substring(position, position?.length);
-                      // console.log(thumb);
-                      return (
-                        <div
-                          className=""
-                          style={{ display: "flex", alignItems: "flex-start" }}
-                        >
-                          <img
-                            key={thumb}
-                            src={thumb}
-                            width="100px"
-                            height="100px"
-                            alt=""
-                            style={{ borderRadius: "7px" }}
-                          />
-                          <button
-                            onClick={handleDeleteThumb(thumb)}
-                            style={{
-                              // position: 'absolute',
-
-                              marginTop: "-12px",
-                              marginLeft: "-10px",
-                              color: "gray",
-                              backgroundColor: "transparent",
-                              padding: "0px 0px 0px 0px",
-                              "& :hover": {
-                                color: "#aaa",
-                                backgroundColor: "#ddd",
-                                borderRadius: "50%",
-                                padding: 3,
-                              },
-                              border: "none",
-                              borderRadius: "50%",
-                              marginRight: "5px",
-                            }}
-                          >
-                            <XCircleFill color="red" />
-                            {/* <HighlightOffIcon
-                                                            onClick={handleDeleteThumb(thumb)}
-                                                        /> */}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {form?.thumbnail?.length < 10 && (
-                    <div>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{ display: "none" }}
-                        onChange={handleUploadProduct}
-                      />
-                      {/* Custom Bootstrap button */}
-                      <Button
-                        style={{
-                          backgroundColor: "transparent",
-                          border: "2px dashed #000",
-                          width: "98px",
-                          height: "98px",
-                        }}
-                        disabled={loading}
-                        variant="primary"
-                        onClick={handleButtonClick}
-                      >
-                        <PlusLg color="black" size={30} />
-                      </Button>
-
-                      {error.thumbnail && (
-                        <p color="error">{error.thumbnail}</p>
-                      )}
-                    </div>
-                  )}
+                    <XCircleFill color="red" size={16} />
+                  </button>
                 </div>
+              ))}
+              {form?.thumbnail?.length < 10 && (
+                <div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={handleUploadProduct}
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                  />
+                  <button
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "2px dashed #ccc",
+                      width: "100px",
+                      height: "100px",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                    disabled={loading}
+                    onClick={handleButtonClick}
+                    onMouseEnter={(e) => {
+                      e.target.style.borderColor = "#3D5E54";
+                      e.target.style.backgroundColor = "#f9f9f9";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.borderColor = "#ccc";
+                      e.target.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    <PlusLg color="#666" size={24} />
+                  </button>
+                </div>
+              )}
+            </div>
+            {error.thumbnail && (
+              <p style={{ fontSize: "12px", color: "red", marginTop: "8px" }}>{error.thumbnail}</p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div className="mb-3">
+            <label className="form-label fw-medium" for="description" style={{ marginBottom: "8px" }}>
+              Deskripsi Produk
+            </label>
+            <textarea
+              onChange={handleFormChange}
+              name="description"
+              className="form-control"
+              id="description"
+              rows="4"
+              value={form?.description}
+              placeholder="Masukkan deskripsi produk"
+              style={{ resize: "vertical" }}
+            />
+          </div>
+        </div>
+
+        {/* Pricing Card */}
+        <div
+          className="card shadow-sm"
+          style={{
+            padding: "24px",
+            marginBottom: "20px",
+            borderRadius: "12px",
+            border: "none"
+          }}
+        >
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ fontWeight: "bold", color: "#333" }}>Harga</h5>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6 mb-4">
+              <label className="form-label fw-medium" for="harga-satuan" style={{ marginBottom: "8px" }}>
+                Harga Jual <span style={{ color: "red" }}>*</span>
+              </label>
+              <div className="input-group">
+                <span className="input-group-text">Rp</span>
+                <input
+                  onChange={handleFormChange}
+                  name="harga"
+                  className={`form-control ${error.harga ? "is-invalid" : ""}`}
+                  id="harga-satuan"
+                  type="number"
+                  value={form?.harga}
+                />
+                {error.harga && <div className="invalid-feedback">{error.harga}</div>}
               </div>
             </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="description">
-                Description
+
+            <div className="col-md-6 mb-4">
+              <label className="form-label fw-medium" for="cogs" style={{ marginBottom: "8px" }}>
+                COGS (Harga Modal)
               </label>
-              <textarea
-                onChange={handleFormChange}
-                name="description"
-                style={{ width: "70%" }}
-                className="form-control"
-                id="description"
-                rows="5"
-                value={form?.description}
-              />
+              <div className="input-group">
+                <span className="input-group-text">Rp</span>
+                <input
+                  className="form-control"
+                  id="cogs"
+                  name="cogs"
+                  type="number"
+                  value={form?.cogs}
+                  onChange={handleFormChange}
+                />
+              </div>
             </div>
           </div>
-          <div
-            className="card"
-            style={{ padding: "20px", marginBottom: "20px" }}
-          >
-            <div className="section-title">
-              <h5 style={{ fontWeight: "bold" }}>Harga</h5>
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="harga-satuan">
-                Harga Satuan
-              </label>
-              <input
-                onChange={handleFormChange}
-                name="harga"
-                style={{ width: "70%" }}
-                className="form-control"
-                id="harga-satuan"
-                type="number"
-                value={form?.harga}
-              />
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="cogs">
-                COGS
-              </label>
-              <input
-                style={{ width: "70%" }}
-                className="form-control"
-                id="cogs"
-                name="cogs"
-                type="number"
-                value={form?.cogs}
-                onChange={handleFormChange}
-              />
-            </div>
+        </div>
+
+        {/* Product Management Card */}
+        <div
+          className="card shadow-sm"
+          style={{
+            padding: "24px",
+            marginBottom: "20px",
+            borderRadius: "12px",
+            border: "none"
+          }}
+        >
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ fontWeight: "bold", color: "#333" }}>Manajemen Produk</h5>
           </div>
-          <div
-            className="card"
-            style={{ padding: "20px", marginBottom: "20px" }}
-          >
-            <div className="section-title">
-              <h5 style={{ fontWeight: "bold" }}>Product Management</h5>
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="product-status">
-                Product Status
+
+          <div className="row">
+            <div className="col-md-4 mb-4">
+              <label className="form-label fw-medium" for="product-status" style={{ marginBottom: "8px" }}>
+                Status Produk
               </label>
               <select
-                style={{ width: "70%" }}
                 className="form-select"
                 id="product-status"
                 name="status"
@@ -624,40 +624,27 @@ export default function DetailProduct() {
                 <option value="Hold">Hold</option>
               </select>
             </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="product-stock">
-                Product Stock
+
+            <div className="col-md-4 mb-4">
+              <label className="form-label fw-medium" for="product-stock" style={{ marginBottom: "8px" }}>
+                Stok <span style={{ color: "red" }}>*</span>
               </label>
               <input
                 onChange={handleFormChange}
                 name="stok"
-                style={{ width: "70%" }}
-                className="form-control"
+                className={`form-control ${error.stok ? "is-invalid" : ""}`}
                 id="product-stock"
                 type="number"
                 value={form?.stok}
               />
+              {error.stok && <div className="invalid-feedback">{error.stok}</div>}
             </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="warning-stock">
-                Warning Stock
+
+            <div className="col-md-4 mb-4">
+              <label className="form-label fw-medium" for="warning-stock" style={{ marginBottom: "8px" }}>
+                Stok Minimum (Warning)
               </label>
               <input
-                style={{ width: "70%" }}
                 className="form-control"
                 id="warning-stock"
                 name="warning_stock"
@@ -667,96 +654,124 @@ export default function DetailProduct() {
               />
             </div>
           </div>
-          <div
-            className="card"
-            style={{ padding: "20px", marginBottom: "20px" }}
-          >
-            <div className="section-title">
-              <h5 style={{ fontWeight: "bold" }}>Berat &amp; Pengiriman</h5>
-            </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="product-weight">
-                Product Weight
+        </div>
+
+        {/* Weight & Shipping Card */}
+        <div
+          className="card shadow-sm"
+          style={{
+            padding: "24px",
+            marginBottom: "20px",
+            borderRadius: "12px",
+            border: "none"
+          }}
+        >
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ fontWeight: "bold", color: "#333" }}>Berat & Pengiriman</h5>
+          </div>
+
+          <div className="row">
+            <div className="col-md-4 mb-4">
+              <label className="form-label fw-medium" for="product-weight" style={{ marginBottom: "8px" }}>
+                Berat (gram) <span style={{ color: "red" }}>*</span>
               </label>
-              <input
-                onChange={handleFormChange}
-                name="weight"
-                style={{ width: "70%" }}
-                className="form-control"
-                id="product-weight"
-                type="number"
-                value={form?.weight}
-              />
+              <div className="input-group">
+                <input
+                  onChange={handleFormChange}
+                  name="weight"
+                  className={`form-control ${error.weight ? "is-invalid" : ""}`}
+                  id="product-weight"
+                  type="number"
+                  value={form?.weight}
+                />
+                <span className="input-group-text">gr</span>
+                {error.weight && <div className="invalid-feedback">{error.weight}</div>}
+              </div>
             </div>
-            <div
-              className="mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <label className="form-label" for="product-size">
-                Product Size (P x L x T)
+
+            <div className="col-md-8 mb-4">
+              <label className="form-label fw-medium" style={{ marginBottom: "8px" }}>
+                Ukuran (P x L x T)
               </label>
-              <div
-                style={{ width: "70%", display: "flex" }}
-                className="form-container"
-                id="product-size"
-              >
-                <input
-                  onChange={handleFormChange}
-                  name="length"
-                  className="form-control d-inline-block"
-                  placeholder="Panjang"
-                  type="number"
-                  value={form?.length}
-                />
-                <input
-                  onChange={handleFormChange}
-                  name="width"
-                  className="form-control d-inline-block"
-                  placeholder="Lebar"
-                  type="number"
-                  value={form?.width}
-                />
-                <input
-                  onChange={handleFormChange}
-                  name="height"
-                  className="form-control d-inline-block"
-                  placeholder="Tinggi"
-                  type="number"
-                  value={form?.height}
-                />
+              <div style={{ display: "flex", gap: "8px" }}>
+                <div style={{ flex: 1 }}>
+                  <input
+                    onChange={handleFormChange}
+                    name="length"
+                    className={`form-control ${error.length ? "is-invalid" : ""}`}
+                    placeholder="Panjang"
+                    type="number"
+                    value={form?.length}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input
+                    onChange={handleFormChange}
+                    name="width"
+                    className={`form-control ${error.width ? "is-invalid" : ""}`}
+                    placeholder="Lebar"
+                    type="number"
+                    value={form?.width}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input
+                    onChange={handleFormChange}
+                    name="height"
+                    className={`form-control ${error.height ? "is-invalid" : ""}`}
+                    placeholder="Tinggi"
+                    type="number"
+                    value={form?.height}
+                  />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                {error.length && <small className="text-danger">{error.length}</small>}
+                {error.width && <small className="text-danger">{error.width}</small>}
+                {error.height && <small className="text-danger">{error.height}</small>}
               </div>
             </div>
           </div>
-          <div className="d-flex justify-content-end">
-            <button
-              onClick={() => navigate("/products")}
-              className="button button-primary"
-              style={{ backgroundColor: "#F05252" }}
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="button button-primary"
-              type="submit"
-            >
-              Save
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div
+          className="d-flex justify-content-end gap-3"
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 -2px 10px rgba(0,0,0,0.05)",
+            position: "sticky",
+            bottom: "20px"
+          }}
+        >
+          <button
+            onClick={() => navigate("/products")}
+            className="btn btn-outline-secondary"
+            type="button"
+            style={{
+              padding: "10px 24px",
+              borderRadius: "8px"
+            }}
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="btn btn-primary"
+            type="submit"
+            style={{
+              backgroundColor: "#3D5E54",
+              border: "none",
+              padding: "10px 32px",
+              borderRadius: "8px"
+            }}
+          >
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
