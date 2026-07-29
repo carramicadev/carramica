@@ -309,7 +309,7 @@ const AddOrder = () => {
   // console.log(orders);
   // query coll product
   useEffect(() => {
-    // Fetch all products and filter client-side for status "Live"
+    // Fetch all products and filter client-side for status "Live" or products without status (default "Live")
     const ref = query(collection(firestore, "product"));
 
     // subscribe in real-time
@@ -319,10 +319,13 @@ const AddOrder = () => {
         ...doc.data(),
       }));
 
-      // Filter only products with status "Live" and stock > 0
+      // Filter products:
+      // - If status exists, must be "Live"
+      // - If status doesn't exist, treat as "Live" (backwards compatibility)
+      // - Must have stock > 0
       const liveProducts = products.filter(
         (product) =>
-          product?.status === "Live" &&
+          (product?.status === "Live" || product?.status === undefined) &&
           product?.stok > 0
       );
 
