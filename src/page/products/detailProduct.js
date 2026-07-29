@@ -384,6 +384,22 @@ export default function DetailProduct() {
             </p>
           </div>
 
+          {/* SKU Rapin Field */}
+          <div className="mb-4">
+            <label className="form-label fw-medium" for="sku_rapin" style={{ marginBottom: "8px" }}>
+              SKU Rapin
+            </label>
+            <input
+              onChange={handleFormChange}
+              name="sku_rapin"
+              className="form-control"
+              id="sku_rapin"
+              type="text"
+              value={form?.sku_rapin || form?.sku || ""}
+              placeholder="Masukkan SKU Rapin"
+            />
+          </div>
+
           {/* Name Field */}
           <div className="mb-4">
             <label className="form-label fw-medium" for="name" style={{ marginBottom: "8px" }}>
