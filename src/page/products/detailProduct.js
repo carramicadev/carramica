@@ -297,7 +297,6 @@ export default function DetailProduct() {
           doc(firestore, "product", productId),
           {
             ...form,
-            stok: increment(parseInt(form?.stok)),
             updatedAt: serverTimestamp(),
           },
           { merge: true }
