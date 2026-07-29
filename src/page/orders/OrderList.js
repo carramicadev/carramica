@@ -988,7 +988,7 @@ const OrderList = () => {
         if (products.length > 0) {
           products.forEach((prod) => {
             allProducts.push({
-              sku: prod?.sku || prod?.id || "",
+              sku: prod?.sku_rapin || prod?.sku || prod?.id || "",
               nama: prod?.nama || "",
               varian: "",
               quantity: prod?.quantity || 0,
@@ -1002,15 +1002,16 @@ const OrderList = () => {
 
       // Build base row object with fixed columns (A-L)
       const baseRow = {
-        cabang: warehouseName,
+        cabang: "",
         tanggal: formatDateForRapin(paymentDate),
         namaPelanggan: item?.senderName || "",
         kodePelanggan: "",
+        noTeleponPelanggan: item?.senderPhone || "",
         namaStafPenjual: salesName,
         kodeStafPenjual: salesCode,
         deskripsi: "",
-        namaKasBank: "",
-        kodeKasBank: "",
+        namaKasBank: "Bank BCA PT",
+        kodeKasBank: "BCAPT",
         diskonInvoice: discountPercent,
         layanan: "",
         pajak: "",
@@ -1064,6 +1065,7 @@ const OrderList = () => {
       { label: "Tanggal", key: "tanggal" },
       { label: "Nama Pelanggan", key: "namaPelanggan" },
       { label: "Kode Pelanggan", key: "kodePelanggan" },
+      { label: "No Telepon Pelanggan", key: "noTeleponPelanggan" },
       { label: "Nama Staf Penjual", key: "namaStafPenjual" },
       { label: "Kode Staf Penjual", key: "kodeStafPenjual" },
       { label: "Deskripsi", key: "deskripsi" },
@@ -1158,15 +1160,15 @@ const OrderList = () => {
     });
 
     // Column positions (0-indexed)
-    const oiColStart = 12; // M
-    const oiColEnd = 14; // O
-    const productColStart = 15; // P
+    const oiColStart = 13; // N
+    const oiColEnd = 15; // P
+    const productColStart = 16; // Q
 
     // Create empty worksheet
     const ws = {};
 
     // Set column widths
-    const numCols = 12 + 3 + (maxProductBlocks * 7);
+    const numCols = 13 + 3 + (maxProductBlocks * 7);
     const colWidths = [];
     for (let i = 0; i < numCols; i++) {
       colWidths.push({ wch: 15 });
@@ -1182,19 +1184,19 @@ const OrderList = () => {
     // Build merge ranges
     const merges = [];
 
-    // Row 1: Headers - Columns 0-11 (Base headers)
-    const baseHeaders = ["Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan", "Nama Staf Penjual", "Kode Staf Penjual", "Deskripsi", "Nama Kas/Bank", "Kode Kas/Bank", "% Diskon Invoice", "% Layanan", "% Pajak"];
-    for (let c = 0; c < 12; c++) {
+    // Row 1: Headers - Columns 0-12 (Base headers)
+    const baseHeaders = ["Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan", "No Telepon Pelanggan", "Nama Staf Penjual", "Kode Staf Penjual", "Deskripsi", "Nama Kas/Bank", "Kode Kas/Bank", "% Diskon Invoice", "% Layanan", "% Pajak"];
+    for (let c = 0; c < 13; c++) {
       ws[cellRef(0, c)] = { v: baseHeaders[c], t: "s" };
       ws[cellRef(0, c)].s = headerStyle;
     }
 
-    // OI: Pendapatan Lain-Lain merge (columns 12, 13, 14)
-    ws[cellRef(0, 12)] = { v: "OI: Pendapatan Lain-Lain", t: "s" };
-    ws[cellRef(0, 12)].s = headerStyle;
-    ws[cellRef(0, 13)] = { v: "", t: "s" };
+    // OI: Pendapatan Lain-Lain merge (columns 13, 14, 15)
+    ws[cellRef(0, 13)] = { v: "OI: Pendapatan Lain-Lain", t: "s" };
+    ws[cellRef(0, 13)].s = headerStyle;
     ws[cellRef(0, 14)] = { v: "", t: "s" };
-    merges.push({ s: { r: 0, c: 12 }, e: { r: 0, c: 14 } });
+    ws[cellRef(0, 15)] = { v: "", t: "s" };
+    merges.push({ s: { r: 0, c: 13 }, e: { r: 0, c: 15 } });
 
     // P: Produk per block
     for (let i = 0; i < maxProductBlocks; i++) {
@@ -1209,12 +1211,14 @@ const OrderList = () => {
     }
 
     // Row 2: Sub-headers
-    for (let c = 0; c < 12; c++) {
+    // A2 = "Warehouse Utama" (below "Cabang")
+    ws[cellRef(1, 0)] = { v: "Warehouse Utama", t: "s" };
+    for (let c = 1; c < 13; c++) {
       ws[cellRef(1, c)] = { v: "", t: "s" };
     }
-    ws[cellRef(1, 12)] = { v: "Kode Sub Akun", t: "s" };
-    ws[cellRef(1, 13)] = { v: "Nama Sub Akun", t: "s" };
-    ws[cellRef(1, 14)] = { v: "Nilai (Rp)", t: "s" };
+    ws[cellRef(1, 13)] = { v: "Kode Sub Akun", t: "s" };
+    ws[cellRef(1, 14)] = { v: "Nama Sub Akun", t: "s" };
+    ws[cellRef(1, 15)] = { v: "Nilai (Rp)", t: "s" };
     for (let i = 0; i < maxProductBlocks; i++) {
       const startCol = productColStart + (i * 7);
       ws[cellRef(1, startCol)] = { v: "Kode SKU", t: "s" };
@@ -1231,11 +1235,12 @@ const OrderList = () => {
       const r = rowIdx + 2; // Excel row (0-indexed)
       let c = 0;
 
-      // Columns 0-11: Base data
+      // Columns 0-12: Base data
       ws[cellRef(r, c++)] = { v: row.cabang || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.tanggal || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.namaPelanggan || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.kodePelanggan || "", t: "s" };
+      ws[cellRef(r, c++)] = { v: row.noTeleponPelanggan || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.namaStafPenjual || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.kodeStafPenjual || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.deskripsi || "", t: "s" };
@@ -1323,7 +1328,7 @@ const OrderList = () => {
 
     // Build row 1: Headers - columns 1-12 same as row 2, then OI and P:Produk group headers
     const baseColumnLabels = [
-      "Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan",
+      "Cabang", "Tanggal", "Nama Pelanggan", "Kode Pelanggan", "No Telepon Pelanggan",
       "Nama Staf Penjual", "Kode Staf Penjual", "Deskripsi",
       "Nama Kas/Bank", "Kode Kas/Bank", "% Diskon Invoice", "% Layanan", "% Pajak"
     ];

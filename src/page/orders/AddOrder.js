@@ -309,8 +309,8 @@ const AddOrder = () => {
   // console.log(orders);
   // query coll product
   useEffect(() => {
-    // define query
-    const ref = query(collection(firestore, "product"), where("stok", ">", 0));
+    // Fetch all products and filter client-side for status "Live"
+    const ref = query(collection(firestore, "product"));
 
     // subscribe in real-time
     const unsubscribe = onSnapshot(ref, (snapshot) => {
@@ -319,7 +319,14 @@ const AddOrder = () => {
         ...doc.data(),
       }));
 
-      setAllProduct(products);
+      // Filter only products with status "Live" and stock > 0
+      const liveProducts = products.filter(
+        (product) =>
+          product?.status === "Live" &&
+          product?.stok > 0
+      );
+
+      setAllProduct(liveProducts);
       setLoading(false);
     });
 
