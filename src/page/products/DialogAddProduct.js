@@ -36,6 +36,7 @@ export default function DialogAddProduct(props) {
     length: 0,
     nama: "",
     sku: "",
+    sku_rapin: "",
     harga: 0,
     stok: 0,
   });
@@ -105,10 +106,16 @@ export default function DialogAddProduct(props) {
       setFormError(findErros);
     } else {
       try {
+        // Auto-fill sku_rapin with sku if empty
+        const finalFormData = {
+          ...formData,
+          sku_rapin: formData.sku_rapin || formData.sku,
+        };
+
         if (props?.show?.mode === "edit") {
           await setDoc(
             doc(firestore, "product", props?.show?.item?.id),
-            { ...formData, updatedAt: serverTimestamp() },
+            { ...finalFormData, updatedAt: serverTimestamp() },
             { merge: true }
           );
           // console.log("Document written with ID: ",);
@@ -119,12 +126,12 @@ export default function DialogAddProduct(props) {
           props.onHide();
         } else {
           const tambahProduk = await addDoc(collection(firestore, "product"), {
-            ...formData,
+            ...finalFormData,
             createdAt: serverTimestamp(),
           });
           await setDoc(
             doc(firestore, "product", tambahProduk?.id),
-            { ...formData, updatedAt: serverTimestamp(), id: tambahProduk?.id },
+            { ...finalFormData, updatedAt: serverTimestamp(), id: tambahProduk?.id },
             { merge: true }
           );
           // console.log("Document written with ID: ",);
@@ -201,6 +208,17 @@ export default function DialogAddProduct(props) {
                   {formError.sku}
                 </Form.Control.Feedback>
               )}
+            </div>
+            <div className="form-group">
+              <label className="label">SKU Rapin</label>
+              <Form.Control
+                className="input"
+                type="text"
+                name="sku_rapin"
+                placeholder="Sama dengan SKU jika kosong"
+                value={formData.sku_rapin}
+                onChange={handleFormChange}
+              />
             </div>
             <div className="form-group">
               <label className="label">Product Name</label>
