@@ -941,10 +941,13 @@ const OrderList = () => {
   };
 
   // Format number with comma as decimal separator (Indonesian format for Rapin)
+  // - 1 decimal place only (e.g., 25,5 not 25,50)
+  // - Round properly (e.g., 26,68 becomes 26,7)
+  // - Empty if value is 0 or falsy
   const formatPercentForRapin = (num) => {
-    if (num === null || num === undefined || num === "") return "";
-    // Convert number to string with 2 decimal places, then replace dot with comma
-    return parseFloat(num).toFixed(2).replace(".", ",");
+    if (num === null || num === undefined || num === "" || num === 0) return "";
+    // Round to 1 decimal place, then replace dot with comma
+    return parseFloat(num).toFixed(1).replace(".", ",");
   };
 
   // Transform order data to rapin format
