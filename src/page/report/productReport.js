@@ -14,7 +14,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { firestore } from "../../FirebaseFrovider";
 import Loading from "../../components/Loading";
 import { CSVLink } from "react-csv";
-import { CloudArrowDown, ArrowDown, ArrowUp } from "react-bootstrap-icons";
+import { CloudArrowDown, ArrowDown, ArrowUp, ArrowLeft, ArrowRight } from "react-bootstrap-icons";
 
 export default function ReportProdukTerjual() {
   const [orders, setOrders] = useState([]);
@@ -26,6 +26,11 @@ export default function ReportProdukTerjual() {
   // 🔥 For multi-column sorting
   const [sortField, setSortField] = useState("nama");
   const [sortOrder, setSortOrder] = useState("asc");
+
+  // 🔥 Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const pageSizeOptions = [20, 50, 100, 200, "All"];
 
   // 🔹 Fetch orders
   useEffect(() => {
@@ -151,6 +156,18 @@ export default function ReportProdukTerjual() {
     return arr;
   }, [orders, productsMap, sortField, sortOrder]);
 
+  // 🔥 Pagination logic
+  const totalItems = filteredProducts.length;
+  const totalPages = pageSize === "All" ? 1 : Math.ceil(totalItems / pageSize);
+  const startIndex = pageSize === "All" ? 0 : (currentPage - 1) * pageSize;
+  const endIndex = pageSize === "All" ? totalItems : Math.min(startIndex + pageSize, totalItems);
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when pageSize or filteredProducts changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize, filteredProducts.length]);
+
   // 🔥 Handle sorting
   const handleSort = (field) => {
     if (sortField === field) {
@@ -170,150 +187,427 @@ export default function ReportProdukTerjual() {
     );
   };
 
-  // 🔹 Styles
+  // 🔹 Styles - Improved Design
   const styles = {
-    container: { padding: 16, maxWidth: 1200, margin: "0 auto" },
+    container: {
+      padding: 24,
+      maxWidth: 1400,
+      margin: "0 auto",
+      backgroundColor: "#f8f9fa",
+      minHeight: "calc(100vh - 100px)",
+      borderRadius: 12,
+    },
+    card: {
+      backgroundColor: "white",
+      borderRadius: 12,
+      padding: 24,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+      marginBottom: 24,
+    },
     header: {
-      fontSize: 22,
+      fontSize: 24,
       fontWeight: "bold",
-      marginBottom: 16,
-      textAlign: "center",
+      marginBottom: 24,
+      color: "#333",
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
     },
     filterContainer: {
       display: "flex",
       flexWrap: "wrap",
       justifyContent: "space-between",
-      gap: 12,
-      marginBottom: 20,
+      alignItems: "flex-end",
+      gap: 16,
+      marginBottom: 24,
     },
-    dateGroup: { display: "flex", flexWrap: "wrap", gap: 12 },
-    exportButton: { display: "flex", alignItems: "flex-end" },
-    tableWrapper: { overflowX: "auto" },
+    filterGroup: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 16,
+      alignItems: "flex-end",
+    },
+    filterItem: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6,
+    },
+    filterLabel: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: "#555",
+    },
+    dateInput: {
+      padding: "10px 14px",
+      borderRadius: 8,
+      border: "1px solid #ddd",
+      fontSize: 14,
+      minWidth: 160,
+    },
+    rightSection: {
+      display: "flex",
+      alignItems: "center",
+      gap: 16,
+    },
+    exportButton: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+    },
+    totalBadge: {
+      backgroundColor: "#3D5E54",
+      color: "white",
+      padding: "10px 20px",
+      borderRadius: 8,
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+    },
+    totalLabel: {
+      fontSize: 14,
+      fontWeight: 500,
+    },
+    totalValue: {
+      fontSize: 18,
+      fontWeight: "bold",
+    },
+    tableWrapper: {
+      overflowX: "auto",
+      borderRadius: 8,
+      border: "1px solid #e0e0e0",
+    },
     table: {
       width: "100%",
       borderCollapse: "collapse",
-      border: "1px solid #ccc",
-      fontSize: "10px",
-      minWidth: 400,
+      fontSize: 14,
+      minWidth: 600,
     },
     th: {
-      padding: 12,
-      borderBottom: "1px solid #ddd",
+      padding: "14px 16px",
+      borderBottom: "2px solid #e0e0e0",
       backgroundColor: "#3D5E54",
       color: "white",
       cursor: "pointer",
       whiteSpace: "nowrap",
+      fontWeight: 600,
+      textAlign: "left",
+      fontSize: 14,
     },
-    td: { padding: 12, borderBottom: "1px solid #eee" },
-    totalText: { marginTop: 20, textAlign: "right", fontWeight: "bold" },
+    td: {
+      padding: "14px 16px",
+      borderBottom: "1px solid #eee",
+      fontSize: 14,
+      color: "#333",
+    },
+    paginationContainer: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 20,
+      padding: "16px 0",
+      borderTop: "1px solid #eee",
+      flexWrap: "wrap",
+      gap: 16,
+    },
+    paginationInfo: {
+      fontSize: 14,
+      color: "#666",
+    },
+    paginationControls: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+    },
+    pageButton: {
+      padding: "8px 12px",
+      border: "1px solid #ddd",
+      backgroundColor: "white",
+      borderRadius: 6,
+      cursor: "pointer",
+      fontSize: 14,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    pageButtonDisabled: {
+      opacity: 0.5,
+      cursor: "not-allowed",
+    },
+    pageNumber: {
+      padding: "8px 14px",
+      border: "1px solid #ddd",
+      backgroundColor: "white",
+      borderRadius: 6,
+      cursor: "pointer",
+      fontSize: 14,
+      minWidth: 40,
+    },
+    pageNumberActive: {
+      backgroundColor: "#3D5E54",
+      color: "white",
+      border: "1px solid #3D5E54",
+    },
+    pageSizeSelect: {
+      padding: "8px 12px",
+      border: "1px solid #ddd",
+      borderRadius: 6,
+      fontSize: 14,
+      backgroundColor: "white",
+      cursor: "pointer",
+    },
+    sortIcon: {
+      marginLeft: 6,
+      opacity: 0.7,
+    },
+    noDataText: {
+      padding: "20px",
+      textAlign: "center",
+      color: "#666",
+      fontSize: 14,
+    },
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.header}>Product Report</h2>
+      <h2 style={styles.header}>
+        <span style={{
+          backgroundColor: "#3D5E54",
+          color: "white",
+          padding: "8px 12px",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+        }}>
+          📊
+        </span>
+        Product Report
+      </h2>
 
-      {/* Date Filters */}
-      <div style={styles.filterContainer}>
-        <div style={styles.dateGroup}>
-          <div>
-            <label>From:</label>
-            <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              selectsStart
-              startDate={startDate}
-              endDate={endDate}
-              dateFormat="dd/MM/yyyy"
-              placeholderText="Select start date"
-              className="border p-2 rounded"
-            />
+      {/* Filter Card */}
+      <div style={styles.card}>
+        <div style={styles.filterContainer}>
+          <div style={styles.filterGroup}>
+            <div style={styles.filterItem}>
+              <label style={styles.filterLabel}>From Date</label>
+              <DatePicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Select start date"
+                style={styles.dateInput}
+                className="form-control"
+              />
+            </div>
+
+            <div style={styles.filterItem}>
+              <label style={styles.filterLabel}>To Date</label>
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Select end date"
+                className="form-control"
+              />
+            </div>
           </div>
 
-          <div>
-            <label>To:</label>
-            <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              selectsEnd
-              startDate={startDate}
-              endDate={endDate}
-              minDate={startDate}
-              dateFormat="dd/MM/yyyy"
-              placeholderText="Select end date"
-              className="border p-2 rounded"
-            />
+          {/* Right Section: Total Badge + Export Button */}
+          <div style={styles.rightSection}>
+            <div style={styles.totalBadge}>
+              <span style={styles.totalLabel}>Total Products Sold:</span>
+              <span style={styles.totalValue}>
+                {filteredProducts.reduce((sum, p) => sum + p.totalQty, 0).toLocaleString()}
+              </span>
+            </div>
+
+            <div style={styles.exportButton}>
+              <CSVLink
+                data={filteredProducts}
+                separator=";"
+                filename={"product_report.csv"}
+                className="btn btn-success"
+                style={{
+                  backgroundColor: "#28a745",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <CloudArrowDown /> Export CSV
+              </CSVLink>
+            </div>
           </div>
         </div>
 
-        <div style={styles.exportButton}>
-          <CSVLink
-            data={filteredProducts}
-            separator=";"
-            filename={"produk_terjual.csv"}
-            className="btn btn-outline-secondary"
-          >
-            <CloudArrowDown /> Export CSV
-          </CSVLink>
-        </div>
-      </div>
-
-      {/* Table */}
-      {loading ? (
-        <Loading />
-      ) : (
-        <>
-          <div style={styles.tableWrapper}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th} onClick={() => handleSort("nama")}>
-                    Product Name <SortIcon field="nama" />
-                  </th>
-
-                  <th style={styles.th} onClick={() => handleSort("sku")}>
-                    SKU <SortIcon field="sku" />
-                  </th>
-
-                  <th
-                    style={styles.th}
-                    onClick={() => handleSort("categoryName")}
-                  >
-                    Category <SortIcon field="categoryName" />
-                  </th>
-
-                  <th style={styles.th} onClick={() => handleSort("totalQty")}>
-                    Quantity Sold <SortIcon field="totalQty" />
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map((item, idx) => (
-                    <tr key={idx}>
-                      <td style={styles.td}>{item.nama}</td>
-                      <td style={styles.td}>{item.sku}</td>
-                      <td style={styles.td}>{item.categoryName}</td>
-                      <td style={styles.td}>{item.totalQty}</td>
-                    </tr>
-                  ))
-                ) : (
+        {/* Table */}
+        {loading ? (
+          <div style={{ padding: 48, textAlign: "center" }}>
+            <Loading />
+          </div>
+        ) : (
+          <>
+            <div style={styles.tableWrapper}>
+              <table style={styles.table}>
+                <thead>
                   <tr>
-                    <td style={styles.td} colSpan={4} align="center">
-                      There is no data in this date range.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                    <th style={{...styles.th, borderTopLeftRadius: 8}} onClick={() => handleSort("nama")}>
+                      Product Name
+                      <span style={styles.sortIcon}>
+                        <SortIcon field="nama" />
+                      </span>
+                    </th>
 
-          <div style={styles.totalText}>
-            Total Products Sold:{" "}
-            {filteredProducts.reduce((sum, p) => sum + p.totalQty, 0)}
-          </div>
-        </>
-      )}
+                    <th style={styles.th} onClick={() => handleSort("sku")}>
+                      SKU
+                      <span style={styles.sortIcon}>
+                        <SortIcon field="sku" />
+                      </span>
+                    </th>
+
+                    <th style={styles.th} onClick={() => handleSort("categoryName")}>
+                      Category
+                      <span style={styles.sortIcon}>
+                        <SortIcon field="categoryName" />
+                      </span>
+                    </th>
+
+                    <th style={{...styles.th, borderTopRightRadius: 8}} onClick={() => handleSort("totalQty")}>
+                      Quantity Sold
+                      <span style={styles.sortIcon}>
+                        <SortIcon field="totalQty" />
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {paginatedProducts.length > 0 ? (
+                    paginatedProducts.map((item, idx) => (
+                      <tr key={idx} style={{
+                        backgroundColor: idx % 2 === 0 ? "white" : "#f9f9f9"
+                      }}>
+                        <td style={styles.td}>{item.nama}</td>
+                        <td style={{...styles.td, fontFamily: "monospace", fontWeight: 500}}>{item.sku}</td>
+                        <td style={styles.td}>
+                          <span style={{
+                            backgroundColor: "#e8f5e9",
+                            color: "#2e7d32",
+                            padding: "4px 10px",
+                            borderRadius: 20,
+                            fontSize: 12,
+                            fontWeight: 500,
+                          }}>
+                            {item.categoryName}
+                          </span>
+                        </td>
+                        <td style={{...styles.td, fontWeight: 700, color: "#3D5E54"}}>{item.totalQty}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} style={styles.noDataText}>
+                        <div style={{ marginBottom: 8, fontSize: 24 }}>📦</div>
+                        There is no data in this date range.
+                        <br />
+                        <small style={{ color: "#999" }}>Please select a date range to view product sales.</small>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {totalItems > 0 && (
+              <div style={styles.paginationContainer}>
+                <div style={styles.paginationInfo}>
+                  Showing {startIndex + 1} to {endIndex} of {totalItems} entries
+                </div>
+
+                <div style={styles.paginationControls}>
+                  {/* Page Size Selector */}
+                  <select
+                    style={styles.pageSizeSelect}
+                    value={pageSize}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setPageSize(value === "All" ? "All" : parseInt(value));
+                    }}
+                  >
+                    {pageSizeOptions.map((size) => (
+                      <option key={size} value={size}>
+                        {size === "All" ? "All" : `${size} rows`}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Prev Button */}
+                  <button
+                    style={{
+                      ...styles.pageButton,
+                      ...(currentPage === 1 ? styles.pageButtonDisabled : {}),
+                    }}
+                    disabled={currentPage === 1 || pageSize === "All"}
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  >
+                    <ArrowLeft size={16} />
+                  </button>
+
+                  {/* Page Numbers */}
+                  {pageSize !== "All" && Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        style={{
+                          ...styles.pageNumber,
+                          ...(currentPage === pageNum ? styles.pageNumberActive : {}),
+                        }}
+                        onClick={() => setCurrentPage(pageNum)}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  {/* Next Button */}
+                  <button
+                    style={{
+                      ...styles.pageButton,
+                      ...(currentPage === totalPages || pageSize === "All" ? styles.pageButtonDisabled : {}),
+                    }}
+                    disabled={currentPage === totalPages || pageSize === "All"}
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  >
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
