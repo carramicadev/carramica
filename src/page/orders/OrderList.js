@@ -183,6 +183,8 @@ const OrderList = () => {
   const [filterColomDialog, setFilterColomDialog] = useState(false);
   const [rapinExportDropdown, setRapinExportDropdown] = useState(false);
   const [rapinProductsMap, setRapinProductsMap] = useState({});
+  // Use ref to store products map to avoid React state closure issues
+  const rapinProductsMapRef = useRef({});
 
   // Close rapin dropdown when clicking outside
   useEffect(() => {
@@ -998,20 +1000,64 @@ const OrderList = () => {
         if (products.length > 0) {
           products.forEach((prod) => {
             // Get sku_rapin from products map (Firestore product collection)
-            // Try to find product by id first, then by sku as fallback
-            let productData = rapinProductsMap[prod.id] || rapinProductsMap[prod.sku] || {};
+            // If prod.sku already starts with "Rapin-", use it directly
+            let skuRapin = "";
 
-            // If not found by id/sku, search through all products to find by sku
-            if (Object.keys(productData).length === 0 && prod.sku) {
-              for (const key in rapinProductsMap) {
-                if (rapinProductsMap[key]?.sku === prod.sku) {
-                  productData = rapinProductsMap[key];
-                  break;
+            if (prod?.sku && prod.sku.startsWith("Rapin-")) {
+              // SKU already in Rapin format
+              skuRapin = prod.sku;
+              console.log("[RAPIN-LOOKUP] Using sku directly (Rapin format):", skuRapin);
+            } else {
+              // Try to find product in rapinProductsMap to get sku_rapin
+              // Use ref to avoid React state closure issues
+              const productMap = rapinProductsMapRef.current;
+              let productData = {};
+
+              // First, try direct lookup by Firestore document ID
+              if (productMap[prod.id]) {
+                productData = productMap[prod.id];
+                console.log("[RAPIN-LOOKUP] Found by doc ID:", prod.id);
+              }
+              // Then try by sku
+              else if (productMap[prod.sku]) {
+                productData = productMap[prod.sku];
+                console.log("[RAPIN-LOOKUP] Found by sku key:", prod.sku);
+              }
+              // If not found, search through all products by matching id field or sku field
+              else {
+                console.log("[RAPIN-LOOKUP] Searching for prod.id:", prod.id, "prod.sku:", prod.sku);
+                console.log("[RAPIN-LOOKUP] Total items in productMap:", Object.keys(productMap).length);
+
+                // Check if the product exists by ID directly
+                if (productMap[prod.id]) {
+                  console.log("[RAPIN-LOOKUP] Found by direct ID check:", productMap[prod.id]);
+                  productData = productMap[prod.id];
+                } else {
+                  // Search through all products
+                  for (const key in productMap) {
+                    const p = productMap[key];
+                    // Match by product id field or sku
+                    if (p?.id === prod.id || p?.sku === prod.sku) {
+                      productData = p;
+                      console.log("[RAPIN-LOOKUP] Found by field match, key:", key, "p.id:", p?.id, "p.sku:", p?.sku);
+                      break;
+                    }
+                  }
+                }
+
+                // If still not found, check if it's stored by SKU as key
+                if (!productData?.sku_rapin && prod.sku) {
+                  const bySkuKey = productMap[prod.sku];
+                  if (bySkuKey) {
+                    console.log("[RAPIN-LOOKUP] Found by SKU key:", bySkuKey);
+                    productData = bySkuKey;
+                  }
                 }
               }
-            }
 
-            const skuRapin = productData?.sku_rapin;
+              skuRapin = productData?.sku_rapin || "";
+              console.log("[RAPIN-LOOKUP] Final skuRapin:", skuRapin);
+            }
 
             // Calculate discount percentage
             // If discount_type is "%", use directly
@@ -1434,45 +1480,93 @@ const OrderList = () => {
 
   // Fetch products for rapin export (to get sku_rapin)
   const fetchRapinProductsIfNeeded = async () => {
-    // If products map is already populated, skip fetching
-    if (Object.keys(rapinProductsMap).length > 0) {
+    // Check if products already loaded in ref
+    if (Object.keys(rapinProductsMapRef.current).length > 0) {
+      console.log("[RAPIN] Products already loaded in ref:", Object.keys(rapinProductsMapRef.current).length);
       return;
     }
 
     try {
       const map = {};
 
-      // First, try fetching from main "product" collection (if exists)
+      // Fetch from "products" collection
+      try {
+        const productsColl = collection(firestore, "products");
+        const snapshot = await getDocs(productsColl);
+        console.log("[RAPIN] Products fetched from 'products' collection:", snapshot.size);
+        snapshot.docs.forEach((docSnap) => {
+          const data = docSnap.data();
+          map[docSnap.id] = data;
+          // Also index by sku for easier lookup
+          if (data?.sku) {
+            map[data.sku] = data;
+          }
+        });
+      } catch (e) {
+        console.log("[RAPIN] Collection 'products' error:", e.message);
+      }
+
+      // Fetch from "product" collection (alternative)
       try {
         const productColl = collection(firestore, "product");
         const snapshot = await getDocs(productColl);
+        console.log("[RAPIN] Products fetched from 'product' collection:", snapshot.size);
         snapshot.docs.forEach((docSnap) => {
-          map[docSnap.id] = docSnap.data();
+          const data = docSnap.data();
+          map[docSnap.id] = data;
+          if (data?.sku) {
+            map[data.sku] = data;
+          }
         });
       } catch (e) {
-        // Main product collection might not exist, continue to categories
-        console.log("Main product collection not found, checking categories...");
+        console.log("[RAPIN] Collection 'product' error:", e.message);
       }
 
-      // Fetch products from category subcollections
-      const categoriesRef = collection(firestore, "categories");
-      const categoriesSnap = await getDocs(categoriesRef);
+      // Fetch from category subcollections: /categories/{categoryId}/products
+      try {
+        const categoriesRef = collection(firestore, "categories");
+        const categoriesSnap = await getDocs(categoriesRef);
+        console.log("[RAPIN] Categories found:", categoriesSnap.size);
 
-      for (const categoryDoc of categoriesSnap.docs) {
-        try {
-          const productsInCategoryRef = collection(firestore, "categories", categoryDoc.id, "products");
-          const productsSnap = await getDocs(productsInCategoryRef);
-          productsSnap.docs.forEach((docSnap) => {
-            map[docSnap.id] = docSnap.data();
-          });
-        } catch (e) {
-          // Category might not have products subcollection
+        for (const categoryDoc of categoriesSnap.docs) {
+          try {
+            const productsInCategoryRef = collection(firestore, "categories", categoryDoc.id, "products");
+            const productsSnap = await getDocs(productsInCategoryRef);
+            console.log(`[RAPIN] Products in category '${categoryDoc.nama}':`, productsSnap.size);
+            productsSnap.docs.forEach((docSnap) => {
+              const data = docSnap.data();
+              map[docSnap.id] = data;
+              if (data?.sku) {
+                map[data.sku] = data;
+              }
+            });
+          } catch (e) {
+            // Category might not have products subcollection
+          }
+        }
+      } catch (e) {
+        console.log("[RAPIN] Categories error:", e.message);
+      }
+
+      console.log("[RAPIN] Total products in map:", Object.keys(map).length);
+      // Debug: find product with sku_rapin
+      let foundRapin = false;
+      for (const key in map) {
+        if (map[key]?.sku_rapin) {
+          console.log("[RAPIN] Found product with sku_rapin:", { key, sku: map[key].sku, sku_rapin: map[key].sku_rapin });
+          foundRapin = true;
+          if (!foundRapin) break; // Only log first 5
         }
       }
+      if (!foundRapin) {
+        console.log("[RAPIN] No products with sku_rapin found in map!");
+      }
 
+      // Store in both ref (for immediate access) and state (for re-renders)
+      rapinProductsMapRef.current = map;
       setRapinProductsMap(map);
     } catch (err) {
-      console.error("Error fetching products for rapin:", err);
+      console.error("[RAPIN] Error fetching products:", err);
     }
   };
 
