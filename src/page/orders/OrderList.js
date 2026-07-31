@@ -182,6 +182,7 @@ const OrderList = () => {
   const [filterDialog, setFilterDialog] = useState(false);
   const [filterColomDialog, setFilterColomDialog] = useState(false);
   const [rapinExportDropdown, setRapinExportDropdown] = useState(false);
+  const [rapinProductsMap, setRapinProductsMap] = useState({});
 
   // Close rapin dropdown when clicking outside
   useEffect(() => {
@@ -987,13 +988,46 @@ const OrderList = () => {
 
         if (products.length > 0) {
           products.forEach((prod) => {
+            // Get sku_rapin from products map (Firestore product collection)
+            // Try to find product by id first, then by sku as fallback
+            let productData = rapinProductsMap[prod.id] || rapinProductsMap[prod.sku] || {};
+
+            // If not found by id/sku, search through all products to find by sku
+            if (Object.keys(productData).length === 0 && prod.sku) {
+              for (const key in rapinProductsMap) {
+                if (rapinProductsMap[key]?.sku === prod.sku) {
+                  productData = rapinProductsMap[key];
+                  break;
+                }
+              }
+            }
+
+            const skuRapin = productData?.sku_rapin;
+
+            // Calculate discount percentage
+            // If discount_type is "%", use directly
+            // If discount_type is "Rp", convert to percentage: (discount / price) * 100
+            let diskonPercent = 0;
+            const discountValue = prod?.discount || 0;
+            const discountType = prod?.discount_type || "%";
+            const productPrice = prod?.price || 1; // Avoid division by zero
+
+            if (discountValue > 0) {
+              if (discountType === "%") {
+                diskonPercent = discountValue;
+              } else {
+                // Convert rupiah discount to percentage
+                diskonPercent = parseFloat(((discountValue / productPrice) * 100).toFixed(2));
+              }
+            }
+
             allProducts.push({
-              sku: prod?.sku_rapin || prod?.sku || prod?.id || "",
+              sku: skuRapin || prod?.sku || prod?.id || "",
               nama: prod?.nama || "",
               varian: "",
               quantity: prod?.quantity || 0,
               harga: prod?.price || 0,
-              diskon: "",
+              diskon: diskonPercent,
               catatan: "",
             });
           });
@@ -1111,7 +1145,10 @@ const OrderList = () => {
 
   // Get data for rapin export (based on selection or all visible data)
   // Only export orders with paymentStatus "settlement"
-  const getRapinData = () => {
+  const getRapinData = async () => {
+    // First, ensure products are fetched
+    await fetchRapinProductsIfNeeded();
+
     let ordersToExport = [];
 
     if (selectedRows.length > 0) {
@@ -1140,8 +1177,8 @@ const OrderList = () => {
   };
 
   // Export as XLSX using xlsx library
-  const exportRapinXLSX = () => {
-    const data = getRapinData();
+  const exportRapinXLSX = async () => {
+    const data = await getRapinData();
     if (data.length === 0) {
       enqueueSnackbar("Tidak ada data untuk di-export", { variant: "warning" });
       return;
@@ -1287,7 +1324,7 @@ const OrderList = () => {
 
     // Create workbook
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Rapin Export");
+    XLSX.utils.book_append_sheet(wb, ws, "UPLOAD");
 
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellDates: false });
 
@@ -1304,8 +1341,8 @@ const OrderList = () => {
 
 
   // Export as CSV (compatible with Excel)
-  const exportRapinCSV = () => {
-    const data = getRapinData();
+  const exportRapinCSV = async () => {
+    const data = await getRapinData();
     if (data.length === 0) {
       enqueueSnackbar("Tidak ada data untuk di-export", { variant: "warning" });
       return;
@@ -1386,12 +1423,35 @@ const OrderList = () => {
     setRapinExportDropdown(false);
   };
 
+  // Fetch products for rapin export (to get sku_rapin)
+  const fetchRapinProductsIfNeeded = async () => {
+    // If products map is already populated, skip fetching
+    if (Object.keys(rapinProductsMap).length > 0) {
+      return;
+    }
+
+    try {
+      const productColl = collection(firestore, "product");
+      const snapshot = await getDocs(productColl);
+      const map = {};
+      snapshot.docs.forEach((docSnap) => {
+        map[docSnap.id] = docSnap.data();
+      });
+      setRapinProductsMap(map);
+    } catch (err) {
+      console.error("Error fetching products for rapin:", err);
+    }
+  };
+
   // Handle rapin export with format selection
-  const handleRapinExport = (format) => {
+  const handleRapinExport = async (format) => {
+    // Fetch products if not already loaded
+    await fetchRapinProductsIfNeeded();
+
     if (format === "csv") {
-      exportRapinCSV();
+      await exportRapinCSV();
     } else if (format === "xlsx") {
-      exportRapinXLSX();
+      await exportRapinXLSX();
     }
   };
   // change resi
