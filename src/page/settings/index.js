@@ -375,6 +375,7 @@ const Settings = (props) => {
                         <table className="table table-bordered">
                           <thead>
                             <tr>
+                              <th>ID</th>
                               <th>NAME</th>
                               <th>EMAIL</th>
                               <th>PHONE</th>
@@ -386,6 +387,9 @@ const Settings = (props) => {
                             {list?.map((user) => {
                               return (
                                 <tr>
+                                  <td style={{ fontFamily: "monospace", fontSize: "12px" }}>
+                                    {user?.userId}
+                                  </td>
                                   <td>
                                     <div className="d-flex align-items-center">
                                       <span className="me-2">
