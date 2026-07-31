@@ -943,7 +943,16 @@ const OrderList = () => {
       // Get payment date (from settlement_time, or shippingDate, or createdAt)
       let paymentDate;
       if (item?.midtransRes?.settlement_time) {
-        paymentDate = new Date(item?.midtransRes?.settlement_time);
+        // Normalize string date to ISO 8601 format for consistent parsing
+        const settlementTime = item?.midtransRes?.settlement_time;
+        if (typeof settlementTime === "string") {
+          // Replace space with "T" to make it ISO 8601 format
+          paymentDate = new Date(settlementTime.replace(" ", "T"));
+        } else if (settlementTime?.toDate) {
+          paymentDate = settlementTime.toDate();
+        } else {
+          paymentDate = new Date(settlementTime);
+        }
       } else if (item?.shippingDate) {
         paymentDate = item.shippingDate?.toDate ? item.shippingDate.toDate() : new Date(item.shippingDate);
       } else if (item?.createdAt) {
