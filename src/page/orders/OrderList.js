@@ -1440,12 +1440,36 @@ const OrderList = () => {
     }
 
     try {
-      const productColl = collection(firestore, "product");
-      const snapshot = await getDocs(productColl);
       const map = {};
-      snapshot.docs.forEach((docSnap) => {
-        map[docSnap.id] = docSnap.data();
-      });
+
+      // First, try fetching from main "product" collection (if exists)
+      try {
+        const productColl = collection(firestore, "product");
+        const snapshot = await getDocs(productColl);
+        snapshot.docs.forEach((docSnap) => {
+          map[docSnap.id] = docSnap.data();
+        });
+      } catch (e) {
+        // Main product collection might not exist, continue to categories
+        console.log("Main product collection not found, checking categories...");
+      }
+
+      // Fetch products from category subcollections
+      const categoriesRef = collection(firestore, "categories");
+      const categoriesSnap = await getDocs(categoriesRef);
+
+      for (const categoryDoc of categoriesSnap.docs) {
+        try {
+          const productsInCategoryRef = collection(firestore, "categories", categoryDoc.id, "products");
+          const productsSnap = await getDocs(productsInCategoryRef);
+          productsSnap.docs.forEach((docSnap) => {
+            map[docSnap.id] = docSnap.data();
+          });
+        } catch (e) {
+          // Category might not have products subcollection
+        }
+      }
+
       setRapinProductsMap(map);
     } catch (err) {
       console.error("Error fetching products for rapin:", err);
