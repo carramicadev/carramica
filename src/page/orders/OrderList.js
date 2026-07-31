@@ -940,6 +940,13 @@ const OrderList = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // Format number with comma as decimal separator (Indonesian format for Rapin)
+  const formatPercentForRapin = (num) => {
+    if (num === null || num === undefined || num === "") return "";
+    // Convert number to string with 2 decimal places, then replace dot with comma
+    return parseFloat(num).toFixed(2).replace(".", ",");
+  };
+
   // Transform order data to rapin format
   // One row per INVOICE (one invoice may have multiple orders with multiple products)
   // Products are added HORIZONTALLY as separate product blocks
@@ -1087,7 +1094,7 @@ const OrderList = () => {
               varian: "",
               quantity: prod?.quantity || 0,
               harga: prod?.price || 0,
-              diskon: diskonPercent,
+              diskon: formatPercentForRapin(diskonPercent),
               catatan: "",
             });
           });
@@ -1106,7 +1113,7 @@ const OrderList = () => {
         deskripsi: "",
         namaKasBank: "Bank BCA PT",
         kodeKasBank: "BCAPT",
-        diskonInvoice: discountPercent,
+        diskonInvoice: formatPercentForRapin(discountPercent),
         layanan: "",
         pajak: "",
       };
