@@ -918,7 +918,7 @@ const OrderList = () => {
 
   // ========== EXPORT RAPIN FUNCTIONS ==========
 
-  // Format date for rapin (YYYY-MM-DD)
+  // Format date for rapin (YYYY-MM-DD) - explicit format to avoid timezone issues
   const formatDateForRapin = (date) => {
     if (!date) return "";
     let d;
@@ -932,7 +932,12 @@ const OrderList = () => {
       return "";
     }
     if (isNaN(d.getTime())) return "";
-    return d.toISOString().split("T")[0];
+
+    // Explicitly format date as YYYY-MM-DD to avoid any timezone conversion
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   // Transform order data to rapin format
