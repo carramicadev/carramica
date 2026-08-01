@@ -941,13 +941,19 @@ const OrderList = () => {
   };
 
   // Format number with comma as decimal separator (Indonesian format for Rapin)
-  // - 1 decimal place only (e.g., 25,5 not 25,50)
-  // - Round properly (e.g., 26,68 becomes 26,7)
+  // - Up to 4 decimal places (e.g., 25.5231)
   // - Empty if value is 0 or falsy
   const formatPercentForRapin = (num) => {
     if (num === null || num === undefined || num === "" || num === 0) return "";
-    // Round to 1 decimal place, then replace dot with comma
-    return parseFloat(num).toFixed(1).replace(".", ",");
+    // Return as number with up to 4 decimal places
+    return Math.round(num * 10000) / 10000;
+  };
+
+  // Format number as string with comma decimal separator for CSV export
+  const formatPercentForRapinCSV = (num) => {
+    if (num === null || num === undefined || num === "" || num === 0) return "";
+    // Round to 4 decimal places and replace dot with comma
+    return (Math.round(num * 10000) / 10000).toString().replace(".", ",");
   };
 
   // Transform order data to rapin format
@@ -1353,9 +1359,15 @@ const OrderList = () => {
       ws[cellRef(r, c++)] = { v: row.deskripsi || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.namaKasBank || "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.kodeKasBank || "", t: "s" };
-      ws[cellRef(r, c++)] = { v: row.diskonInvoice || "", t: "s" };
+      // % Diskon Invoice - use number format only if value exists
+      ws[cellRef(r, c++)] = row.diskonInvoice !== "" && row.diskonInvoice !== undefined && row.diskonInvoice !== null
+        ? { v: row.diskonInvoice, t: "n", z: "0.####" }
+        : { v: "", t: "s" };
       ws[cellRef(r, c++)] = { v: row.layanan || "", t: "s" };
-      ws[cellRef(r, c++)] = { v: row.pajak || "", t: "s" };
+      // % Pajak - use number format only if value exists
+      ws[cellRef(r, c++)] = row.pajak !== "" && row.pajak !== undefined && row.pajak !== null
+        ? { v: row.pajak, t: "n", z: "0.####" }
+        : { v: "", t: "s" };
 
       // OI columns
       ws[cellRef(r, c++)] = { v: row.oiKodeSubAkun || "", t: "s" };
@@ -1370,7 +1382,11 @@ const OrderList = () => {
         ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Varian"] || "", t: "s" };
         ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Kuantitas"] || 0, t: "n" };
         ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "HargaSatuan"] || 0, t: "n" };
-        ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Diskon"] || "", t: "s" };
+        // % Diskon - use number format only if value exists
+        const diskonVal = row["p" + prodIdx + "Diskon"];
+        ws[cellRef(r, c++)] = diskonVal !== "" && diskonVal !== undefined && diskonVal !== null
+          ? { v: diskonVal, t: "n", z: "0.####" }
+          : { v: "", t: "s" };
         ws[cellRef(r, c++)] = { v: row["p" + prodIdx + "Catatan"] || "", t: "s" };
         prodIdx++;
       }
@@ -1468,12 +1484,39 @@ const OrderList = () => {
       return str;
     };
 
+    // Helper to format percentage for CSV (with comma decimal separator)
+    const formatPercentCsv = (num) => {
+      if (num === null || num === undefined || num === "" || num === 0) return "";
+      return (Math.round(num * 10000) / 10000).toString().replace(".", ",");
+    };
+
+    // Convert data for CSV export (format percentages with comma)
+    const csvData = data.map(row => {
+      const csvRow = { ...row };
+      // Format diskonInvoice
+      if (csvRow.diskonInvoice !== undefined) {
+        csvRow.diskonInvoice = formatPercentCsv(csvRow.diskonInvoice);
+      }
+      // Format pajak
+      if (csvRow.pajak !== undefined) {
+        csvRow.pajak = formatPercentCsv(csvRow.pajak);
+      }
+      // Format product diskon columns (p1Diskon, p2Diskon, etc.)
+      for (let i = 1; i <= 20; i++) {
+        const diskonKey = `p${i}Diskon`;
+        if (csvRow[diskonKey] !== undefined) {
+          csvRow[diskonKey] = formatPercentCsv(csvRow[diskonKey]);
+        }
+      }
+      return csvRow;
+    });
+
     // Row 1: Group headers
     const groupRow = groupHeaderRow.map(escapeCsv).join(";");
     // Row 2: Column headers
     const headerRow = headers.map(h => escapeCsv(h.label)).join(";");
     // Data rows
-    const dataRows = data.map(row =>
+    const dataRows = csvData.map(row =>
       headers.map(h => escapeCsv(row[h.key] ?? "")).join(";")
     );
 
