@@ -1,5 +1,5 @@
 import { doc, getDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { NavDropdown } from "react-bootstrap";
 import {
   CaretDownFill,
@@ -9,6 +9,8 @@ import {
   List,
   XSquareFill,
   XLg,
+  BoxArrowRight,
+  Gear,
 } from "react-bootstrap-icons";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -23,14 +25,30 @@ const Header = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
 
   const handleMouseEnter = (name) => setActiveSubMenu(name);
   const handleMouseLeave = () => setActiveSubMenu(null);
-  const handleShowLogoutDialog = () => setShowLogoutDialog(true);
+  const handleShowLogoutDialog = () => {
+    setShowLogoutDialog(true);
+    setShowUserMenu(false);
+  };
   const handleLogout = () => auth.signOut();
 
   const location = useLocation();
   const path = location.pathname;
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // 🔹 fetch user profile
   useEffect(() => {
@@ -88,9 +106,10 @@ const Header = () => {
   }, []);
 
   const activeLinkStyle = {
-    backgroundColor: "#00000026",
-    padding: "10px",
-    borderRadius: "7px",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: "8px 14px",
+    borderRadius: "8px",
+    fontWeight: "500",
   };
 
   return (
@@ -101,37 +120,15 @@ const Header = () => {
             style={styles.mobileMenuButton}
             onClick={() => setMenuOpen(!menuOpen)}
           >
-            {menuOpen ? <XLg size={28} /> : <List size={28} />}
+            {menuOpen ? <XLg size={26} /> : <List size={26} />}
           </div>
         )}
+
         {/* Logo */}
-        <div style={styles.logo}>CARRAMICA</div>
-        {/* User icon */}
-        {isMobile && menuOpen && (
-          <div style={styles.userIcon}>
-            <NavDropdown
-              title={<PersonCircle size={30} />}
-              id="basic-nav-dropdown"
-            >
-              <NavDropdown.ItemText style={{ whiteSpace: "nowrap" }}>
-                <PersonCircle size={20} style={{ marginRight: 5 }} />
-                {profile?.firstName} {profile?.lastName}
-              </NavDropdown.ItemText>
-              <NavDropdown.ItemText style={{ whiteSpace: "nowrap" }}>
-                <EnvelopeAtFill size={20} style={{ marginRight: 5 }} />
-                {profile?.email}
-              </NavDropdown.ItemText>
-              <NavDropdown.Divider />
-              <NavDropdown.Item
-                onClick={handleShowLogoutDialog}
-                style={{ color: "red" }}
-              >
-                Logout
-              </NavDropdown.Item>
-            </NavDropdown>
-          </div>
-        )}
-        {/* Hamburger button for mobile */}
+        <Link to="/" style={styles.logo}>
+          {/* <span style={styles.logoIcon}>C</span> */}
+          <span style={styles.logoText}>CARRAMICA</span>
+        </Link>
 
         {/* Navigation links */}
         <div
@@ -144,7 +141,7 @@ const Header = () => {
               : {}),
           }}
         >
-          {akses.map((acc) => (
+          {akses?.map((acc) => (
             <div
               key={acc.path}
               onMouseEnter={() => acc.subMenu && handleMouseEnter(acc.name)}
@@ -154,10 +151,8 @@ const Header = () => {
               <Link
                 to={acc.path === "/products/*" ? "/products" : acc.path}
                 style={
-                  path === "/products" && acc.path === "/products/*"
-                    ? activeLinkStyle
-                    : path === acc.path
-                    ? activeLinkStyle
+                  (path === "/products" && acc.path === "/products/*") || path === acc.path
+                    ? { ...styles.navLink, ...activeLinkStyle }
                     : styles.navLink
                 }
                 className="nav-link"
@@ -165,9 +160,9 @@ const Header = () => {
                 {acc.name}
                 {acc.subMenu &&
                   (activeSubMenu === acc.name ? (
-                    <CaretDownFill />
+                    <CaretDownFill size={14} />
                   ) : (
-                    <CaretRightFill />
+                    <CaretRightFill size={14} />
                   ))}
               </Link>
 
@@ -178,6 +173,7 @@ const Header = () => {
                       key={sub.path}
                       to={sub.path === "/products/*" ? "/products" : sub.path}
                       style={styles.submenuItem}
+                      onClick={() => setActiveSubMenu(null)}
                     >
                       {sub.name}
                     </Link>
@@ -188,31 +184,58 @@ const Header = () => {
           ))}
         </div>
 
-        {/* User icon */}
-        {!menuOpen && (
-          <div style={styles.userIcon}>
-            <NavDropdown
-              title={<PersonCircle size={30} />}
-              id="basic-nav-dropdown"
-            >
-              <NavDropdown.ItemText style={{ whiteSpace: "nowrap" }}>
-                <PersonCircle size={20} style={{ marginRight: 5 }} />
-                {profile?.firstName} {profile?.lastName}
-              </NavDropdown.ItemText>
-              <NavDropdown.ItemText style={{ whiteSpace: "nowrap" }}>
-                <EnvelopeAtFill size={20} style={{ marginRight: 5 }} />
-                {profile?.email}
-              </NavDropdown.ItemText>
-              <NavDropdown.Divider />
-              <NavDropdown.Item
-                onClick={handleShowLogoutDialog}
-                style={{ color: "red" }}
-              >
-                Logout
-              </NavDropdown.Item>
-            </NavDropdown>
+        {/* User Menu */}
+        <div style={styles.userSection} ref={userMenuRef}>
+          <div
+            style={{
+              ...styles.userButton,
+              ...(showUserMenu ? styles.userButtonActive : {}),
+            }}
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
+            <div style={styles.userAvatar}>
+              <PersonCircle size={22} />
+            </div>
+            <span style={styles.userName}>
+              {profile?.firstName || "User"}
+            </span>
           </div>
-        )}
+
+          {/* Dropdown Menu */}
+          {showUserMenu && (
+            <div style={styles.userDropdown}>
+              <div style={styles.userDropdownHeader}>
+                <div style={styles.userDropdownAvatar}>
+                  <PersonCircle size={40} color="#3D5E54" />
+                </div>
+                <div style={styles.userDropdownInfo}>
+                  <strong style={{ fontSize: "14px", color: "#212529" }}>
+                    {profile?.firstName} {profile?.lastName}
+                  </strong>
+                  <span style={{ fontSize: "12px", color: "#6c757d" }}>
+                    {profile?.email}
+                  </span>
+                </div>
+              </div>
+              <div style={styles.userDropdownDivider} />
+              <Link
+                to="/settings"
+                style={styles.userDropdownItem}
+                onClick={() => setShowUserMenu(false)}
+              >
+                <Gear size={16} />
+                <span>Settings</span>
+              </Link>
+              <div
+                style={styles.userDropdownItem}
+                onClick={handleShowLogoutDialog}
+              >
+                <BoxArrowRight size={16} />
+                <span>Logout</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Logout dialog */}
         <LogoutDialog
@@ -230,63 +253,176 @@ export default Header;
 const styles = {
   header: {
     color: "white",
-    zIndex: 1,
+    zIndex: 1000,
     backgroundColor: "#3D5E54",
     width: "100%",
-    paddingLeft: "10px",
-    paddingRight: "10px",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
   },
   headerContainer: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     flexWrap: "wrap",
+    maxWidth: "1400px",
+    margin: "0 auto",
+    padding: "0px 24px",
   },
   logo: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: "22px",
+    fontWeight: "700",
+    textDecoration: "none",
+    display: "flex",
+    alignItems: "center",
+    gap: "2px",
+    color: "white",
+  },
+  logoIcon: {
+    backgroundColor: "white",
+    color: "#3D5E54",
+    width: "32px",
+    height: "32px",
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "700",
+    fontSize: "18px",
+  },
+  logoText: {
+    letterSpacing: "1px",
   },
   navLinks: {
     display: "flex",
-    gap: 20,
+    gap: "4px",
     alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
   },
   navItem: {
     position: "relative",
   },
   navLink: {
-    color: "white",
+    color: "rgba(255,255,255,0.85)",
     textDecoration: "none",
-    padding: "10px",
+    padding: "8px 14px",
     display: "flex",
     alignItems: "center",
-    gap: 5,
+    gap: "6px",
+    borderRadius: "8px",
+    fontSize: "16px",
+    fontWeight: "500",
+    transition: "all 0.2s ease",
   },
   submenu: {
     position: "absolute",
     top: "100%",
     left: 0,
     background: "#fff",
-    border: "1px solid #ccc",
-    borderRadius: 5,
-    padding: 5,
+    border: "1px solid #e9ecef",
+    borderRadius: "12px",
+    padding: "8px",
     zIndex: 10,
+    minWidth: "180px",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+    marginTop: "4px",
   },
   submenuItem: {
     display: "block",
-    padding: "5px 10px",
-    color: "#3D5E54",
+    padding: "10px 14px",
+    color: "#495057",
     textAlign: "left",
     textDecoration: "none",
+    borderRadius: "8px",
+    fontSize: "14px",
+    transition: "background 0.2s ease",
   },
-  userIcon: {
+  userSection: {
+    position: "relative",
+    marginLeft: "16px",
+  },
+  userButton: {
     display: "flex",
     alignItems: "center",
+    gap: "10px",
+    padding: "6px 12px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    transition: "background 0.2s ease",
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  userButtonActive: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  userAvatar: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  userName: {
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "white",
+  },
+  userDropdown: {
+    position: "absolute",
+    top: "calc(100% + 8px)",
+    right: 0,
+    background: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+    minWidth: "260px",
+    overflow: "hidden",
+    zIndex: 1001,
+  },
+  userDropdownHeader: {
+    padding: "16px",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    background: "#f8f9fa",
+  },
+  userDropdownAvatar: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "50%",
+    backgroundColor: "#e9ecef",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  userDropdownInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+  userDropdownDivider: {
+    height: "1px",
+    backgroundColor: "#e9ecef",
+  },
+  userDropdownItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "12px 16px",
+    color: "#495057",
+    textDecoration: "none",
+    fontSize: "14px",
+    cursor: "pointer",
+    transition: "background 0.2s ease",
   },
   mobileMenuButton: {
     display: "block",
     color: "white",
     cursor: "pointer",
+    padding: "8px",
   },
   navLinksMobileClosed: {
     display: "none",
@@ -295,7 +431,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     width: "100%",
-    marginTop: 10,
-    gap: 10,
+    marginTop: "12px",
+    gap: "4px",
+    paddingBottom: "12px",
   },
 };
