@@ -219,8 +219,8 @@ export default function DateRangePickerPopup({
     })} - ${format(endDate || startDate, "dd MMM yyyy", { locale: localeID })}`;
 
   return (
-    <div className="p-3 pt-0">
-      <p
+    <div>
+      {/* <p
         style={{
           justifyContent: "center",
           marginRight: "5px",
@@ -230,8 +230,8 @@ export default function DateRangePickerPopup({
         }}
       >
         Date Order
-      </p>
-      <div className="d-flex align-items-center gap-3 mb-3">
+      </p> */}
+      <div className="d-flex align-items-center gap-3">
         <Button
           variant="outline-secondary"
           disabled={manualSelecting || !startDate}
