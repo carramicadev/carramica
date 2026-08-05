@@ -20,7 +20,7 @@ import { LogoutDialog } from "./logoutDialog";
 // Default menu items - tampil saat data rules belum dimuat
 const DEFAULT_MENU = [
   { path: "/", name: "Home" },
-  { path: "/orders/add", name: "Add Order" },
+  { path: "/add-order", name: "Add Order" },
   { path: "/orders", name: "Orders" },
   { path: "/products", name: "Product" },
   { path: "/logistic", name: "Logistic" },
