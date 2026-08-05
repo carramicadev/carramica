@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import {
   Button,
   ButtonGroup,
@@ -450,8 +450,8 @@ const Logistik = () => {
   console.log(ordersByMonth);
 
   return (
-    <div className="container" style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <h1 className="page-title">Logistik</h1>
       <div
         style={{
@@ -1316,6 +1316,7 @@ const Logistik = () => {
         <Button style={{ whiteSpace: 'nowrap', backgroundColor: '#3D5E54', border: 'none' }} onClick={handleNextPage} disabled={currentPage === totalPages}>{'Next->'}</Button>
       </ButtonGroup> */}
     </div>
+    </Layout>
   );
 };
 

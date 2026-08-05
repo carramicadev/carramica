@@ -78,7 +78,7 @@ import Scrollbars from "react-custom-scrollbars-2";
 import "./orders.css";
 import DialogSendWA from "./DialogSendWA";
 import EditOrders from "./DialogEditOrder";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import DialogEditShipDate from "./DialogEditShippingDate";
 import { typesense } from "../../typesense";
 import Loading from "../../components/Loading";
@@ -2420,8 +2420,8 @@ const OrderList = () => {
   };
 
   return (
-    <div className="container" style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <h1 className="page-title">Order</h1>
       {/* <div className="form-container"> */}
 
@@ -3059,6 +3059,7 @@ const OrderList = () => {
         onHide={() => setDialogAddKuitansi({ open: false, data: {} })}
       />
     </div>
+    </Layout>
   );
 };
 

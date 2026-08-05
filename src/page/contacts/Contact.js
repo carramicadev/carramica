@@ -29,7 +29,7 @@ import DatePicker from "react-datepicker";
 import DialogAddContact from "./DialogAddContact";
 import { firestore } from "../../FirebaseFrovider";
 import formatDate, { currency, decimal } from "../../formatter";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import Loading from "../../components/Loading";
 
 const Contact = () => {
@@ -355,8 +355,8 @@ const Contact = () => {
   console.log(loading);
 
   return (
-    <div className="container" style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <h1 className="page-title">Contact</h1>
       {/* <div class="container mt-5"> */}
       <div
@@ -684,7 +684,7 @@ const Contact = () => {
         // loading={loading}
       />
     </div>
-    // </div>
+    </Layout>
   );
 };
 

@@ -34,7 +34,7 @@ import { firestore, functions } from "../../FirebaseFrovider";
 import ProfilePage from "./settingsProfil";
 import "./settings.css";
 import Warehouse from "./warehouse";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import Agen from "./agen";
 
 const Settings = (props) => {
@@ -233,8 +233,8 @@ const Settings = (props) => {
     color: "#3D5E54",
   };
   return (
-    <div className="container" style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <Row>
         <Col>
           <h1>Settings</h1>
@@ -515,6 +515,7 @@ const Settings = (props) => {
         </Tab>
       </Tabs>
     </div>
+    </Layout>
   );
 };
 
