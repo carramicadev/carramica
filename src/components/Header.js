@@ -24,7 +24,7 @@ const DEFAULT_MENU = [
   { path: "/orders", name: "Orders" },
   { path: "/products", name: "Product" },
   { path: "/logistic", name: "Logistic" },
-  { path: "/contacts", name: "Contact" },
+  { path: "/contact", name: "Contact" },
   { path: "/report", name: "Report" },
   { path: "/settings", name: "Settings" },
 ];
