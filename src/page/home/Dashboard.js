@@ -14,13 +14,12 @@ import {
 } from "firebase/firestore";
 import React, { useCallback, useEffect, useState } from "react";
 import { Container, Row, Col, Card } from "react-bootstrap";
-import DatePicker from "react-datepicker";
 import TransactionChart from "./Charts";
 import { firestore } from "../../FirebaseFrovider";
 import Header from "../../components/Header";
-import "react-datepicker/dist/react-datepicker.css";
 import { currency } from "../../formatter";
 import { set } from "date-fns";
+import DateRangePickerPopup from "../orders/DatePicker";
 import {
   BoxFill,
   CartCheck,
@@ -395,7 +394,7 @@ const Dashboard = ({ profile }) => {
     }
   };
 
-  const filterByDate = useCallback(async (start, end) => {
+  const filterByDate = useCallback(async (start, end, rules) => {
     try {
       setLoading(true);
       setTotalOrdersCount();
@@ -559,7 +558,7 @@ const Dashboard = ({ profile }) => {
         </div>
 
         {/* Top Actions */}
-        <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap", }}>
           <button
             onClick={fetchAllData}
             style={{
@@ -574,20 +573,22 @@ const Dashboard = ({ profile }) => {
               gap: "8px",
               cursor: "pointer",
               boxShadow: "0 2px 8px rgba(25, 135, 84, 0.3)",
+              // height: "44px",
             }}
           >
             <KanbanFill /> Load All Orders
           </button>
 
-          <DatePicker
-            selected={startDate}
-            onChange={handleSelect}
-            startDate={startDate}
-            endDate={endDate}
-            selectsRange
-            showIcon
-            style={{ borderRadius: "10px" }}
-          />
+          <div style={{ marginTop:0}}>
+            <DateRangePickerPopup
+              filterByDate={filterByDate}
+              rules={profile?.rules}
+              startDate={startDate}
+              setStartDate={setStartDate}
+              endDate={endDate}
+              setEndDate={setEndDate}
+            />
+          </div>
         </div>
       </div>
 
