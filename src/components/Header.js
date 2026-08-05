@@ -17,10 +17,23 @@ import { useAuth } from "../AuthContext";
 import { auth, firestore } from "../FirebaseFrovider";
 import { LogoutDialog } from "./logoutDialog";
 
+// Default menu items - tampil saat data rules belum dimuat
+const DEFAULT_MENU = [
+  { path: "/", name: "Home" },
+  { path: "/orders/add", name: "Add Order" },
+  { path: "/orders", name: "Orders" },
+  { path: "/products", name: "Product" },
+  { path: "/logistic", name: "Logistic" },
+  { path: "/contacts", name: "Contact" },
+  { path: "/report", name: "Report" },
+  { path: "/settings", name: "Settings" },
+];
+
 const Header = () => {
   const { currentUser } = useAuth();
   const [profile, setProfile] = useState({});
   const [checkList, setChcekList] = useState([]);
+  const [menuLoading, setMenuLoading] = useState(true); // Track menu loading state
   const [activeSubMenu, setActiveSubMenu] = useState(null);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -70,6 +83,7 @@ const Header = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (profile?.rules) {
+        setMenuLoading(true);
         const docRef = doc(
           firestore,
           "settings",
@@ -83,6 +97,10 @@ const Header = () => {
         } else {
           console.log("No such document!");
         }
+        setMenuLoading(false);
+      } else if (profile && Object.keys(profile).length > 0) {
+        // If profile exists but no rules, use default menu
+        setMenuLoading(false);
       }
     };
     fetchData();
@@ -93,6 +111,9 @@ const Header = () => {
     name: role?.name,
     subMenu: role?.subMenu || null,
   }));
+
+  // Gunakan menu default jika checkList kosong dan sedang loading
+  const displayMenu = !menuLoading && checkList?.length > 0 ? akses : DEFAULT_MENU;
 
   // 🔹 handle resize to toggle mobile mode
   useEffect(() => {
@@ -141,7 +162,7 @@ const Header = () => {
               : {}),
           }}
         >
-          {akses?.map((acc) => (
+          {displayMenu?.map((acc) => (
             <div
               key={acc.path}
               onMouseEnter={() => acc.subMenu && handleMouseEnter(acc.name)}

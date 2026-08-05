@@ -29,7 +29,7 @@ import {
 import { Typeahead } from "react-bootstrap-typeahead";
 import DialogAddProduct from "./DialogAddProduct";
 import { firestore } from "../../FirebaseFrovider";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
 import { FilterProduct } from "./filterDialog";
 import { currency } from "../../formatter";
@@ -240,8 +240,8 @@ const ListProduct = () => {
     return <SortDown />;
   };
   return (
-    <div className="container" style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <h1 className="page-title">Product</h1>
       <div
         style={{
@@ -502,6 +502,7 @@ const ListProduct = () => {
         </div>
       </div>
     </div>
+    </Layout>
   );
 };
 

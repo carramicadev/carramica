@@ -16,7 +16,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Container, Row, Col, Card } from "react-bootstrap";
 import TransactionChart from "./Charts";
 import { firestore } from "../../FirebaseFrovider";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import { currency } from "../../formatter";
 import { set } from "date-fns";
 import DateRangePickerPopup from "../orders/DatePicker";
@@ -545,10 +545,9 @@ const Dashboard = ({ profile }) => {
     : 0;
 
   return (
-    <div className="container" style={{ paddingTop: "100px", paddingBottom: "50px" }}>
-      <Header />
-
+    <Layout>
       {/* Header Row: Dashboard title and Actions */}
+      <div className="container" style={{ marginBottom: "32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
         <div>
           <h1 className="page-title" style={{ marginBottom: "0px" }}>Dashboard</h1>
@@ -784,7 +783,8 @@ const Dashboard = ({ profile }) => {
           </Row>
         </section>
       </Container>
-    </div>
+      </div>
+    </Layout>
   );
 };
 

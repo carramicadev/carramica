@@ -32,7 +32,7 @@ import {
   XCircleFill,
 } from "react-bootstrap-icons";
 import { useSnackbar } from "notistack";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 
 export default function DetailProduct() {
   const { productId } = useParams();
@@ -317,9 +317,8 @@ export default function DetailProduct() {
 
   console.log(form);
   return (
-    <div className="container" style={{ paddingTop: "80px", paddingBottom: "40px" }}>
-      <Header />
-
+    <Layout>
+    <div className="container">
       {/* Back Button */}
       <div style={{ marginBottom: "20px", marginTop: "20px" }}>
         <button
@@ -791,5 +790,6 @@ export default function DetailProduct() {
         </div>
       </form>
     </div>
+    </Layout>
   );
 }

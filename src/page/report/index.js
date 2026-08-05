@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Tabs, Tab } from "react-bootstrap";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import ProductReport from "./productReport";
 // You can add other tab components later
 
@@ -8,8 +8,8 @@ const ReportPage = () => {
   const [activeTab, setActiveTab] = useState("product");
 
   return (
-    <div className="container " style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <h1 className="page-title">Report Dashboard</h1>
       <Tabs
         id="report-tabs"
@@ -30,6 +30,7 @@ const ReportPage = () => {
         </Tab>
       </Tabs>
     </div>
+    </Layout>
   );
 };
 

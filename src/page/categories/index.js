@@ -13,7 +13,7 @@ import AddDialog from "./addCategories";
 // import { firestore } from '../../../components/FirebaseProvider';
 import { arrayToTree } from "performant-array-to-tree";
 import { firestore } from "../../FirebaseFrovider";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import {
   collection,
   deleteDoc,
@@ -181,8 +181,8 @@ function Categories() {
   };
 
   return (
-    <div className="container" style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <h1 className="page-title">Daftar Kategori</h1>
       {renderTree(treeData)}
       <Button
@@ -221,6 +221,7 @@ function Categories() {
         }}
       />
     </div>
+    </Layout>
   );
 }
 

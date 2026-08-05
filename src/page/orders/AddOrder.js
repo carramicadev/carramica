@@ -17,7 +17,7 @@ import {
   deleteDoc,
   Timestamp,
 } from "firebase/firestore";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 import AddSalesModal from "../../AddSalesModal";
 import { Typeahead } from "react-bootstrap-typeahead";
 import { httpsCallable } from "firebase/functions";
@@ -1357,8 +1357,8 @@ const AddOrder = () => {
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   return (
-    <div className="container" style={{ paddingTop: "100px" }}>
-      <Header />
+    <Layout>
+    <div className="container">
       <h1 className="page-title">Form Order</h1>
       <div
         style={{
@@ -1982,6 +1982,7 @@ const AddOrder = () => {
       />
       <AddSalesModal isOpen={isModalOpen} onRequestClose={closeModal} />
     </div>
+    </Layout>
   );
 };
 
