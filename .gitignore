@@ -22,3 +22,6 @@ ui-debug.log
 
 # Build output
 build/
+
+functions/
+.DS_Store
