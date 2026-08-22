@@ -2823,7 +2823,7 @@ const OrderList = () => {
               >
                 <thead>
                   <tr style={{ whiteSpace: "nowrap" }}>
-                    <th>
+                    <th className="sticky-col sticky-col-select">
                       <input
                         className="form-check-input"
                         type="checkbox"
@@ -2832,15 +2832,18 @@ const OrderList = () => {
                         id="flexCheckChecked"
                       />
                     </th>
+                    <th className="sticky-col sticky-col-2">Invoice Id</th>
+                    <th className="sticky-col sticky-col-3">Order Id</th>
+                    <th className="sticky-col sticky-col-4">Nama pengirim</th>
 
-                    {selectColumn.map((col, i) => (
+                    {/* Skip first 3 columns (Invoice Id, Order Id, Nama pengirim) since they're rendered as sticky */}
+                    {selectColumn.slice(3).map((col, i) => (
                       <th key={i}>{col?.label}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {mapData?.map?.((item, i) => {
-                    // console.log(i === edit)
                     const idOrder = parseInt(item.unixId.split("_")?.[1]);
                     let style = {
                       borderRadius: "20px",
@@ -2883,17 +2886,86 @@ const OrderList = () => {
                     }
                     return (
                       <tr key={item?.unixId} style={{ whiteSpace: "nowrap" }}>
-                        <td>
+                        {/* Sticky Column 1: Select - always show */}
+                        <td className="sticky-col sticky-col-select">
                           <input
                             type="checkbox"
                             checked={selectedRows.includes(i)}
-                            onChange={(e) =>
-                              handleSelectRow(e, i, item?.unixId)
-                            }
+                            onChange={(e) => handleSelectRow(e, i, item?.unixId)}
                           />
                         </td>
-                        {selectColumn.map((col, colIndex) => (
-                          <td key={colIndex} style={col.style}>
+
+                        {/* Always show Invoice Id, Order Id, Nama pengirim for every row */}
+                        <td className="sticky-col sticky-col-2" style={{ position: "sticky", left: "40px" }}>
+                          {idOrder === 0 && (
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                              {/* Chevron for kuitansi */}
+                              {item.kuitansi && (
+                                <span
+                                  style={{ marginRight: "3px", cursor: "pointer" }}
+                                  onClick={() => toggleOpen(item.id)}
+                                >
+                                  {openItems.includes(item.id) ? (
+                                    <ChevronDown size={12} />
+                                  ) : (
+                                    <ChevronRight size={12} />
+                                  )}
+                                </span>
+                              )}
+                              {/* Clickable Invoice Id */}
+                              <OverlayTrigger
+                                trigger="click"
+                                placement="right"
+                                overlay={ListContent(item)}
+                                rootClose
+                              >
+                                <a
+                                  style={{
+                                    color: "black",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {item?.invoice_id}
+                                </a>
+                              </OverlayTrigger>
+                            </div>
+                          )}
+                          {/* Kuitansi list when expanded */}
+                          {openItems.includes(item.id) && item?.kuitansi?.map((kui, ik) => (
+                            <a
+                              key={kui?.id}
+                              onClick={() =>
+                                setInvoiceDialog({
+                                  open: true,
+                                  data: [item],
+                                  type: "dp",
+                                  id: kui?.id,
+                                })
+                              }
+                              style={{
+                                color: "#0e703f",
+                                cursor: "pointer",
+                                marginTop: "5px",
+                                backgroundColor: "#d9f7e8",
+                                padding: "5px",
+                                borderRadius: "5px",
+                                display: "block",
+                              }}
+                            >
+                              INVOICE {ik + 1}
+                            </a>
+                          ))}
+                        </td>
+
+                        {/* Sticky Column 3: Order Id - always show */}
+                        <td className="sticky-col sticky-col-3">{item?.ordId}</td>
+
+                        {/* Sticky Column 4: Nama pengirim - always show */}
+                        <td className="sticky-col sticky-col-4">{item?.senderName}</td>
+
+                        {/* Remaining columns */}
+                        {selectColumn.slice(3).map((col, colIndex) => (
+                          <td key={`cell-${colIndex}`}>
                             {col.key(item, i, idOrder, style, edit, openItems)}
                           </td>
                         ))}

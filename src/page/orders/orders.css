@@ -118,6 +118,71 @@ th {
     width: 2300px;
 }
 
+/* Sticky columns for table */
+.table-container {
+    overflow-x: auto;
+    overflow-y: visible;
+    position: relative;
+}
+
+/* Sticky column base */
+.sticky-col {
+    position: sticky;
+    background-color: #fff;
+}
+
+/* Column 1: Select checkbox - left: 0 */
+.sticky-col-select {
+    left: 0;
+    z-index: 40;
+    min-width: 40px;
+    max-width: 40px;
+    box-shadow: 2px 0 0 0 #aaa;
+}
+
+/* Column 2: Invoice Id - clickable */
+.sticky-col-2 {
+    left: 40px;
+    z-index: 30;
+    min-width: 120px;
+    box-shadow: 2px 0 0 0 #aaa;
+}
+
+/* Column 3: Order Id */
+.sticky-col-3 {
+    left: 160px;
+    z-index: 20;
+    min-width: 100px;
+    box-shadow: 2px 0 0 0 #aaa;
+}
+
+/* Column 4: Nama pengirim */
+.sticky-col-4 {
+    left: 260px;
+    z-index: 10;
+    min-width: 150px;
+    box-shadow: 2px 0 0 0 #aaa;
+}
+
+/* Hover effects for sticky rows */
+.table-container tbody tr:hover .sticky-col-select,
+.table-container tbody tr:hover .sticky-col-2,
+.table-container tbody tr:hover .sticky-col-3,
+.table-container tbody tr:hover .sticky-col-4 {
+    background-color: #f5f5f5;
+}
+
+/* Header styling */
+.table-container table thead th {
+    background-color: #fff;
+    color: #000;
+}
+
+/* Table hover effect */
+.table-container table tbody tr:hover td {
+    background-color: #f5f5f5;
+}
+
 .section-new-analytic {
     height: 300px;
     background-color: #e0e0e0;

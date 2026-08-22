@@ -36,6 +36,7 @@ import "./settings.css";
 import Warehouse from "./warehouse";
 import Layout from "../../components/Layout";
 import Agen from "./agen";
+import { usePaymentNotification } from "../../components/PaymentNotification";
 
 const Settings = (props) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -273,7 +274,7 @@ const Settings = (props) => {
                         Users
                       </Nav.Link>
                     </Nav.Item>
-                    <Nav.Item>
+                    <Nav.Item style={{ marginBottom: "10px" }}>
                       <Nav.Link
                         style={
                           subKey === "control"
@@ -283,6 +284,18 @@ const Settings = (props) => {
                         eventKey="control"
                       >
                         Control
+                      </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item style={{ marginBottom: "10px" }}>
+                      <Nav.Link
+                        style={
+                          subKey === "notification"
+                            ? { backgroundColor: "grey" }
+                            : { backgroundColor: "lightgray", color: "black" }
+                        }
+                        eventKey="notification"
+                      >
+                        Notification
                       </Nav.Link>
                     </Nav.Item>
                   </Nav>
@@ -342,6 +355,9 @@ const Settings = (props) => {
                           Save
                         </Button>
                       </Form>
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="notification">
+                      <NotificationSettings />
                     </Tab.Pane>
                     <Tab.Pane eventKey="users">
                       <div className="table-responsive">
@@ -520,3 +536,251 @@ const Settings = (props) => {
 };
 
 export default Settings;
+
+// Notification Settings Component
+const NotificationSettings = () => {
+  const { enqueueSnackbar } = useSnackbar();
+  const {
+    isEnabled,
+    soundEnabled,
+    permissionStatus,
+    requestPermission,
+    disableNotifications,
+    setSoundEnabled,
+    showPaymentNotification,
+    toasts,
+    clearAllToasts,
+  } = usePaymentNotification();
+
+  const handleTestNotification = () => {
+    showPaymentNotification({
+      invoiceId: "TEST-" + Date.now(),
+      amount: 250000,
+      customerName: "Test Customer",
+      paymentMethod: "test",
+    });
+    enqueueSnackbar("Test notification sent!", { variant: "info" });
+  };
+
+  return (
+    <div>
+      <h2>Pengaturan Notifikasi</h2>
+      <p className="text-muted mb-4">
+        Atur notifikasi pembayaran untuk menerima pemberitahuan saat ada customer yang melakukan pembayaran.
+      </p>
+
+      {/* Browser Notification Section */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="d-flex align-items-center mb-3">
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "12px",
+                background: isEnabled
+                  ? "linear-gradient(135deg, #3D5E54 0%, #4a7c6f 100%)"
+                  : "#e9ecef",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+                marginRight: "12px",
+              }}
+            >
+              {isEnabled ? "🔔" : "🔕"}
+            </div>
+            <div style={{ flex: 1 }}>
+              <h5 className="mb-1">Notifikasi Browser</h5>
+              <p className="mb-0 text-muted" style={{ fontSize: "13px" }}>
+                Tampilkan notifikasi di kanan atas layar saat ada pembayaran baru
+              </p>
+            </div>
+            <div>
+              {permissionStatus === "denied" ? (
+                <span className="badge bg-danger">Diblokir</span>
+              ) : isEnabled ? (
+                <span className="badge bg-success">Aktif</span>
+              ) : (
+                <span className="badge bg-secondary">Nonaktif</span>
+              )}
+            </div>
+          </div>
+
+          {permissionStatus === "denied" ? (
+            <div className="alert alert-warning">
+              <strong>Notifikasi diblokir!</strong>
+              <p className="mb-0 mt-2">
+                Pengaturan browser memblokir notifikasi. Silakan aktifkan di pengaturan browser Anda.
+              </p>
+            </div>
+          ) : !isEnabled ? (
+            <button
+              onClick={requestPermission}
+              className="btn btn-primary w-100"
+              style={{ backgroundColor: "#3D5E54", border: "none" }}
+            >
+              Aktifkan Notifikasi
+            </button>
+          ) : (
+            <button
+              onClick={disableNotifications}
+              className="btn btn-outline-danger w-100"
+            >
+              Matikan Notifikasi
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Sound Section */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="d-flex align-items-center">
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "12px",
+                background: soundEnabled
+                  ? "linear-gradient(135deg, #3D5E54 0%, #4a7c6f 100%)"
+                  : "#e9ecef",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+                marginRight: "12px",
+              }}
+            >
+              {soundEnabled ? "🔊" : "🔇"}
+            </div>
+            <div style={{ flex: 1 }}>
+              <h5 className="mb-1">Suara Notifikasi</h5>
+              <p className="mb-0 text-muted" style={{ fontSize: "13px" }}>
+                Mainkan suara kasir saat ada pembayaran baru
+              </p>
+            </div>
+            <div>
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                style={{
+                  background: soundEnabled ? "#d4edda" : "#e9ecef",
+                  border: "none",
+                  borderRadius: "20px",
+                  width: "56px",
+                  height: "28px",
+                  cursor: "pointer",
+                  position: "relative",
+                  transition: "background 0.2s ease",
+                }}
+              >
+                <div
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    background: "#fff",
+                    position: "absolute",
+                    top: "2px",
+                    left: soundEnabled ? "30px" : "2px",
+                    transition: "left 0.2s ease",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "14px",
+                  }}
+                >
+                  {soundEnabled ? "🔔" : "🔕"}
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Test Notification Section */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="d-flex align-items-center mb-3">
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #ffc107 0%, #ff9800 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+                marginRight: "12px",
+              }}
+            >
+              🧪
+            </div>
+            <div style={{ flex: 1 }}>
+              <h5 className="mb-1">Tes Notifikasi</h5>
+              <p className="mb-0 text-muted" style={{ fontSize: "13px" }}>
+                Kirim notifikasi test untuk memastikan pengaturan bekerja dengan benar
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleTestNotification}
+            className="btn btn-warning w-100"
+            style={{ border: "none" }}
+          >
+            📨 Kirim Notifikasi Test
+          </button>
+        </div>
+      </div>
+
+      {/* Recent Notifications */}
+      {toasts.length > 0 && (
+        <div className="card">
+          <div className="card-body">
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <h5 className="mb-0">
+                💰 Notifikasi Terbaru ({toasts.length})
+              </h5>
+              <button
+                onClick={clearAllToasts}
+                className="btn btn-sm btn-outline-secondary"
+              >
+                Hapus Semua
+              </button>
+            </div>
+            <div className="list-group">
+              {toasts.map((toast) => (
+                <div
+                  key={toast.id}
+                  className="list-group-item d-flex justify-content-between align-items-center"
+                  style={{
+                    background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+                    color: "#fff",
+                    border: "none",
+                    marginBottom: "8px",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <div>
+                    <strong>{toast.customerName}</strong>
+                    <br />
+                    <small style={{ color: "#ffd700" }}>
+                      {toast.invoiceId}
+                    </small>
+                  </div>
+                  <div className="text-end">
+                    <strong style={{ color: "#ffd700" }}>
+                      Rp {toast.amount?.toLocaleString("id-ID")}
+                    </strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
