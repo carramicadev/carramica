@@ -61,12 +61,18 @@ const ListProduct = () => {
   // Reset page when tab changes
   useEffect(() => {
     setPage(1);
+    setSearch([]); // Clear search when switching tabs
   }, [activeTab]);
 
   // Reset page when pageSize changes
   useEffect(() => {
     setPage(1);
   }, [pageSize]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   // Calculate stats from local products (no external fetch needed)
   const calculateLocalStats = (products) => {
@@ -193,18 +199,18 @@ const ListProduct = () => {
     return getFilteredByTab(allOfProduct);
   };
 
-  // Get paginated data for display (client-side pagination for all tabs)
+  // Get paginated data for display
   const getPaginatedData = () => {
-    const filtered = getFilteredByTab(allOfProduct);
+    const allFiltered = getAllFilteredData();
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    return filtered.slice(startIndex, endIndex);
+    return allFiltered.slice(startIndex, endIndex);
   };
 
   const paginatedData = getPaginatedData();
 
   // Total count for pagination info
-  const totalFilteredCount = getFilteredByTab(allOfProduct).length;
+  const totalFilteredCount = getAllFilteredData().length;
   const totalPages = Math.ceil(totalFilteredCount / pageSize);
   // console.log(filteredData)
   // checkbox
@@ -356,34 +362,66 @@ const ListProduct = () => {
           display: "flex",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: "10px",
+          gap: "15px",
           alignItems: "center",
+          marginBottom: "15px",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          <Typeahead
-            id="basic-typeahead"
-            labelKey="nama"
-            onChange={setSearch}
-            options={getFilteredByTab(allOfProduct)}
-            placeholder="Search Products..."
-            selected={search}
-            // className="w-50"
-            style={{ marginRight: "10px" }}
-          />
-          <Search size={25} />
+        {/* Search Bar */}
+        <div className="search-container" style={{ flex: "1", maxWidth: "400px", minWidth: "250px" }}>
+          <div className="search-wrapper" style={{ position: "relative" }}>
+            <Search
+              size={18}
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#6c757d",
+                zIndex: 1,
+              }}
+            />
+            <Typeahead
+              id="product-search"
+              labelKey="nama"
+              onChange={setSearch}
+              options={getFilteredByTab(allOfProduct)}
+              placeholder="Cari produk..."
+              selected={search}
+              maxResults={20}
+              highlightOnlyResult={true}
+              className="product-search-input"
+              renderMenuItemResults={(option, props) => option.nama}
+              bodyContainer={true}
+              style={{ width: "100%" }}
+            />
+            {/* Clear button when search is active */}
+            {search.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSearch([])}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "0",
+                  color: "#6c757d",
+                  fontSize: "18px",
+                  lineHeight: 1,
+                }}
+                title="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
-        {/* <div>
 
-            </div> */}
-        <div>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
           <CSVLink
             style={{
               width: "150px",
@@ -734,6 +772,72 @@ const ListProduct = () => {
         .button {
           padding: 4px 8px !important;
           font-size: 12px !important;
+        }
+        /* Search Input Styling */
+        .search-container {
+          width: 100%;
+        }
+        .search-wrapper {
+          position: relative;
+        }
+        .product-search-input .rbt-input-main {
+          padding: 8px 40px 8px 40px !important;
+          border-radius: 20px !important;
+          border: 1px solid #ced4da !important;
+          font-size: 14px !important;
+          width: 100% !important;
+          transition: all 0.2s ease !important;
+        }
+        .product-search-input .rbt-input-main:focus {
+          border-color: #3D5E54 !important;
+          box-shadow: 0 0 0 3px rgba(61, 94, 84, 0.15) !important;
+          outline: none !important;
+        }
+        .product-search-input .rbt-input-main::placeholder {
+          color: #adb5bd !important;
+        }
+        /* Dropdown menu styling */
+        .product-search-input .rbt-menu {
+          border-radius: 8px !important;
+          border: 1px solid #e9ecef !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+          margin-top: 4px !important;
+          max-height: 300px !important;
+          overflow-y: auto !important;
+        }
+        .product-search-input .rbt-menu-item {
+          padding: 10px 12px !important;
+          border-bottom: 1px solid #f1f3f4 !important;
+          transition: background 0.15s ease !important;
+        }
+        .product-search-input .rbt-menu-item:hover {
+          background-color: #f8f9fa !important;
+        }
+        .product-search-input .rbt-menu-item.active {
+          background-color: #3D5E54 !important;
+          color: white !important;
+        }
+        .product-search-input .rbt-menu-item.selected {
+          background-color: #e8f4f1 !important;
+        }
+        .product-search-input .rbt-menu-item highlight {
+          background-color: #fff3cd !important;
+          font-weight: 600 !important;
+        }
+        /* Token/pill styling for selected items */
+        .product-search-input .rbt-token {
+          background-color: #3D5E54 !important;
+          color: white !important;
+          border-radius: 12px !important;
+          padding: 2px 8px !important;
+          font-size: 12px !important;
+        }
+        .product-search-input .rbt-token-close-btn {
+          color: white !important;
+        }
+        /* Close button hover */
+        button[title="Clear search"]:hover {
+          color: #dc3545 !important;
         }
       `}</style>
     </div>
