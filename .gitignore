@@ -1,3 +1,24 @@
 node_modules
 .env*
 
+# Firebase / Google Cloud credentials
+functions/firebase-admin-key.json
+functions/firebase-admin-key-prod.json
+functions/firebase-admin-key-sbi.json
+functions/.runtimeconfig.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Build output
+build/

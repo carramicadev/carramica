@@ -16,23 +16,26 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { firestore, storage } from "../../FirebaseFrovider";
+import { firestore, storage, functions } from "../../FirebaseFrovider";
 import {
   deleteObject,
   getDownloadURL,
   ref,
   uploadString,
 } from "firebase/storage";
-import { Button } from "react-bootstrap";
+import { Button, Badge } from "react-bootstrap";
 import {
   ArrowLeft,
+  ArrowCounterclockwise,
   Border,
+  Link as LinkIcon,
   PlusLg,
   XCircle,
   XCircleFill,
 } from "react-bootstrap-icons";
 import { useSnackbar } from "notistack";
 import Layout from "../../components/Layout";
+import { httpsCallable } from "firebase/functions";
 
 export default function DetailProduct() {
   const { productId } = useParams();
@@ -40,9 +43,51 @@ export default function DetailProduct() {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
+  // Desty sync state
+  const [syncingDesty, setSyncingDesty] = useState(false);
+
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
+
+  // Handle sync stock from Desty for this product
+  const handleSyncDestyStock = async () => {
+    const skuToSync = form.destySkuNumber || form.sku_rapin || form.sku;
+
+    if (!skuToSync) {
+      enqueueSnackbar("SKU tidak ditemukan untuk sinkronisasi", { variant: "warning" });
+      return;
+    }
+
+    if (!window.confirm(`Sinkronisasi stok dari Desty untuk SKU ${skuToSync}?`)) {
+      return;
+    }
+
+    setSyncingDesty(true);
+    try {
+      const syncDestyStock = httpsCallable(functions, "syncDestyStock");
+      const result = await syncDestyStock({ skuNumber: skuToSync });
+
+      if (result.data.success) {
+        enqueueSnackbar(
+          `Stok berhasil di-sync dari Desty. sebelumnya: ${result.data.previousStock}, sekarang: ${result.data.newStock}`,
+          { variant: "success" }
+        );
+        // Refresh form data
+        setForm((prev) => ({
+          ...prev,
+          stok: result.data.newStock,
+          destyLastSync: new Date(),
+        }));
+      }
+    } catch (error) {
+      console.error("Error syncing Desty stock:", error);
+      enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
+    } finally {
+      setSyncingDesty(false);
+    }
+  };
+
   const [form, setForm] = useState({
     weight: 0,
     height: 0,
@@ -58,6 +103,12 @@ export default function DetailProduct() {
     warning_stock: 0,
     status: "Live",
     category: {},
+    // Desty fields
+    destyConnected: false,
+    destySkuNumber: "",
+    destySpuId: "",
+    destyLastSync: null,
+    isDestyProduct: false,
   });
   const [error, setError] = useState({
     weight: "",
@@ -608,6 +659,76 @@ export default function DetailProduct() {
           </div>
         </div>
 
+        {/* Desty Integration Card */}
+        {(form.destyConnected || form.isDestyProduct || form.destySkuNumber) && (
+          <div
+            className="card shadow-sm"
+            style={{
+              padding: "24px",
+              marginBottom: "20px",
+              borderRadius: "12px",
+              border: form.destyConnected ? "2px solid #198754" : "1px solid #dee2e6"
+            }}
+          >
+            <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <h5 style={{ fontWeight: "bold", color: "#333", margin: 0 }}>
+                  <LinkIcon /> Integrasi Desty
+                </h5>
+                {form.destyConnected && (
+                  <Badge bg="success">Terhubung</Badge>
+                )}
+                {form.isDestyProduct && (
+                  <Badge bg="info">Produk Desty</Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-medium" style={{ marginBottom: "8px" }}>
+                  SKU Desty
+                </label>
+                <div className="form-control" style={{ backgroundColor: "#f8f9fa" }}>
+                  {form.destySkuNumber || "-"}
+                </div>
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-medium" style={{ marginBottom: "8px" }}>
+                  Desty Product ID
+                </label>
+                <div className="form-control" style={{ backgroundColor: "#f8f9fa" }}>
+                  {form.destySpuId || "-"}
+                </div>
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-medium" style={{ marginBottom: "8px" }}>
+                  Terakhir Sinkronisasi
+                </label>
+                <div className="form-control" style={{ backgroundColor: "#f8f9fa" }}>
+                  {form.destyLastSync
+                    ? new Date(form.destyLastSync.seconds * 1000).toLocaleString("id-ID")
+                    : "Belum pernah"}
+                </div>
+              </div>
+
+              <div className="col-md-6 mb-3 d-flex align-items-end">
+                <Button
+                  variant="outline-success"
+                  onClick={handleSyncDestyStock}
+                  disabled={syncingDesty || (!form.destySkuNumber && !form.sku_rapin && !form.sku)}
+                  title="Sinkronisasi stok dari Desty"
+                >
+                  <ArrowCounterclockwise className={syncingDesty ? "spin" : ""} />
+                  {syncingDesty ? " Sinkronisasi..." : " Sync Stok dari Desty"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Product Management Card */}
         <div
           className="card shadow-sm"
@@ -788,6 +909,17 @@ export default function DetailProduct() {
             Simpan Perubahan
           </button>
         </div>
+
+        {/* Custom CSS for spin animation */}
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          .spin {
+            animation: spin 1s linear infinite;
+          }
+        `}</style>
       </form>
     </div>
     </Layout>
