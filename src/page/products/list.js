@@ -548,10 +548,28 @@ const ListProduct = () => {
                         <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU Desty: ${item.destySkuNumber || '-'}`}>
                           Desty: <code>{item.destySkuNumber || '-'}</code>
                         </div>
-                        {/* Matching indicator */}
-                        {(item.sku_rapin === item.destySkuNumber || item.sku === item.destySkuNumber) ? (
-                          <Badge bg="warning" className="mt-1" title="SKU ERM = SKU Desty">Match</Badge>
-                        ) : null}
+                        {/* SKU Match Status Indicator */}
+                        {(() => {
+                          const rapinMatch = item.sku_rapin && item.destySkuNumber && item.sku_rapin === item.destySkuNumber;
+                          const crmMatch = item.sku && item.destySkuNumber && item.sku === item.destySkuNumber;
+                          const allMatch = rapinMatch && crmMatch;
+                          const anyMatch = rapinMatch || crmMatch;
+                          const noMatch = !anyMatch && (item.sku_rapin || item.sku || item.destySkuNumber);
+
+                          if (allMatch) {
+                            return <Badge bg="success" className="mt-1" title="Semua SKU cocok">Match</Badge>;
+                          }
+                          if (rapinMatch && !crmMatch) {
+                            return <Badge bg="info" className="mt-1" title="SKU Rapin = SKU Desty, CRM berbeda">Rapin ✓</Badge>;
+                          }
+                          if (crmMatch && !rapinMatch) {
+                            return <Badge bg="primary" className="mt-1" title="SKU CRM = SKU Desty, Rapin berbeda">CRM ✓</Badge>;
+                          }
+                          if (noMatch) {
+                            return <Badge bg="danger" className="mt-1" title="Semua SKU tidak cocok">No Match</Badge>;
+                          }
+                          return null;
+                        })()}
                       </td>
                       <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         {/* Desty Connection Indicator */}
