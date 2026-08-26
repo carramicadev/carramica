@@ -149,6 +149,41 @@ const ListProduct = () => {
     }
   };
 
+  // Handle Desty produk sync (sync stock for connected products from /api/product/sku/detail)
+  const handleSyncProdukDesty = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin sync stok produk dari Desty? Stok akan di-update dari /api/product/sku/detail.")) {
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ syncStock: true })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { synced, skipped, total } = result.results;
+        enqueueSnackbar(
+          `Sync berhasil! Disync: ${synced}, Dilewati: ${skipped} (dari total ${total} produk)`,
+          { variant: "success" }
+        );
+        // Refresh data
+        setUpdate((prev) => !prev);
+      } else {
+        enqueueSnackbar(`Sync gagal: ${result.error || 'Unknown error'}`, { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+      enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // Load all products (used for all tabs with client-side pagination)
   useEffect(() => {
     const getDoc = query(
@@ -345,16 +380,30 @@ const ListProduct = () => {
           </Nav.Item>
         </Nav>
 
-        {/* Sync Button */}
-        <Button
-          variant="outline-primary"
-          onClick={handleSyncDesty}
-          disabled={syncing}
-          title="Sinkronisasi berat produk dari Desty (hanya untuk produk yang terhubung)"
-        >
-          <ArrowCounterclockwise className={syncing ? "spin" : ""} />
-          {syncing ? " Sinkronisasi..." : " Sync Berat Desty"}
-        </Button>
+        {/* Sync Buttons */}
+        <div className="d-flex gap-2">
+          {/* Sync Produk Desty - sync all products from /api/product/page */}
+          <Button
+            variant="outline-success"
+            onClick={handleSyncProdukDesty}
+            disabled={syncing}
+            title="Sinkronisasi semua produk dari Desty (stok & data produk)"
+          >
+            <CloudArrowDown className={syncing ? "spin" : ""} />
+            {syncing ? " Sync..." : " Sync Produk Desty"}
+          </Button>
+
+          {/* Sync Berat Desty - sync weight only */}
+          <Button
+            variant="outline-primary"
+            onClick={handleSyncDesty}
+            disabled={syncing}
+            title="Sinkronisasi berat produk dari Desty"
+          >
+            <ArrowCounterclockwise className={syncing ? "spin" : ""} />
+            {syncing ? " Sync..." : " Sync Berat Desty"}
+          </Button>
+        </div>
       </div>
 
       {/* Legend for indicators */}
