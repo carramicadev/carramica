@@ -45,6 +45,7 @@ export default function DetailProduct() {
 
   // Desty sync state
   const [syncingDesty, setSyncingDesty] = useState(false);
+  const [syncingWeight, setSyncingWeight] = useState(false);
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
@@ -65,26 +66,94 @@ export default function DetailProduct() {
 
     setSyncingDesty(true);
     try {
-      const syncDestyStock = httpsCallable(functions, "syncDestyStock");
-      const result = await syncDestyStock({ skuNumber: skuToSync });
+      // Use HTTP endpoint (no auth required)
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyStockHttp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skuNumber: skuToSync, productId: productId })
+      });
 
-      if (result.data.success) {
+      const result = await response.json();
+
+      if (result.success) {
         enqueueSnackbar(
-          `Stok berhasil di-sync dari Desty. sebelumnya: ${result.data.previousStock}, sekarang: ${result.data.newStock}`,
+          `Stok berhasil di-sync dari Desty. sebelumnya: ${result.previousStock}, sekarang: ${result.newStock}`,
           { variant: "success" }
         );
         // Refresh form data
         setForm((prev) => ({
           ...prev,
-          stok: result.data.newStock,
+          stok: result.newStock,
+          weight: result.newWeight || prev.weight,
           destyLastSync: new Date(),
         }));
+      } else {
+        enqueueSnackbar(`Gagal sync: ${result.error || 'Unknown error'}`, { variant: "error" });
       }
     } catch (error) {
       console.error("Error syncing Desty stock:", error);
       enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
     } finally {
       setSyncingDesty(false);
+    }
+  };
+
+  // Handle sync weight from Desty SKU Detail
+  const handleSyncDestyWeight = async () => {
+    const skuToSync = form.destySkuNumber || form.sku_rapin || form.sku;
+
+    if (!skuToSync) {
+      enqueueSnackbar("SKU tidak ditemukan untuk sinkronisasi berat", { variant: "warning" });
+      return;
+    }
+
+    if (!window.confirm(`Sinkronisasi berat dari Desty untuk SKU ${skuToSync}?`)) {
+      return;
+    }
+
+    setSyncingWeight(true);
+    try {
+      // Call the testDestySkuDetail function to get weight
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/testDestySkuDetail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skuNumber: skuToSync })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.weight) {
+        // Update Firestore with the weight
+        const prodDocRef = doc(firestore, "product", productId);
+        await updateDoc(prodDocRef, {
+          weight: result.weight,
+          destyLastSync: serverTimestamp(),
+        });
+
+        // Update local state
+        setForm((prev) => ({
+          ...prev,
+          weight: result.weight,
+          destyLastSync: new Date(),
+        }));
+
+        enqueueSnackbar(
+          `Berat berhasil di-sync dari Desty: ${result.weight} gram`,
+          { variant: "success" }
+        );
+      } else if (result.success && !result.weight) {
+        enqueueSnackbar(
+          `Berat di Desty belum diinput (null). Silakan input berat secara manual di dashboard Desty terlebih dahulu.`,
+          { variant: "warning" }
+        );
+      } else {
+        enqueueSnackbar(`Gagal sync berat: ${result.error || "Unknown error"}`, { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Error syncing Desty weight:", error);
+      enqueueSnackbar(`Gagal sinkronisasi berat: ${error.message}`, { variant: "error" });
+    } finally {
+      setSyncingWeight(false);
     }
   };
 
@@ -825,6 +894,26 @@ export default function DetailProduct() {
                 <span className="input-group-text">gr</span>
                 {error.weight && <div className="invalid-feedback">{error.weight}</div>}
               </div>
+              {/* Sync Weight from Desty Button */}
+              {(form.destySkuNumber || form.sku_rapin || form.sku) && (
+                <Button
+                  variant="outline-info"
+                  size="sm"
+                  className="mt-2"
+                  onClick={handleSyncDestyWeight}
+                  disabled={syncingWeight}
+                  title="Sinkronisasi berat dari Desty (SKU Detail)"
+                >
+                  <ArrowCounterclockwise className={syncingWeight ? "spin" : ""} />
+                  {syncingWeight ? " Sync..." : " Sync Berat dari Desty"}
+                </Button>
+              )}
+              {/* Info if weight is 0 or null */}
+              {(!form?.weight || form?.weight === 0) && (
+                <div className="form-text text-warning mt-1">
+                  <small>⚠️ Berat belum ada. Klik "Sync Berat dari Desty" atau input manual.</small>
+                </div>
+              )}
             </div>
 
             <div className="col-md-8 mb-4">

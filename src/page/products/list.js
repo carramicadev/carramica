@@ -98,7 +98,7 @@ const ListProduct = () => {
   const fetchDestyStats = async () => {
     // Use HTTP endpoint instead of callable
     try {
-      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyProductsHttp", {
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
@@ -115,14 +115,14 @@ const ListProduct = () => {
 
   // Handle Desty sync
   const handleSyncDesty = async () => {
-    if (!window.confirm("Apakah Anda yakin ingin melakukan sinkronisasi dengan Desty? Produk yang ada di Desty akan di-sync ke Carramica.")) {
+    if (!window.confirm("Apakah Anda yakin ingin sinkronisasi berat dari Desty? Berat produk yang terhubung dengan Desty akan di-sync.")) {
       return;
     }
 
     setSyncing(true);
     try {
       // Use HTTP endpoint
-      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyProductsHttp", {
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ updateStock: false })
@@ -131,9 +131,9 @@ const ListProduct = () => {
       const result = await response.json();
 
       if (result.success) {
-        const { created, updated, skipped } = result.results;
+        const { synced, skipped, total } = result.results;
         enqueueSnackbar(
-          `Sinkronisasi berhasil! Dibuat: ${created}, Diupdate: ${updated}, Dilewati: ${skipped}`,
+          `Sinkronisasi berat berhasil! Disync: ${synced}, Dilewati: ${skipped} (dari total ${total} produk)`,
           { variant: "success" }
         );
         // Refresh data
@@ -350,11 +350,23 @@ const ListProduct = () => {
           variant="outline-primary"
           onClick={handleSyncDesty}
           disabled={syncing}
-          title="Sinkronisasi produk dan stok dari Desty"
+          title="Sinkronisasi berat produk dari Desty (hanya untuk produk yang terhubung)"
         >
           <ArrowCounterclockwise className={syncing ? "spin" : ""} />
-          {syncing ? " Sinkronisasi..." : " Sinkronisasi Desty"}
+          {syncing ? " Sinkronisasi..." : " Sync Berat Desty"}
         </Button>
+      </div>
+
+      {/* Legend for indicators */}
+      <div style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
+        <span style={{ marginRight: "15px" }}>
+          <span style={{ fontSize: "14px", marginRight: "3px" }}>⚠️</span>
+          Berat belum di-sync dari Desty (klik produk → sync manual)
+        </span>
+        <span>
+          <span style={{ fontSize: "12px", marginRight: "3px" }}>📦</span>
+          Ukuran belum diinput (input manual diperlukan)
+        </span>
       </div>
 
       <div
@@ -567,7 +579,38 @@ const ListProduct = () => {
                       </td>
                       <td style={{ textAlign: "right", verticalAlign: "middle" }}>{currency(item?.harga)}</td>
                       <td style={{ textAlign: "right", verticalAlign: "middle" }}>{item?.cogs ?? 0}</td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>{item?.stok}</td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                        {item?.stok}
+                        {/* Weight indicator */}
+                        {(!item?.weight || item?.weight === 0) && isDestyConnected && (
+                          <span
+                            title="⚠️ Berat belum disinkronisasi. Klik produk ini untuk sync berat dari Desty."
+                            style={{
+                              display: "inline-block",
+                              marginLeft: "5px",
+                              cursor: "pointer",
+                              fontSize: "14px"
+                            }}
+                            onClick={() => navigate(`/products/detailProduct/${item?.id}`)}
+                          >
+                            ⚠️
+                          </span>
+                        )}
+                        {/* Dimension indicator - needs manual input */}
+                        {(!item?.length || !item?.width || !item?.height) && (
+                          <span
+                            title="⚠️ Ukuran (P x L x T) belum diinput. Input manual diperlukan."
+                            style={{
+                              display: "inline-block",
+                              marginLeft: "2px",
+                              cursor: "help",
+                              fontSize: "12px"
+                            }}
+                          >
+                            📦
+                          </span>
+                        )}
+                      </td>
                       <td style={{ textAlign: "center", verticalAlign: "middle" }}>{item?.qty_sold ?? 0}</td>
                       <td style={{ textAlign: "center", verticalAlign: "middle" }}>{item?.orderCount ?? 0}</td>
                       <td style={{ textAlign: "right", verticalAlign: "middle" }}>
