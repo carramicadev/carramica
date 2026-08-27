@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
 // import { getAnalytics } from "firebase/analytics";
 
 let firebaseConfig = {
@@ -27,6 +28,16 @@ export default firebaseConfig;
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// Match the function region: asia-southeast2
+const functions = getFunctions(app, 'asia-southeast2');
+
+// For local development, uncomment these lines:
+// if (window.location.hostname === 'localhost') {
+//   const { connectFunctionsEmulator } = require('firebase/functions');
+//   connectFunctionsEmulator(functions, 'localhost', 5001);
+// }
+
 // const analytics = getAnalytics(app);
 
-export { db };
+export { db, functions };

@@ -1,24 +1,20 @@
-import { useFirestoreQueryData } from "@react-query-firebase/firestore";
 import {
   collection,
   deleteDoc,
   doc,
-  endBefore,
-  getDocs,
-  limit,
-  limitToLast,
   onSnapshot,
   orderBy,
   query,
-  startAfter,
 } from "firebase/firestore";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup, Table } from "react-bootstrap";
+import { Button, ButtonGroup, Table, Badge, Nav } from "react-bootstrap";
 import {
+  ArrowCounterclockwise,
   CloudArrowDown,
   Filter,
   Images,
+  Link as LinkIcon,
   PencilSquare,
   Search,
   SortAlphaDown,
@@ -48,107 +44,214 @@ const ListProduct = () => {
     mode: "add",
   });
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [update, setUpdate] = useState(false);
-  const [allProduct, setAllProduct] = useState([]);
   const [allOfProduct, setAllOfProduct] = useState([]);
 
-  // query coll product
+  // Desty sync state
+  const [syncing, setSyncing] = useState(false);
+  const [syncStats, setSyncStats] = useState({
+    totalProducts: 0,
+    destyConnected: 0,
+    isDestyProduct: 0,
+    ermOnly: 0,
+  });
+  const [activeTab, setActiveTab] = useState("all"); // 'all' | 'desty' | 'erm'
+
+  // Reset page when tab changes
   useEffect(() => {
-    if (page === 1) {
-      // const fetchData = async () => {
-      const getDoc = query(
-        collection(firestore, "product"),
-        orderBy("createdAt", "desc")
-      );
-      // const documentSnapshots = await getDocs(getDoc);
-      const unsubscribe = onSnapshot(getDoc, (snapshot) => {
-        const updatedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setAllOfProduct(updatedData); // Update the state with the new data
-      });
-      return () => unsubscribe();
-      // };
-      // fetchData();
-    }
-  }, []);
+    setPage(1);
+    setSearch([]); // Clear search when switching tabs
+  }, [activeTab]);
+
+  // Reset page when pageSize changes
   useEffect(() => {
-    if (page === 1) {
-      // const fetchData = async () => {
-      const getDoc = query(
-        collection(firestore, "product"),
-        orderBy("createdAt", "desc"),
-        limit(20)
-      );
-      // const documentSnapshots = await getDocs(getDoc);
-      const unsubscribe = onSnapshot(getDoc, (snapshot) => {
-        const updatedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setAllProduct(updatedData); // Update the state with the new data
-      });
-      return () => unsubscribe();
-      // };
-      // fetchData();
+    setPage(1);
+  }, [pageSize]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  // Calculate stats from local products (no external fetch needed)
+  const calculateLocalStats = (products) => {
+    const destyProducts = products.filter(p => p.destyConnected === true || p.isDestyProduct === true);
+    const ermOnly = products.filter(p => p.destyConnected !== true && p.isDestyProduct !== true);
+    return {
+      totalProducts: products.length,
+      destyConnected: destyProducts.length,
+      isDestyProduct: 0,
+      ermOnly: ermOnly.length,
+    };
+  };
+
+  // Update stats when products change
+  useEffect(() => {
+    if (allOfProduct.length > 0) {
+      const stats = calculateLocalStats(allOfProduct);
+      setSyncStats(stats);
     }
-  }, [update]);
-  const showNext = ({ item }) => {
-    if (allProduct.length === 0) {
-      alert("Thats all we have for now !");
-    } else {
-      // const fetchNextData = async () => {
-      const getDoc = query(
-        collection(firestore, "product"),
-        orderBy("createdAt", "desc"),
-        startAfter(item.createdAt),
-        limit(20)
-      );
-      const unsubscribe = onSnapshot(getDoc, (snapshot) => {
-        const updatedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setAllProduct(updatedData); // Update the state with the new data
+  }, [allOfProduct]);
+
+  // Fetch Desty connection statistics (manual only)
+  const fetchDestyStats = async () => {
+    // Use HTTP endpoint instead of callable
+    try {
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})
       });
-      setPage(page + 1);
-      return () => unsubscribe();
-      // };
-      // fetchNextData();
+      const result = await response.json();
+      if (result.success) {
+        setSyncStats((prev) => ({ ...prev, lastSync: new Date() }));
+        enqueueSnackbar("Sinkronisasi berhasil!", { variant: "success" });
+      }
+    } catch (error) {
+      console.warn("HTTP sync skipped:", error);
     }
   };
 
-  const showPrevious = ({ item }) => {
-    // const fetchPreviousData = async () => {
+  // Handle Desty sync
+  const handleSyncDesty = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin sinkronisasi berat dari Desty? Berat produk yang terhubung dengan Desty akan di-sync.")) {
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      // Use HTTP endpoint
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updateStock: false })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { synced, skipped, total } = result.results;
+        enqueueSnackbar(
+          `Sinkronisasi berat berhasil! Disync: ${synced}, Dilewati: ${skipped} (dari total ${total} produk)`,
+          { variant: "success" }
+        );
+        // Refresh data
+        setUpdate((prev) => !prev);
+      } else {
+        enqueueSnackbar(`Sinkronisasi gagal: ${result.error || 'Unknown error'}`, { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+      enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Handle Desty produk sync (sync stock for connected products from /api/product/sku/detail)
+  const handleSyncProdukDesty = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin sync stok produk dari Desty? Stok akan di-update dari /api/product/sku/detail.")) {
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ syncStock: true })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { synced, skipped, total } = result.results;
+        enqueueSnackbar(
+          `Sync berhasil! Disync: ${synced}, Dilewati: ${skipped} (dari total ${total} produk)`,
+          { variant: "success" }
+        );
+        // Refresh data
+        setUpdate((prev) => !prev);
+      } else {
+        enqueueSnackbar(`Sync gagal: ${result.error || 'Unknown error'}`, { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+      enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Load all products (used for all tabs with client-side pagination)
+  useEffect(() => {
     const getDoc = query(
       collection(firestore, "product"),
-      orderBy("createdAt", "desc"),
-      endBefore(item.createdAt),
-      limitToLast(20)
+      orderBy("createdAt", "desc")
     );
     const unsubscribe = onSnapshot(getDoc, (snapshot) => {
-      const updatedData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+      const updatedData = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
       }));
-      setAllProduct(updatedData); // Update the state with the new data
+      setAllOfProduct(updatedData);
     });
-    setPage(page - 1);
     return () => unsubscribe();
-  };
+  }, [update]);
   //   fetchPreviousData();
   // };
   // const handleSearch = (e) => {
   //   setSearchTerm(e.target.value);
   //   setPage(1)
   // };
-  const filteredData = search.length > 0 ? search : allProduct;
+
+  // Filter products by tab
+  const getFilteredByTab = (products) => {
+    if (activeTab === "all") {
+      // Show ALL products
+      return products;
+    }
+    if (activeTab === "desty") {
+      // Products connected to Desty (either from sync or created from Desty)
+      return products.filter(
+        (p) => p.destyConnected === true || p.isDestyProduct === true
+      );
+    }
+    if (activeTab === "erm") {
+      // Products that are NOT connected to Desty
+      // Use !== true to handle undefined, null, false, "false", 0
+      return products.filter(
+        (p) => p.destyConnected !== true && p.isDestyProduct !== true
+      );
+    }
+    return products;
+  };
+
+  // Get all filtered data (before pagination)
+  const getAllFilteredData = () => {
+    if (search.length > 0) return search;
+    return getFilteredByTab(allOfProduct);
+  };
+
+  // Get paginated data for display
+  const getPaginatedData = () => {
+    const allFiltered = getAllFilteredData();
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return allFiltered.slice(startIndex, endIndex);
+  };
+
+  const paginatedData = getPaginatedData();
+
+  // Total count for pagination info
+  const totalFilteredCount = getAllFilteredData().length;
+  const totalPages = Math.ceil(totalFilteredCount / pageSize);
   // console.log(filteredData)
   // checkbox
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedRows(filteredData.map((item) => item.id));
+      setSelectedRows(paginatedData.map((item) => item.id));
     } else {
       setSelectedRows([]);
     }
@@ -204,7 +307,7 @@ const ListProduct = () => {
   const [sortConfig, setSortConfig] = useState({ key: "id", direction: "asc" });
 
   const sortedData = React.useMemo(() => {
-    let sortableItems = [...filteredData];
+    let sortableItems = [...paginatedData];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -217,7 +320,7 @@ const ListProduct = () => {
       });
     }
     return sortableItems;
-  }, [filteredData, sortConfig]);
+  }, [paginatedData, sortConfig]);
   const selectedData = sortedData?.filter?.((item) =>
     selectedRows.includes(item.id)
   );
@@ -239,50 +342,154 @@ const ListProduct = () => {
     }
     return <SortDown />;
   };
+
   return (
     <Layout>
     <div className="container">
       <h1 className="page-title">Product</h1>
+
+      {/* Tab Navigation for Product Source */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <Nav variant="tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
+          <Nav.Item>
+            <Nav.Link eventKey="all">
+              Semua Produk
+              {syncStats && (
+                <Badge bg="secondary" className="ms-2">{syncStats.totalProducts}</Badge>
+              )}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="desty">
+              <LinkIcon className="me-1" />
+              Produk Desty
+              {syncStats && (
+                <Badge bg="success" className="ms-2">
+                  {(syncStats.destyConnected || 0) + (syncStats.isDestyProduct || 0)}
+                </Badge>
+              )}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="erm">
+              Produk ERM Carramica
+              {syncStats && (
+                <Badge bg="info" className="ms-2">{syncStats.ermOnly}</Badge>
+              )}
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+
+        {/* Sync Buttons */}
+        <div className="d-flex gap-2">
+          {/* Sync Produk Desty - sync all products from /api/product/page */}
+          <Button
+            variant="outline-success"
+            onClick={handleSyncProdukDesty}
+            disabled={syncing}
+            title="Sinkronisasi semua produk dari Desty (stok & data produk)"
+          >
+            <CloudArrowDown className={syncing ? "spin" : ""} />
+            {syncing ? " Sync..." : " Sync Produk Desty"}
+          </Button>
+
+          {/* Sync Berat Desty - sync weight only */}
+          <Button
+            variant="outline-primary"
+            onClick={handleSyncDesty}
+            disabled={syncing}
+            title="Sinkronisasi berat produk dari Desty"
+          >
+            <ArrowCounterclockwise className={syncing ? "spin" : ""} />
+            {syncing ? " Sync..." : " Sync Berat Desty"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Legend for indicators */}
+      <div style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
+        <span style={{ marginRight: "15px" }}>
+          <span style={{ fontSize: "14px", marginRight: "3px" }}>⚠️</span>
+          Berat belum di-sync dari Desty (klik produk → sync manual)
+        </span>
+        <span>
+          <span style={{ fontSize: "12px", marginRight: "3px" }}>📦</span>
+          Ukuran belum diinput (input manual diperlukan)
+        </span>
+      </div>
+
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: "10px",
+          gap: "15px",
           alignItems: "center",
+          marginBottom: "15px",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          <Typeahead
-            id="basic-typeahead"
-            labelKey="nama"
-            onChange={setSearch}
-            options={allOfProduct}
-            placeholder="Search Products..."
-            selected={search}
-            // className="w-50"
-            style={{ marginRight: "10px" }}
-          />
-          <Search size={25} />
+        {/* Search Bar */}
+        <div className="search-container" style={{ flex: "1", maxWidth: "400px", minWidth: "250px" }}>
+          <div className="search-wrapper" style={{ position: "relative" }}>
+            <Search
+              size={18}
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#6c757d",
+                zIndex: 1,
+              }}
+            />
+            <Typeahead
+              id="product-search"
+              labelKey="nama"
+              onChange={setSearch}
+              options={getFilteredByTab(allOfProduct)}
+              placeholder="Cari produk..."
+              selected={search}
+              maxResults={20}
+              highlightOnlyResult={true}
+              className="product-search-input"
+              renderMenuItemResults={(option, props) => option.nama}
+              bodyContainer={true}
+              style={{ width: "100%" }}
+            />
+            {/* Clear button when search is active */}
+            {search.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSearch([])}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "0",
+                  color: "#6c757d",
+                  fontSize: "18px",
+                  lineHeight: 1,
+                }}
+                title="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
-        {/* <div>
-              
-            </div> */}
-        <div>
+
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
           <CSVLink
             style={{
               width: "150px",
               marginRight: "10px",
               whiteSpace: "nowrap",
             }}
-            data={selectedData.length > 0 ? selectedData : allOfProduct}
+            data={selectedData.length > 0 ? selectedData : getFilteredByTab(allOfProduct)}
             separator={";"}
             filename={"table_orders.csv"}
             className="btn btn-outline-secondary"
@@ -325,14 +532,7 @@ const ListProduct = () => {
           </button>
         </div>
       </div>
-      <div
-        className="form-container"
-        style={{
-          width: "100%",
-          overflowX: "auto",
-          overflowY: "hidden",
-        }}
-      >
+      <div className="form-container">
         <div className="form-section">
           <div>
             {selectedRows.length > 0 && (
@@ -340,91 +540,197 @@ const ListProduct = () => {
                 <p>{selectedRows.length} row selected</p>
               </div>
             )}
-            <Table striped bordered hover style={{ minWidth: "900px" }}>
+            <Table
+              striped
+              bordered
+              hover
+              style={{
+                tableLayout: "fixed",
+                width: "100%",
+                fontSize: "13px",
+              }}
+              className="product-table"
+            >
+              <colgroup>
+                <col style={{ width: "40px" }} />
+                <col style={{ width: "60px" }} />
+                <col style={{ width: "18%" }} />
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "7%" }} />
+                <col style={{ width: "7%" }} />
+                <col style={{ width: "7%" }} />
+                <col style={{ width: "6%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "12%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "8%" }} />
+              </colgroup>
               <thead>
-                <tr style={{ whiteSpace: "nowrap" }}>
-                  <th>
+                <tr>
+                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>
                     <input
                       className="form-check-input"
                       type="checkbox"
-                      checked={selectedRows?.length === filteredData?.length}
+                      checked={selectedRows?.length === paginatedData?.length}
                       onChange={handleSelectAll}
                       id="flexCheckChecked"
                     />
                   </th>
-                  <th>Image</th>
-                  {/* <th>Product Id</th> */}
-                  {/* <th>SKU</th> */}
-                  <th onClick={() => handleSort("nama")}>
+                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Image</th>
+                  <th onClick={() => handleSort("nama")} style={{ verticalAlign: "middle", cursor: "pointer" }}>
                     Product Name {renderSortIcon("nama")}
                   </th>
-                  {/* <th>Category</th>
-                <th>Weight/gr</th>
-                <th>Length</th>
-                <th>Width</th>
-                <th>Height</th> */}
-                  <th>Price</th>
-                  <th>COGS</th>
-                  <th>Inventory</th>
-                  <th>QTY Sold</th>
-                  <th>Order</th>
-                  <th>Net Revenue</th>
-                  <th>Action</th>
+                  <th style={{ textAlign: "right", verticalAlign: "middle" }}>Price</th>
+                  <th style={{ textAlign: "right", verticalAlign: "middle" }}>COGS</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Inventory</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>QTY Sold</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Order</th>
+                  <th style={{ textAlign: "right", verticalAlign: "middle" }}>Net Revenue</th>
+                  <th style={{ verticalAlign: "middle" }}>SKU Info</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Desty</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedData?.map?.((item, i) => {
-                  console.log(item?.qty_sold);
+                  const isDestyConnected = item.destyConnected === true || item.isDestyProduct === true;
                   return (
                     <tr key={item.id}>
-                      <td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <input
                           type="checkbox"
                           checked={selectedRows.includes(item.id)}
                           onChange={(e) => handleSelectRow(e, item.id)}
                         />
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         {item?.thumbnail?.length > 0 ? (
                           <img
                             src={item?.thumbnail?.[0]}
                             alt=""
-                            height={50}
-                            width={50}
-                            style={{ borderRadius: "5px" }}
+                            height={40}
+                            width={40}
+                            style={{ borderRadius: "5px", objectFit: "cover" }}
                           />
                         ) : (
-                          <Images size={50} />
+                          <Images size={30} />
                         )}
                       </td>
 
-                      {/* <td>{item?.sku}</td> */}
-                      <td>{item?.nama}</td>
-                      {/* <td>{item?.category?.nama}</td>
-                  <td>{item?.weight}</td>
-                  <td>{item?.length}</td>
-                  <td>{item?.width}</td>
-                  <td>{item?.height}</td> */}
-                      <td>{currency(item?.harga)}</td>
-                      <td>{item?.cogs ?? 0}</td>
-                      <td>{item?.stok}</td>
-                      <td>{item?.qty_sold ?? 0}</td>
-                      <td>{item?.orderCount ?? 0}</td>
-                      <td>
+                      <td style={{
+                        verticalAlign: "middle",
+                        whiteSpace: "normal",
+                        wordWrap: "break-word",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}>
+                        <span title={item?.nama}>{item?.nama}</span>
+                      </td>
+                      <td style={{ textAlign: "right", verticalAlign: "middle" }}>{currency(item?.harga)}</td>
+                      <td style={{ textAlign: "right", verticalAlign: "middle" }}>{item?.cogs ?? 0}</td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                        {item?.stok}
+                        {/* Weight indicator */}
+                        {(!item?.weight || item?.weight === 0) && isDestyConnected && (
+                          <span
+                            title="⚠️ Berat belum disinkronisasi. Klik produk ini untuk sync berat dari Desty."
+                            style={{
+                              display: "inline-block",
+                              marginLeft: "5px",
+                              cursor: "pointer",
+                              fontSize: "14px"
+                            }}
+                            onClick={() => navigate(`/products/detailProduct/${item?.id}`)}
+                          >
+                            ⚠️
+                          </span>
+                        )}
+                        {/* Dimension indicator - needs manual input */}
+                        {(!item?.length || !item?.width || !item?.height) && (
+                          <span
+                            title="⚠️ Ukuran (P x L x T) belum diinput. Input manual diperlukan."
+                            style={{
+                              display: "inline-block",
+                              marginLeft: "2px",
+                              cursor: "help",
+                              fontSize: "12px"
+                            }}
+                          >
+                            📦
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>{item?.qty_sold ?? 0}</td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>{item?.orderCount ?? 0}</td>
+                      <td style={{ textAlign: "right", verticalAlign: "middle" }}>
                         {item?.qty_sold > 0
-                          ? currency(
-                              parseInt(item?.qty_sold) * parseInt(item?.harga)
-                            )
+                          ? currency(parseInt(item?.qty_sold) * parseInt(item?.harga))
                           : "Rp.0"}
                       </td>
-                      <td>
-                        {" "}
+                      <td style={{ fontSize: "11px", verticalAlign: "middle" }}>
+                        {/* SKU Info */}
+                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU Rapin: ${item.sku_rapin || '-'}`}>
+                          Rapin: <code>{item.sku_rapin || '-'}</code>
+                        </div>
+                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU CRM: ${item.sku || '-'}`}>
+                          CRM: <code>{item.sku || '-'}</code>
+                        </div>
+                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU Desty: ${item.destySkuNumber || '-'}`}>
+                          Desty: <code>{item.destySkuNumber || '-'}</code>
+                        </div>
+                        {/* SKU Match Status Indicator */}
+                        {(() => {
+                          const rapinMatch = item.sku_rapin && item.destySkuNumber && item.sku_rapin === item.destySkuNumber;
+                          const crmMatch = item.sku && item.destySkuNumber && item.sku === item.destySkuNumber;
+                          const allMatch = rapinMatch && crmMatch;
+                          const anyMatch = rapinMatch || crmMatch;
+                          const noMatch = !anyMatch && (item.sku_rapin || item.sku || item.destySkuNumber);
+
+                          if (allMatch) {
+                            return <Badge bg="success" className="mt-1" title="Semua SKU cocok">Match</Badge>;
+                          }
+                          if (rapinMatch && !crmMatch) {
+                            return <Badge bg="info" className="mt-1" title="SKU Rapin = SKU Desty, CRM berbeda">Rapin ✓</Badge>;
+                          }
+                          if (crmMatch && !rapinMatch) {
+                            return <Badge bg="primary" className="mt-1" title="SKU CRM = SKU Desty, Rapin berbeda">CRM ✓</Badge>;
+                          }
+                          if (noMatch) {
+                            return <Badge bg="danger" className="mt-1" title="Semua SKU tidak cocok">No Match</Badge>;
+                          }
+                          return null;
+                        })()}
+                      </td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                        {/* Desty Connection Indicator */}
+                        {isDestyConnected ? (
+                          <Badge
+                            bg="success"
+                            title={`Terhubung dengan Desty (SKU: ${item.destySkuNumber || item.sku_rapin || item.sku})`}
+                            style={{ cursor: "pointer" }}
+                            onClick={() => {
+                              if (item.destyLastSync) {
+                                enqueueSnackbar(
+                                  `Terakhir sync: ${new Date(item.destyLastSync.seconds * 1000).toLocaleString("id-ID")}`,
+                                  { variant: "info" }
+                                );
+                              }
+                            }}
+                          >
+                            <LinkIcon /> Desty
+                          </Badge>
+                        ) : (
+                          <Badge bg="secondary" title="Tidak terhubung dengan Desty">
+                            ERM Only
+                          </Badge>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <button
                           onClick={() => {
                             navigate(`/products/detailProduct/${item?.id}`);
-                            // setDialogAdd({ open: true, data: selectedData, mode: 'edit', item: item })
                           }}
-                          style={{ backgroundColor: "#998970" }}
+                          style={{ backgroundColor: "#998970", marginRight: "5px" }}
                           className="button button-primary"
                         >
                           <PencilSquare />
@@ -443,49 +749,74 @@ const ListProduct = () => {
               </tbody>
             </Table>
           </div>
-          <ButtonGroup style={{ textAlign: "center", float: "right" }}>
-            {/* //show previous button only when we have items */}
-            <Button
-              disabled={page === 1}
-              style={{
-                marginRight: "10px",
-                whiteSpace: "nowrap",
-                backgroundColor: "#3D5E54",
-                border: "none",
-              }}
-              onClick={() => showPrevious({ item: allProduct[0] })}
-            >
-              {"<-Prev"}
-            </Button>
-            <input
-              value={page}
-              className="input"
-              disabled
-              style={{
-                padding: "0px",
-                width: "40px",
-                marginRight: "10px",
-                textAlign: "center",
-                border: "none",
-                marginBottom: "8px",
-                marginTop: "8px",
-              }}
-            />
-            {/* //show next button only when we have items */}
-            <Button
-              disabled={filteredData.length < 20}
-              style={{
-                whiteSpace: "nowrap",
-                backgroundColor: "#3D5E54",
-                border: "none",
-              }}
-              onClick={() =>
-                showNext({ item: filteredData[filteredData.length - 1] })
-              }
-            >
-              {"Next->"}
-            </Button>
-          </ButtonGroup>
+          {/* Pagination Controls */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "15px" }}>
+            {/* Page Size Selector */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "14px", color: "#666" }}>Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                style={{
+                  padding: "5px 10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  cursor: "pointer"
+                }}
+              >
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span style={{ fontSize: "14px", color: "#666" }}>
+                Showing {Math.min((page - 1) * pageSize + 1, totalFilteredCount || 1)} - {Math.min(page * pageSize, totalFilteredCount)} of {totalFilteredCount}
+              </span>
+            </div>
+
+            {/* Page Navigation */}
+            <ButtonGroup style={{ textAlign: "center" }}>
+              <Button
+                disabled={page === 1}
+                style={{
+                  marginRight: "5px",
+                  whiteSpace: "nowrap",
+                  backgroundColor: "#3D5E54",
+                  border: "none",
+                }}
+                onClick={() => setPage(page - 1)}
+              >
+                {"<-Prev"}
+              </Button>
+              <input
+                value={`${page} / ${Math.max(1, totalPages)}`}
+                className="input"
+                disabled
+                style={{
+                  padding: "5px 10px",
+                  width: "70px",
+                  marginRight: "5px",
+                  textAlign: "center",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                }}
+              />
+              <Button
+                disabled={page >= totalPages}
+                style={{
+                  whiteSpace: "nowrap",
+                  backgroundColor: "#3D5E54",
+                  border: "none",
+                }}
+                onClick={() => setPage(page + 1)}
+              >
+                {"Next->"}
+              </Button>
+            </ButtonGroup>
+          </div>
           <DialogAddProduct
             show={dialogAdd}
             onHide={() => setDialogAdd({ open: false, data: {} })}
@@ -497,10 +828,110 @@ const ListProduct = () => {
           <FilterProduct
             show={filterDialog}
             handleClose={() => setFilterDialog(false)}
-            setAllProducts={setAllProduct}
+            setAllProducts={setAllOfProduct}
           />
         </div>
       </div>
+
+      {/* Custom CSS */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+        /* Table styling */
+        .product-table {
+          table-layout: fixed;
+          overflow: hidden;
+        }
+        .product-table td {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .product-table td span {
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        /* Remove horizontal scroll on table container */
+        .form-container {
+          overflow-x: visible !important;
+        }
+        /* Button styling */
+        .button {
+          padding: 4px 8px !important;
+          font-size: 12px !important;
+        }
+        /* Search Input Styling */
+        .search-container {
+          width: 100%;
+        }
+        .search-wrapper {
+          position: relative;
+        }
+        .product-search-input .rbt-input-main {
+          padding: 8px 40px 8px 40px !important;
+          border-radius: 20px !important;
+          border: 1px solid #ced4da !important;
+          font-size: 14px !important;
+          width: 100% !important;
+          transition: all 0.2s ease !important;
+        }
+        .product-search-input .rbt-input-main:focus {
+          border-color: #3D5E54 !important;
+          box-shadow: 0 0 0 3px rgba(61, 94, 84, 0.15) !important;
+          outline: none !important;
+        }
+        .product-search-input .rbt-input-main::placeholder {
+          color: #adb5bd !important;
+        }
+        /* Dropdown menu styling */
+        .product-search-input .rbt-menu {
+          border-radius: 8px !important;
+          border: 1px solid #e9ecef !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+          margin-top: 4px !important;
+          max-height: 300px !important;
+          overflow-y: auto !important;
+        }
+        .product-search-input .rbt-menu-item {
+          padding: 10px 12px !important;
+          border-bottom: 1px solid #f1f3f4 !important;
+          transition: background 0.15s ease !important;
+        }
+        .product-search-input .rbt-menu-item:hover {
+          background-color: #f8f9fa !important;
+        }
+        .product-search-input .rbt-menu-item.active {
+          background-color: #3D5E54 !important;
+          color: white !important;
+        }
+        .product-search-input .rbt-menu-item.selected {
+          background-color: #e8f4f1 !important;
+        }
+        .product-search-input .rbt-menu-item highlight {
+          background-color: #fff3cd !important;
+          font-weight: 600 !important;
+        }
+        /* Token/pill styling for selected items */
+        .product-search-input .rbt-token {
+          background-color: #3D5E54 !important;
+          color: white !important;
+          border-radius: 12px !important;
+          padding: 2px 8px !important;
+          font-size: 12px !important;
+        }
+        .product-search-input .rbt-token-close-btn {
+          color: white !important;
+        }
+        /* Close button hover */
+        button[title="Clear search"]:hover {
+          color: #dc3545 !important;
+        }
+      `}</style>
     </div>
     </Layout>
   );

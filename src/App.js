@@ -17,7 +17,7 @@ import Login from "./Login";
 import Dashboard from "./page/home/Dashboard";
 import { AuthProvider, useAuth } from "./AuthContext";
 import PrivateRoute from "./PrivateRoute";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, collection, query, orderBy, limit } from "firebase/firestore";
 import { firestore } from "./FirebaseFrovider";
 import Logistik from "./page/logistic";
 import OrderList from "./page/orders/OrderList";
@@ -26,11 +26,62 @@ import Product from "./page/products";
 import PaymentRedirect from "./PaymentRedirect";
 import Categories from "./page/categories";
 import ReportPage from "./page/report";
+import { NotificationProvider, NotificationFloatingButton, usePaymentNotification } from "./components/PaymentNotification";
+import { functions } from "./FirebaseFrovider";
+import { httpsCallable } from "firebase/functions";
+
+// Notification Listener Component (must be inside NotificationProvider)
+const NotificationListener = () => {
+  const { showPaymentNotification } = usePaymentNotification();
+  const { currentUser } = useAuth();
+  const [lastNotificationId, setLastNotificationId] = useState(null);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const notificationsQuery = query(
+      collection(firestore, "payment_notifications"),
+      orderBy("createdAt", "desc"),
+      limit(1)
+    );
+
+    const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        const latestNotification = snapshot.docs[0];
+        const notificationId = latestNotification.id;
+
+        if (notificationId !== lastNotificationId) {
+          const notificationData = latestNotification.data();
+          const createdAt = notificationData.createdAt?.toDate?.() || new Date();
+          const thirtySecondsAgo = new Date(Date.now() - 30000);
+
+          if (createdAt > thirtySecondsAgo) {
+            showPaymentNotification({
+              invoiceId: notificationData.invoiceId,
+              orderId: notificationData.orderId,
+              amount: notificationData.amount,
+              customerName: notificationData.customerName,
+              paymentMethod: notificationData.paymentMethod,
+            });
+            setLastNotificationId(notificationId);
+          }
+        }
+      }
+    }, (error) => {
+      console.log("Payment notification listener error:", error);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser, showPaymentNotification, lastNotificationId]);
+
+  return null;
+};
 
 function App() {
   const { currentUser } = useAuth();
   const [profile, setProfile] = useState({});
   const [checkList, setChcekList] = useState([]);
+
   const comp = {
     home: Dashboard,
     addOrder: AddOrder,
@@ -52,9 +103,7 @@ function App() {
           setProfile({
             ...docSnap.data(),
           });
-          // console.log("Document data:", docSnap.data());
         } else {
-          // docSnap.data() will be undefined in this case
           console.log("No such document!");
         }
       }
@@ -74,10 +123,8 @@ function App() {
         );
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          // console.log(docSnap.data())
           setChcekList(docSnap.data()?.akses);
         } else {
-          // docSnap.data() will be undefined in this case
           console.log("No such document!");
         }
       }
@@ -106,24 +153,11 @@ function App() {
     };
   });
 
-  // console.log(akses)
   return (
-    <Router>
-      <Routes>
-        {/* <Route path="/add-order" element={<PrivateRoute><AddOrder /></PrivateRoute>} />
-        <Route path="/orders" element={<PrivateRoute><OrderList /></PrivateRoute>} />
-        <Route path="/products" element={<PrivateRoute><Product /></PrivateRoute>} />
-        <Route path="/logistic" element={<PrivateRoute><Logistik /></PrivateRoute>} />
-        <Route path="/contact" element={<PrivateRoute><Contact /></PrivateRoute>} />
-        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        /> */}
+    <NotificationProvider>
+      <NotificationListener />
+      <Router>
+        <Routes>
         {akses?.map((acc) => {
           return (
             <>
@@ -132,8 +166,7 @@ function App() {
                 path={acc?.path}
                 element={
                   <PrivateRoute>
-                    <acc.component profile={profile} />{" "}
-                    {/* Render the component */}
+                    <acc.component profile={profile} />
                   </PrivateRoute>
                 }
               />
@@ -145,8 +178,7 @@ function App() {
                       path={sub?.path}
                       element={
                         <PrivateRoute>
-                          <sub.component profile={profile} />{" "}
-                          {/* Render the component */}
+                          <sub.component profile={profile} />
                         </PrivateRoute>
                       }
                     />
@@ -160,6 +192,7 @@ function App() {
         <Route path="/payment-redirect/:id" element={<PaymentRedirect />} />
       </Routes>
     </Router>
+    </NotificationProvider>
   );
 }
 

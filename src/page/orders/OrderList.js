@@ -2823,7 +2823,7 @@ const OrderList = () => {
               >
                 <thead>
                   <tr style={{ whiteSpace: "nowrap" }}>
-                    <th>
+                    <th className="sticky-col sticky-col-select">
                       <input
                         className="form-check-input"
                         type="checkbox"
@@ -2832,15 +2832,35 @@ const OrderList = () => {
                         id="flexCheckChecked"
                       />
                     </th>
+                    {/* Invoice Id - controlled by selectColumn */}
+                    {selectColumn.some(col => col.label === "Invoice Id") && (
+                      <th className="sticky-col sticky-col-2">Invoice Id</th>
+                    )}
+                    {/* Order Id - controlled by selectColumn */}
+                    {selectColumn.some(col => col.label === "Order Id") && (
+                      <th className={`sticky-col ${selectColumn.some(col => col.label === "Invoice Id") ? 'sticky-col-3' : 'sticky-col-3-first'}`}>Order Id</th>
+                    )}
+                    {/* Nama pengirim - controlled by selectColumn */}
+                    {selectColumn.some(col => col.label === "Nama pengirim") && (
+                      <th className={`sticky-col ${
+                        selectColumn.some(col => col.label === "Invoice Id") && selectColumn.some(col => col.label === "Order Id")
+                          ? 'sticky-col-4'
+                          : selectColumn.some(col => col.label === "Invoice Id")
+                            ? 'sticky-col-4-second'
+                            : selectColumn.some(col => col.label === "Order Id")
+                              ? 'sticky-col-4-third'
+                              : 'sticky-col-4-first'
+                      }`}>Nama pengirim</th>
+                    )}
 
-                    {selectColumn.map((col, i) => (
+                    {/* Skip first 3 columns (Invoice Id, Order Id, Nama pengirim) since they're rendered as sticky */}
+                    {selectColumn.slice(3).map((col, i) => (
                       <th key={i}>{col?.label}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {mapData?.map?.((item, i) => {
-                    // console.log(i === edit)
                     const idOrder = parseInt(item.unixId.split("_")?.[1]);
                     let style = {
                       borderRadius: "20px",
@@ -2883,17 +2903,104 @@ const OrderList = () => {
                     }
                     return (
                       <tr key={item?.unixId} style={{ whiteSpace: "nowrap" }}>
-                        <td>
+                        {/* Sticky Column 1: Select - always show */}
+                        <td className="sticky-col sticky-col-select">
                           <input
                             type="checkbox"
                             checked={selectedRows.includes(i)}
-                            onChange={(e) =>
-                              handleSelectRow(e, i, item?.unixId)
-                            }
+                            onChange={(e) => handleSelectRow(e, i, item?.unixId)}
                           />
                         </td>
-                        {selectColumn.map((col, colIndex) => (
-                          <td key={colIndex} style={col.style}>
+
+                        {/* Invoice Id - controlled by selectColumn */}
+                        {selectColumn.some(col => col.label === "Invoice Id") && (
+                          <td className="sticky-col sticky-col-2">
+                            {idOrder === 0 && (
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                {/* Chevron for kuitansi */}
+                                {item.kuitansi && (
+                                  <span
+                                    style={{ marginRight: "3px", cursor: "pointer" }}
+                                    onClick={() => toggleOpen(item.id)}
+                                  >
+                                    {openItems.includes(item.id) ? (
+                                      <ChevronDown size={12} />
+                                    ) : (
+                                      <ChevronRight size={12} />
+                                    )}
+                                  </span>
+                                )}
+                                {/* Clickable Invoice Id */}
+                                <OverlayTrigger
+                                  trigger="click"
+                                  placement="right"
+                                  overlay={ListContent(item)}
+                                  rootClose
+                                >
+                                  <a
+                                    style={{
+                                      color: "black",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {item?.invoice_id}
+                                  </a>
+                                </OverlayTrigger>
+                              </div>
+                            )}
+                            {/* Kuitansi list when expanded */}
+                            {openItems.includes(item.id) && item?.kuitansi?.map((kui, ik) => (
+                              <a
+                                key={kui?.id}
+                                onClick={() =>
+                                  setInvoiceDialog({
+                                    open: true,
+                                    data: [item],
+                                    type: "dp",
+                                    id: kui?.id,
+                                  })
+                                }
+                                style={{
+                                  color: "#0e703f",
+                                  cursor: "pointer",
+                                  marginTop: "5px",
+                                  backgroundColor: "#d9f7e8",
+                                  padding: "5px",
+                                  borderRadius: "5px",
+                                  display: "block",
+                                }}
+                              >
+                                INVOICE {ik + 1}
+                              </a>
+                            ))}
+                          </td>
+                        )}
+
+                        {/* Order Id - controlled by selectColumn */}
+                        {selectColumn.some(col => col.label === "Order Id") && (
+                          <td className={`sticky-col ${selectColumn.some(col => col.label === "Invoice Id") ? 'sticky-col-3' : 'sticky-col-3-first'}`}>
+                            {item?.ordId}
+                          </td>
+                        )}
+
+                        {/* Nama pengirim - controlled by selectColumn */}
+                        {selectColumn.some(col => col.label === "Nama pengirim") && (
+                          <td className={`sticky-col ${
+                            selectColumn.some(col => col.label === "Invoice Id") && selectColumn.some(col => col.label === "Order Id")
+                              ? 'sticky-col-4'
+                              : selectColumn.some(col => col.label === "Invoice Id")
+                                ? 'sticky-col-4-second'
+                                : selectColumn.some(col => col.label === "Order Id")
+                                  ? 'sticky-col-4-third'
+                                  : 'sticky-col-4-first'
+                          }`}>
+                            {item?.senderName}
+                          </td>
+                        )}
+
+                        {/* Remaining columns */}
+                        {selectColumn.slice(3).map((col, colIndex) => (
+                          <td key={`cell-${colIndex}`}>
                             {col.key(item, i, idOrder, style, edit, openItems)}
                           </td>
                         ))}
