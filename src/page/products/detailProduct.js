@@ -67,7 +67,7 @@ export default function DetailProduct() {
     setSyncingDesty(true);
     try {
       // Use HTTP endpoint (no auth required)
-      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyStockHttp", {
+      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyStockHttp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skuNumber: skuToSync, productId: productId })
@@ -114,7 +114,7 @@ export default function DetailProduct() {
     setSyncingWeight(true);
     try {
       // Call the testDestySkuDetail function to get weight
-      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/testDestySkuDetail", {
+      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/testDestySkuDetail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skuNumber: skuToSync })
