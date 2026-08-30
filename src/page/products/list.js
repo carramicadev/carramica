@@ -98,7 +98,7 @@ const ListProduct = () => {
   const fetchDestyStats = async () => {
     // Use HTTP endpoint instead of callable
     try {
-      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
+      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyWeightAll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
@@ -113,16 +113,16 @@ const ListProduct = () => {
     }
   };
 
-  // Handle Desty sync
+  // Handle Desty sync (sync weight only for existing connected products)
   const handleSyncDesty = async () => {
-    if (!window.confirm("Apakah Anda yakin ingin sinkronisasi berat dari Desty? Berat produk yang terhubung dengan Desty akan di-sync.")) {
+    if (!window.confirm("Apakah Anda yakin ingin sync berat dari Desty? Berat produk yang terhubung dengan Desty akan di-sync.")) {
       return;
     }
 
     setSyncing(true);
     try {
-      // Use HTTP endpoint
-      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
+      // Use syncDestyWeightAll - this syncs weight only for existing Desty-connected products
+      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyWeightAll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ updateStock: false })
@@ -149,26 +149,27 @@ const ListProduct = () => {
     }
   };
 
-  // Handle Desty produk sync (sync stock for connected products from /api/product/sku/detail)
+  // Handle Desty produk sync (sync ALL products from Desty - create new, update existing)
   const handleSyncProdukDesty = async () => {
-    if (!window.confirm("Apakah Anda yakin ingin sync stok produk dari Desty? Stok akan di-update dari /api/product/sku/detail.")) {
+    if (!window.confirm("Apakah Anda yakin ingin sync SEMUA produk dari Desty? Produk baru akan di-create, produk yang ada akan di-update.")) {
       return;
     }
 
     setSyncing(true);
     try {
-      const response = await fetch("https://asia-southeast2-charamica-8bb03.cloudfunctions.net/syncDestyWeightAll", {
+      // Use syncDestyProductsHttp - this fetches ALL products from Desty and syncs to Firestore
+      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyProductsHttp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ syncStock: true })
+        body: JSON.stringify({})
       });
 
       const result = await response.json();
 
       if (result.success) {
-        const { synced, skipped, total } = result.results;
+        const { created, updated, skipped, totalFetched, errors } = result.results;
         enqueueSnackbar(
-          `Sync berhasil! Disync: ${synced}, Dilewati: ${skipped} (dari total ${total} produk)`,
+          `Sync berhasil! Created: ${created}, Updated: ${updated}, Total fetched: ${totalFetched}${errors.length > 0 ? `, Errors: ${errors.length}` : ''}`,
           { variant: "success" }
         );
         // Refresh data
