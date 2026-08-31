@@ -2806,11 +2806,11 @@ const OrderList = () => {
           </button>
         </div>
       </div>
-      <div>
+      <div className="table-section-wrapper">
         <div
           // ref={scrollRef}
           // onWheel={handleWheel}
-          style={{ maxWidth: "100vw", overflowX: "scroll" }}
+          style={{ maxWidth: "100%", overflowX: "auto" }}
         >
           {/* Section 3: Table */}
           <div className="section-table" id="table-section">

@@ -3,208 +3,257 @@
 @tailwind utilities;
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    overflow-x: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
 /* Section 1 - Banner */
 .section-banner {
-    height: 300px;
-    background-color: #4caf50;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-size: 24px;
+  height: 300px;
+  background-color: #4caf50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 24px;
 }
 
 /* Section 2 - Analytic */
 .section-analytic {
-    height: 1024px;
-    background-color: #f1f1f1;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
+  height: 1024px;
+  background-color: #f1f1f1;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+}
+
+/* Section 3 - Table - Break out of container max-width */
+.table-section-wrapper {
+  padding: 0 15px;
+  overflow-x: auto;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  max-width: 100vw;
 }
 
 /* Section 3 - Table */
 .section-table {
-    margin: auto;
-    max-width: 100%;
-    padding-bottom: 20px;
+  margin: auto;
+  max-width: 100%;
+  padding-bottom: 0;
+  overflow-x: auto;
 }
 
 .table-container {
-    overflow-x: auto;
-    /* allow horizontal scroll */
-    overflow-y: auto;
-    position: relative;
-    width: 100%;
-    /* take full space */
+  overflow-x: auto;
+  /* allow horizontal scroll */
+  overflow-y: auto;
+  position: relative;
+  width: 100%;
+  /* take full space */
+  max-width: 100%;
 }
 
-table {
-    width: max-content;
-    /* <-- expand as wide as needed */
-    min-width: 100%;
-    /* <-- still at least full width of container */
-    border-collapse: collapse;
-    margin: 20px 0;
+.table-container table {
+  width: max-content;
+  /* <-- expand as wide as needed */
+  min-width: 100%;
+  /* <-- still at least full width of container */
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+/* Responsive: add padding on smaller screens */
+@media (max-width: 992px) {
+  .table-section-wrapper {
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-section-wrapper {
+    padding: 0 5px;
+  }
 }
 
 table,
 th,
 td {
-    border: 1px solid #ddd;
+  border: 1px solid #ddd;
 }
 
 th,
 td {
-    padding: 12px;
-    text-align: left;
-    white-space: nowrap;
+  padding: 12px;
+  text-align: left;
+  white-space: nowrap;
 }
 
 th {
-    background-color: #4caf50;
-    color: white;
+  background-color: #4caf50;
+  color: white;
 }
 
 .table-container::-webkit-scrollbar {
-    width: 12px;
+  width: 12px;
 }
 
 .table-container::-webkit-scrollbar-thumb {
-    background-color: grey;
-    border-radius: 10px;
-    border: 3px solid transparent;
+  background-color: grey;
+  border-radius: 10px;
+  border: 3px solid transparent;
 }
 
 .table-container::-webkit-scrollbar-track {
-    background-color: #f1f1f1;
+  background-color: #f1f1f1;
 }
 
 .table-vertical-scroll::-webkit-scrollbar {
-    height: 16px;
+  height: 19px;
 }
 
 .table-vertical-scroll::-webkit-scrollbar-thumb {
-    background-color: #3D5E54;
-    border-radius: 10px;
-    border: 3px solid transparent;
+  background-color: #3d5e54;
+  border-radius: 6px;
+  border: 2px solid transparent;
 }
 
 .table-vertical-scroll::-webkit-scrollbar-track {
-    background-color: #f1f1f1;
+  background-color: #f1f1f1;
 }
 
 .table-vertical-scroll {
-    display: block;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    overflow: auto;
-    height: 20px;
-    width: 90%;
-    left: 5%;
-    right: 5%;
-    pointer-events: auto;
+  display: block;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  height: 20px;
+  width: 98%;
+  left: 1%;
+  right: 1%;
+  pointer-events: auto;
+  z-index: 999;
+  background-color: #f1f1f1;
+}
+
+/* Responsive: On smaller screens - keep scrollbar fixed but smaller */
+@media (max-width: 992px) {
+  .table-vertical-scroll {
+    height: 14px;
+  }
+
+  .table-vertical-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-vertical-scroll {
+    height: 12px;
+  }
+
+  .table-vertical-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
 }
 
 .table-vertical-scroll-content {
-    width: 2300px;
+  width: 2300px;
 }
 
 /* Sticky columns for table */
 .table-container {
-    overflow-x: auto;
-    overflow-y: visible;
-    position: relative;
+  overflow-x: auto;
+  overflow-y: visible;
+  position: relative;
 }
 
 /* Sticky column base */
 .sticky-col {
-    position: sticky;
-    background-color: #fff;
+  position: sticky;
+  background-color: #fff;
 }
 
 /* Column 1: Select checkbox - left: 0 */
 .sticky-col-select {
-    left: 0;
-    z-index: 40;
-    min-width: 40px;
-    max-width: 40px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 0;
+  z-index: 40;
+  min-width: 40px;
+  max-width: 40px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 /* Column 2: Invoice Id - clickable */
 .sticky-col-2 {
-    left: 40px;
-    z-index: 30;
-    min-width: 120px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 40px;
+  z-index: 30;
+  min-width: 120px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 /* Column 3: Order Id */
 .sticky-col-3 {
-    left: 160px;
-    z-index: 20;
-    min-width: 100px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 160px;
+  z-index: 20;
+  min-width: 100px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 /* Column 4: Nama pengirim */
 .sticky-col-4 {
-    left: 260px;
-    z-index: 10;
-    min-width: 150px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 260px;
+  z-index: 10;
+  min-width: 150px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 /* Dynamic sticky positions when columns are hidden */
 .sticky-col-2-first {
-    left: 40px;
-    z-index: 30;
-    min-width: 120px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 40px;
+  z-index: 30;
+  min-width: 120px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 .sticky-col-3-first {
-    left: 40px;
-    z-index: 20;
-    min-width: 100px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 40px;
+  z-index: 20;
+  min-width: 100px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 .sticky-col-4-first {
-    left: 40px;
-    z-index: 10;
-    min-width: 150px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 40px;
+  z-index: 10;
+  min-width: 150px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 .sticky-col-3-second {
-    left: 160px;
-    z-index: 20;
-    min-width: 100px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 160px;
+  z-index: 20;
+  min-width: 100px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 .sticky-col-4-second {
-    left: 160px;
-    z-index: 10;
-    min-width: 150px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 160px;
+  z-index: 10;
+  min-width: 150px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 .sticky-col-4-third {
-    left: 260px;
-    z-index: 10;
-    min-width: 150px;
-    box-shadow: 2px 0 0 0 #aaa;
+  left: 260px;
+  z-index: 10;
+  min-width: 150px;
+  box-shadow: 2px 0 0 0 #aaa;
 }
 
 /* Hover effects for sticky rows */
@@ -212,25 +261,25 @@ th {
 .table-container tbody tr:hover .sticky-col-2,
 .table-container tbody tr:hover .sticky-col-3,
 .table-container tbody tr:hover .sticky-col-4 {
-    background-color: #f5f5f5;
+  background-color: #f5f5f5;
 }
 
 /* Header styling */
 .table-container table thead th {
-    background-color: #fff;
-    color: #000;
+  background-color: #fff;
+  color: #000;
 }
 
 /* Table hover effect */
 .table-container table tbody tr:hover td {
-    background-color: #f5f5f5;
+  background-color: #f5f5f5;
 }
 
 .section-new-analytic {
-    height: 300px;
-    background-color: #e0e0e0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
+  height: 300px;
+  background-color: #e0e0e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
 }
