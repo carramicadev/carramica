@@ -48,6 +48,9 @@ const ListProduct = () => {
   const [update, setUpdate] = useState(false);
   const [allOfProduct, setAllOfProduct] = useState([]);
 
+  // Status filter state
+  const [selectedStatus, setSelectedStatus] = useState(null); // null = all, or 'Live', 'Hold', 'Out of Stock', 'Discontinued', 'Draft'
+
   // Desty sync state
   const [syncing, setSyncing] = useState(false);
   const [syncStats, setSyncStats] = useState({
@@ -57,6 +60,35 @@ const ListProduct = () => {
     ermOnly: 0,
   });
   const [activeTab, setActiveTab] = useState("all"); // 'all' | 'desty' | 'erm'
+
+  // Product status counts
+  const [statusCounts, setStatusCounts] = useState({
+    all: 0,
+    Live: 0,
+    Hold: 0,
+    "Out of Stock": 0,
+    Discontinued: 0,
+    Draft: 0,
+  });
+
+  // Calculate status counts from all products
+  useEffect(() => {
+    const counts = {
+      all: allOfProduct.length,
+      Live: 0,
+      Hold: 0,
+      "Out of Stock": 0,
+      Discontinued: 0,
+      Draft: 0,
+    };
+    allOfProduct.forEach((product) => {
+      const status = product.status || "Live";
+      if (counts.hasOwnProperty(status)) {
+        counts[status]++;
+      }
+    });
+    setStatusCounts(counts);
+  }, [allOfProduct]);
 
   // Reset page when tab changes
   useEffect(() => {
@@ -207,26 +239,28 @@ const ListProduct = () => {
   //   setPage(1)
   // };
 
-  // Filter products by tab
+  // Filter products by tab and status
   const getFilteredByTab = (products) => {
-    if (activeTab === "all") {
-      // Show ALL products
-      return products;
-    }
+    // First filter by source (tab)
+    let filtered = products;
     if (activeTab === "desty") {
       // Products connected to Desty (either from sync or created from Desty)
-      return products.filter(
+      filtered = products.filter(
         (p) => p.destyConnected === true || p.isDestyProduct === true
       );
-    }
-    if (activeTab === "erm") {
+    } else if (activeTab === "erm") {
       // Products that are NOT connected to Desty
-      // Use !== true to handle undefined, null, false, "false", 0
-      return products.filter(
+      filtered = products.filter(
         (p) => p.destyConnected !== true && p.isDestyProduct !== true
       );
     }
-    return products;
+
+    // Then filter by status
+    if (selectedStatus) {
+      filtered = filtered.filter((p) => p.status === selectedStatus);
+    }
+
+    return filtered;
   };
 
   // Get all filtered data (before pagination)
@@ -417,6 +451,99 @@ const ListProduct = () => {
           <span style={{ fontSize: "12px", marginRight: "3px" }}>📦</span>
           Ukuran belum diinput (input manual diperlukan)
         </span>
+      </div>
+
+      {/* Product Status Filter Buttons */}
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "15px" }}>
+        {/* All Status Button */}
+        <Button
+          variant={selectedStatus === null ? "primary" : "outline-secondary"}
+          size="sm"
+          onClick={() => {
+            setSelectedStatus(null);
+            setPage(1);
+          }}
+          style={{
+            fontWeight: selectedStatus === null ? "bold" : "normal",
+          }}
+        >
+          Semua ({statusCounts.all})
+        </Button>
+
+        {/* Live */}
+        <Button
+          variant={selectedStatus === "Live" ? "success" : "outline-success"}
+          size="sm"
+          onClick={() => {
+            setSelectedStatus(selectedStatus === "Live" ? null : "Live");
+            setPage(1);
+          }}
+          style={{
+            fontWeight: selectedStatus === "Live" ? "bold" : "normal",
+          }}
+        >
+          🟢 Live ({statusCounts.Live})
+        </Button>
+
+        {/* Hold */}
+        <Button
+          variant={selectedStatus === "Hold" ? "warning" : "outline-warning"}
+          size="sm"
+          onClick={() => {
+            setSelectedStatus(selectedStatus === "Hold" ? null : "Hold");
+            setPage(1);
+          }}
+          style={{
+            fontWeight: selectedStatus === "Hold" ? "bold" : "normal",
+          }}
+        >
+          🟡 Hold ({statusCounts.Hold})
+        </Button>
+
+        {/* Out of Stock */}
+        <Button
+          variant={selectedStatus === "Out of Stock" ? "danger" : "outline-danger"}
+          size="sm"
+          onClick={() => {
+            setSelectedStatus(selectedStatus === "Out of Stock" ? null : "Out of Stock");
+            setPage(1);
+          }}
+          style={{
+            fontWeight: selectedStatus === "Out of Stock" ? "bold" : "normal",
+          }}
+        >
+          🔴 Out of Stock ({statusCounts["Out of Stock"]})
+        </Button>
+
+        {/* Discontinued */}
+        <Button
+          variant={selectedStatus === "Discontinued" ? "secondary" : "outline-secondary"}
+          size="sm"
+          onClick={() => {
+            setSelectedStatus(selectedStatus === "Discontinued" ? null : "Discontinued");
+            setPage(1);
+          }}
+          style={{
+            fontWeight: selectedStatus === "Discontinued" ? "bold" : "normal",
+          }}
+        >
+          ⚫ Discontinued ({statusCounts.Discontinued})
+        </Button>
+
+        {/* Draft */}
+        <Button
+          variant={selectedStatus === "Draft" ? "info" : "outline-info"}
+          size="sm"
+          onClick={() => {
+            setSelectedStatus(selectedStatus === "Draft" ? null : "Draft");
+            setPage(1);
+          }}
+          style={{
+            fontWeight: selectedStatus === "Draft" ? "bold" : "normal",
+          }}
+        >
+          📝 Draft ({statusCounts.Draft})
+        </Button>
       </div>
 
       <div

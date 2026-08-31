@@ -1957,9 +1957,17 @@ const OrderList = () => {
 
     {
       label: "Product",
-      key: (item) =>
-        item?.nama?.map((line, index) => <div key={index}>{line}</div>),
-      style: {},
+      key: (item) => (
+        <div className="product-cell" style={{ maxWidth: 240, textAlign: "left", width: 240 }}>
+          {item?.nama?.map((line, index) => (
+            <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 4, marginBottom: 2, maxWidth: 240 }}>
+              <span style={{ flexShrink: 0 }}>•</span>
+              <span style={{ wordBreak: "break-all", overflowWrap: "break-word", maxWidth: 220 }}>{line}</span>
+            </div>
+          ))}
+        </div>
+      ),
+      style: { maxWidth: 240, whiteSpace: "normal", width: 240 },
     },
     {
       label: "Date Order",
@@ -2806,11 +2814,11 @@ const OrderList = () => {
           </button>
         </div>
       </div>
-      <div>
+      <div className="table-section-wrapper">
         <div
           // ref={scrollRef}
           // onWheel={handleWheel}
-          style={{ maxWidth: "100vw", overflowX: "scroll" }}
+          style={{ maxWidth: "100%", overflowX: "auto" }}
         >
           {/* Section 3: Table */}
           <div className="section-table" id="table-section">
@@ -3027,72 +3035,88 @@ const OrderList = () => {
         {/* Fixed Horizontal Scrollbar */}
       </div>
 
-      <ButtonGroup style={{ textAlign: "center", float: "right" }}>
-        <div>
-          <Form.Select
-            style={{
-              width: "auto",
-              marginTop: "10px",
-              marginRight: "10px",
-              // fontSize: '10px'
-            }}
-            defaultChecked={false}
-            className="select"
-            name="length"
-            onChange={handleChangeLength}
-            value={length}
-          >
-            {/* <option selected hidden >Kurir</option> */}
-
-            {listLength?.map((kur) => {
-              return (
-                <option key={kur} value={kur}>
-                  {kur} Rows{" "}
-                </option>
-              );
-            })}
-          </Form.Select>
+      {/* Selected Rows Indicator */}
+      {selectedRows.length > 0 && (
+        <div style={{
+          marginTop: "10px",
+          padding: "10px 15px",
+          backgroundColor: "#e3f2fd",
+          borderRadius: "5px",
+          display: "inline-block",
+          fontSize: "14px",
+          color: "#1565c0"
+        }}>
+          {selectedRows.length} row{selectedRows.length > 1 ? "s" : ""} selected
         </div>
-        {/* //show previous button only when we have items */}
-        <Button
-          disabled={page === 1}
-          style={{
-            marginRight: "10px",
-            whiteSpace: "nowrap",
-            backgroundColor: "#3D5E54",
-            border: "none",
-          }}
-          onClick={() => showPrevious({ item: list[0] })}
-        >
-          {"<-Prev"}
-        </Button>
-        <input
-          value={page}
-          className="input"
-          disabled
-          style={{
-            padding: "0px",
-            width: "40px",
-            marginRight: "10px",
-            textAlign: "center",
-            border: "none",
-            marginBottom: "8px",
-            marginTop: "8px",
-          }}
-        />
-        {/* //show next button only when we have items */}
-        <Button
-          disabled={list.length < length}
-          style={{
-            whiteSpace: "nowrap",
-            backgroundColor: "#3D5E54",
-            border: "none",
-          }}
-          onClick={() => showNext({ item: mapData[mapData.length - 1] })}
-        >
-          {"Next->"}
-        </Button>
-      </ButtonGroup>
+      )}
+
+      {/* Pagination Controls - Clean Format */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "15px", flexWrap: "wrap", gap: "10px" }}>
+        {/* Page Size Selector */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontSize: "14px", color: "#666" }}>Rows per page:</span>
+          <select
+            value={length}
+            onChange={handleChangeLength}
+            style={{
+              padding: "5px 10px",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              fontSize: "14px",
+              cursor: "pointer"
+            }}
+          >
+            {listLength?.map((kur) => (
+              <option key={kur} value={kur}>
+                {kur}
+              </option>
+            ))}
+          </select>
+          <span style={{ fontSize: "14px", color: "#666" }}>
+            Showing {Math.min((page - 1) * length + 1, allOrders.length || 1)} - {Math.min(page * length, allOrders.length)} of {allOrders.length}
+          </span>
+        </div>
+
+        {/* Page Navigation */}
+        <ButtonGroup style={{ textAlign: "center" }}>
+          <Button
+            disabled={page === 1}
+            style={{
+              marginRight: "5px",
+              whiteSpace: "nowrap",
+              backgroundColor: "#3D5E54",
+              border: "none",
+            }}
+            onClick={() => showPrevious({ item: list[0] })}
+          >
+            {"<-Prev"}
+          </Button>
+          <input
+            value={`${page} / ${Math.max(1, Math.ceil(allOrders.length / length))}`}
+            className="input"
+            disabled
+            style={{
+              padding: "5px 10px",
+              width: "70px",
+              marginRight: "5px",
+              textAlign: "center",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+            }}
+          />
+          <Button
+            disabled={list.length < length}
+            style={{
+              whiteSpace: "nowrap",
+              backgroundColor: "#3D5E54",
+              border: "none",
+            }}
+            onClick={() => showNext({ item: mapData[mapData.length - 1] })}
+          >
+            {"Next->"}
+          </Button>
+        </ButtonGroup>
+      </div>
 
       <DownloadPdfDialog
         setUpdate={setUpdate}
