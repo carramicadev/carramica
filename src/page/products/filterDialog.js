@@ -145,6 +145,15 @@ export const FilterProduct = ({ show, handleClose, setAllProducts, }) => {
                             <option value="Hold">
                                 Hold
                             </option>
+                            <option value="Out of Stock">
+                                Out of Stock
+                            </option>
+                            <option value="Discontinued">
+                                Discontinued
+                            </option>
+                            <option value="Draft">
+                                Draft
+                            </option>
                         </select>
                     </div>
                 </Form>
