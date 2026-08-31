@@ -92,6 +92,58 @@ td {
   white-space: nowrap;
 }
 
+/* Product column - specifically target the Product column cell */
+.table-container table tbody tr td:nth-child(5),
+.table-container table tbody tr td:nth-child(6),
+.table-container table tbody tr td:nth-child(7),
+.table-container table tbody tr td:nth-child(8),
+.table-container table tbody tr td:nth-child(9),
+.table-container table tbody tr td:nth-child(10),
+.table-container table tbody tr td:nth-child(11),
+.table-container table tbody tr td:nth-child(12),
+.table-container table tbody tr td:nth-child(13),
+.table-container table tbody tr td:nth-child(14),
+.table-container table tbody tr td:nth-child(15),
+.table-container table tbody tr td:nth-child(16),
+.table-container table tbody tr td:nth-child(17),
+.table-container table tbody tr td:nth-child(18),
+.table-container table tbody tr td:nth-child(19),
+.table-container table tbody tr td:nth-child(20),
+.table-container table tbody tr td:nth-child(21) {
+  white-space: normal !important;
+}
+
+/* Product column wrapper div - target by style content */
+div[style*="240px"],
+.product-cell {
+  max-width: 240px !important;
+  width: 240px !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: break-all !important;
+}
+
+/* Inner product lines */
+div[style*="240px"] > div,
+.product-cell > div {
+  max-width: 240px !important;
+  width: 240px !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: break-all !important;
+  word-wrap: break-word !important;
+}
+
+/* Product text span */
+div[style*="240px"] span:last-child,
+.product-cell span:last-child {
+  max-width: 220px !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: break-all !important;
+  word-wrap: break-word !important;
+}
+
 th {
   background-color: #4caf50;
   color: white;

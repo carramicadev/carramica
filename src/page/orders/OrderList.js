@@ -1957,9 +1957,17 @@ const OrderList = () => {
 
     {
       label: "Product",
-      key: (item) =>
-        item?.nama?.map((line, index) => <div key={index}>{line}</div>),
-      style: {},
+      key: (item) => (
+        <div className="product-cell" style={{ maxWidth: 240, textAlign: "left", width: 240 }}>
+          {item?.nama?.map((line, index) => (
+            <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 4, marginBottom: 2, maxWidth: 240 }}>
+              <span style={{ flexShrink: 0 }}>•</span>
+              <span style={{ wordBreak: "break-all", overflowWrap: "break-word", maxWidth: 220 }}>{line}</span>
+            </div>
+          ))}
+        </div>
+      ),
+      style: { maxWidth: 240, whiteSpace: "normal", width: 240 },
     },
     {
       label: "Date Order",
