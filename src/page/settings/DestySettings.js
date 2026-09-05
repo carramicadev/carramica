@@ -573,13 +573,13 @@ const DestySettings = () => {
                     <input
                       type="text"
                       className="form-control"
-                      value="https://asia-southeast2-carramica.web.app/destyWebhook"
+                      value="https://asia-southeast2-carramica-prod.cloudfunctions.net/destyWebhook"
                       readOnly
                     />
                     <button
                       className="btn btn-outline-secondary"
                       onClick={() => {
-                        navigator.clipboard.writeText("https://asia-southeast2-carramica.web.app/destyWebhook");
+                        navigator.clipboard.writeText("https://asia-southeast2-carramica-prod.cloudfunctions.net/destyWebhook");
                         enqueueSnackbar("URL berhasil disalin!", { variant: "success" });
                       }}
                     >
@@ -1133,13 +1133,13 @@ const DestySettings = () => {
                 <input
                   type="text"
                   className="form-control"
-                  value="https://asia-southeast2-carramica.web.app/destyWebhook"
+                  value="https://asia-southeast2-carramica-prod.cloudfunctions.net/destyWebhook"
                   readOnly
                 />
                 <button
                   className="btn btn-outline-secondary"
                   onClick={() => {
-                    navigator.clipboard.writeText("https://asia-southeast2-carramica.web.app/destyWebhook");
+                    navigator.clipboard.writeText("https://asia-southeast2-carramica-prod.cloudfunctions.net/destyWebhook");
                     enqueueSnackbar("URL berhasil disalin!", { variant: "success" });
                   }}
                 >
