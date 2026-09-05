@@ -36,6 +36,7 @@ import "./settings.css";
 import Warehouse from "./warehouse";
 import Layout from "../../components/Layout";
 import Agen from "./agen";
+import DestySettings from "./DestySettings";
 import { usePaymentNotification } from "../../components/PaymentNotification";
 
 const Settings = (props) => {
@@ -524,6 +525,13 @@ const Settings = (props) => {
         {props?.profile?.rules === "admin" && (
           <Tab eventKey="agen" title="Agen">
             <Agen />
+          </Tab>
+        )}
+
+        {/* Admin-only Desty Integration Tab */}
+        {props?.profile?.rules === "admin" && (
+          <Tab eventKey="desty" title="Desty Integration">
+            <DestySettings />
           </Tab>
         )}
         <Tab eventKey="profile" title="Profile">
