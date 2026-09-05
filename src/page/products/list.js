@@ -84,24 +84,39 @@ const ListProduct = () => {
     Draft: 0,
   });
 
-  // Calculate status counts from all products
+  // Product status counts - calculated from filtered products based on active tab
   useEffect(() => {
+    // First filter by tab
+    let filteredProducts = allOfProduct;
+    if (activeTab === "desty") {
+      filteredProducts = allOfProduct.filter(
+        (p) => p.destyConnected === true || p.isDestyProduct === true
+      );
+    } else if (activeTab === "erm") {
+      filteredProducts = allOfProduct.filter(
+        (p) => p.destyConnected !== true && p.isDestyProduct !== true
+      );
+    }
+
+    // Then calculate status counts
     const counts = {
-      all: allOfProduct.length,
+      all: filteredProducts.length,
       Live: 0,
       Hold: 0,
       "Out of Stock": 0,
       Discontinued: 0,
       Draft: 0,
     };
-    allOfProduct.forEach((product) => {
+
+    filteredProducts.forEach((product) => {
       const status = product.status || "Live";
       if (counts.hasOwnProperty(status)) {
         counts[status]++;
       }
     });
+
     setStatusCounts(counts);
-  }, [allOfProduct]);
+  }, [allOfProduct, activeTab]);
 
   // Reset page when tab changes
   useEffect(() => {

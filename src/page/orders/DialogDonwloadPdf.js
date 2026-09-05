@@ -79,6 +79,10 @@ const styles = StyleSheet.create({
   text: {
     marginBottom: 5,
   },
+  textProduct:{
+    fontSize: 6,
+    marginBottom : 5,
+  },
   textGC: {
     marginBottom: 5,
     // fontFamily: 'chinese'
@@ -256,10 +260,10 @@ function MyDoc({ item, setLoading }) {
                       <Text style={styles.text}>
                         {data?.unixId}/{data?.ordId}
                       </Text>
-                      <Text style={styles.text}>
+                      <Text style={styles.textProduct}>
                         {data.nama.map((nama, i) => {
                           return (
-                            <Text key={i}>
+                            <Text key={i} style={styles.textProduct}>
                               {nama} <br />
                             </Text>
                           );
@@ -546,6 +550,7 @@ export default function DownloadPdfDialog(props) {
                                 style={{
                                   display: "flex",
                                   justifyContent: "space-between",
+                                  fontSize: 6
                                 }}
                               >
                                 <p>
