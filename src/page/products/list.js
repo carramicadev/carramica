@@ -5,6 +5,9 @@ import {
   onSnapshot,
   orderBy,
   query,
+  updateDoc,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
@@ -25,11 +28,21 @@ import {
 import { Typeahead } from "react-bootstrap-typeahead";
 import DialogAddProduct from "./DialogAddProduct";
 import { firestore } from "../../FirebaseFrovider";
+import firebaseConfig from "../../firebase";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
 import { FilterProduct } from "./filterDialog";
 import { currency } from "../../formatter";
 import { CSVLink } from "react-csv";
+
+// Get function URL based on environment
+const getFunctionUrl = (functionName) => {
+  const region = "asia-southeast2";
+  const projectId = firebaseConfig.projectId;
+  const url = `https://${region}-${projectId}.cloudfunctions.net/${functionName}`;
+  console.log(`[URL] Calling function: ${url}`);
+  return url;
+};
 
 const ListProduct = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -130,7 +143,7 @@ const ListProduct = () => {
   const fetchDestyStats = async () => {
     // Use HTTP endpoint instead of callable
     try {
-      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyWeightAll", {
+      const response = await fetch(getFunctionUrl("syncDestyWeightAll"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
@@ -154,7 +167,7 @@ const ListProduct = () => {
     setSyncing(true);
     try {
       // Use syncDestyWeightAll - this syncs weight only for existing Desty-connected products
-      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyWeightAll", {
+      const response = await fetch(getFunctionUrl("syncDestyWeightAll"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ updateStock: false })
@@ -181,41 +194,161 @@ const ListProduct = () => {
     }
   };
 
-  // Handle Desty produk sync (sync ALL products from Desty - create new, update existing)
+  // Handle Desty produk sync (sync ALL products from Desty)
   const handleSyncProdukDesty = async () => {
-    if (!window.confirm("Apakah Anda yakin ingin sync SEMUA produk dari Desty? Produk baru akan di-create, produk yang ada akan di-update.")) {
-      return;
-    }
-
     setSyncing(true);
     try {
-      // Use syncDestyProductsHttp - this fetches ALL products from Desty and syncs to Firestore
-      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyProductsHttp", {
+      // Step 1: Sync all products from Desty
+      enqueueSnackbar(`Memulai sinkronisasi produk dari Desty...`, { variant: "info" });
+
+      const productsResponse = await fetch(getFunctionUrl("syncDestyProductsHttp"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
       });
 
-      const result = await response.json();
+      const productsResult = await productsResponse.json();
 
-      if (result.success) {
-        const { created, updated, skipped, totalFetched, errors } = result.results;
+      if (!productsResult.success) {
+        enqueueSnackbar(`Sync produk gagal: ${productsResult.error || 'Unknown error'}`, { variant: "error" });
+        setSyncing(false);
+        return;
+      }
+
+      const { created, updated, skipped, totalFetched, errors } = productsResult.results;
+      const syncedSkus = productsResult.results.syncedSkus || [];
+
+      // Create Set with trimmed SKU values for comparison
+      const syncedSkusSet = new Set(syncedSkus.map(sku => sku.trim().toUpperCase()));
+
+      enqueueSnackbar(
+        `Sinkronisasi Desty selesai! Created: ${created}, Updated: ${updated}, Total fetched: ${totalFetched}`,
+        { variant: "success" }
+      );
+
+      console.log(`[SYNC] Total SKUs from Desty: ${syncedSkus.length}`);
+      console.log(`[SYNC] Synced SKUs: ${syncedSkus.join(", ")}`);
+
+      // Step 2: Sync weight for all Desty-connected products
+      enqueueSnackbar(`Memulai sync berat produk...`, { variant: "info" });
+
+      const weightResponse = await fetch(getFunctionUrl("syncDestyWeightAll"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updateStock: false })
+      });
+
+      const weightResult = await weightResponse.json();
+
+      if (weightResult.success) {
+        const { synced, skipped: weightSkipped, total } = weightResult.results;
         enqueueSnackbar(
-          `Sync berhasil! Created: ${created}, Updated: ${updated}, Total fetched: ${totalFetched}${errors.length > 0 ? `, Errors: ${errors.length}` : ''}`,
+          `Sync berat berhasil! Disync: ${synced}, Dilewati: ${weightSkipped} (dari total ${total} produk)`,
           { variant: "success" }
         );
-        // Refresh data
-        setUpdate((prev) => !prev);
       } else {
-        enqueueSnackbar(`Sync gagal: ${result.error || 'Unknown error'}`, { variant: "error" });
+        enqueueSnackbar(`Sync berat gagal: ${weightResult.error || 'Unknown error'}`, { variant: "warning" });
       }
+
+      // Step 3: Set status for all products with destySkuNumber
+      // - Products in syncedSkus = Live
+      // - Products NOT in syncedSkus = Hold
+      enqueueSnackbar(`Memproses status produk Desty...`, { variant: "info" });
+
+      try {
+        const allProductsQuery = query(collection(firestore, "product"));
+        const allSnapshot = await getDocs(allProductsQuery);
+
+        let liveCount = 0;
+        let holdCount = 0;
+        let unchangedCount = 0;
+
+        for (const docSnap of allSnapshot.docs) {
+          const data = docSnap.data();
+          const destySku = data.destySkuNumber;
+          const isDestyProduct = data.destyConnected === true || data.isDestyProduct === true;
+
+          // Process all products that are connected to Desty
+          if (!isDestyProduct) {
+            continue;
+          }
+
+          // If product has destySkuNumber, check if it exists in Desty
+          if (destySku && destySku.trim() !== "") {
+            const trimmedSku = destySku.trim().toUpperCase();
+            const isInSyncedList = syncedSkusSet.has(trimmedSku);
+            const currentStatus = data.status;
+
+            // Determine target status based on whether SKU exists in Desty
+            const targetStatus = isInSyncedList ? "Live" : "Hold";
+
+            // Only update if status is different
+            if (currentStatus !== targetStatus) {
+              await updateDoc(doc(firestore, "product", docSnap.id), {
+                status: targetStatus,
+                updatedAt: new Date()
+              });
+
+              if (targetStatus === "Live") {
+                liveCount++;
+                console.log(`[SYNC] Set to Live: ${destySku}`);
+              } else {
+                holdCount++;
+                console.log(`[SYNC] Set to Hold: ${destySku}`);
+              }
+            } else {
+              unchangedCount++;
+              console.log(`[SYNC] Status unchanged (${currentStatus}): ${destySku}`);
+            }
+          } else {
+            // Product is connected to Desty but has no destySkuNumber - mark as Hold
+            const currentStatus = data.status;
+            if (currentStatus !== "Hold") {
+              await updateDoc(doc(firestore, "product", docSnap.id), {
+                status: "Hold",
+                updatedAt: new Date()
+              });
+              holdCount++;
+              console.log(`[SYNC] Set to Hold (no SKU): ${docSnap.id}`);
+            } else {
+              unchangedCount++;
+              console.log(`[SYNC] Status unchanged (${currentStatus}): ${docSnap.id} (no destySkuNumber)`);
+            }
+          }
+        }
+
+        console.log(`[SYNC] Summary - Live: ${liveCount}, Hold: ${holdCount}, Unchanged: ${unchangedCount}`);
+
+        // Show appropriate notification
+        if (holdCount > 0) {
+          enqueueSnackbar(
+            `${holdCount} produk ditandai sebagai Hold (tidak ada di Desty)`,
+            { variant: "warning" }
+          );
+        }
+        if (liveCount > 0) {
+          enqueueSnackbar(
+            `${liveCount} produk ditandai sebagai Live (ada di Desty)`,
+            { variant: "success" }
+          );
+        }
+        if (liveCount === 0 && holdCount === 0) {
+          enqueueSnackbar(`Semua produk Desty sudah sinkron`, { variant: "info" });
+        }
+      } catch (ermError) {
+        console.error("Error processing product status:", ermError);
+        enqueueSnackbar(`Gagal memproses status produk: ${ermError.message}`, { variant: "warning" });
+      }
+
+      // Refresh data
+      setUpdate((prev) => !prev);
     } catch (error) {
       console.error("Sync error:", error);
       enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
     } finally {
       setSyncing(false);
     }
-  };
+  };;
 
   // Load all products (used for all tabs with client-side pagination)
   useEffect(() => {
