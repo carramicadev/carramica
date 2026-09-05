@@ -67,6 +67,7 @@ const DestySettings = () => {
   const [pushLogs, setPushLogs] = useState([]);
   const [orderLogs, setOrderLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [clearingLogs, setClearingLogs] = useState(false);
 
   // Active tab
   const [activeTab, setActiveTab] = useState("overview");
@@ -333,6 +334,73 @@ const DestySettings = () => {
       enqueueSnackbar("Gagal memuat log", { variant: "error" });
     } finally {
       setLoadingLogs(false);
+    }
+  };
+
+  // Clear Stock Push Logs
+  const clearStockPushLogs = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus semua Stock Push Logs?")) {
+      return;
+    }
+
+    try {
+      setClearingLogs(true);
+      const clearFn = httpsCallable(functions, "clearStockPushLogs");
+      const result = await clearFn({});
+      if (result.data?.success) {
+        enqueueSnackbar(`Berhasil menghapus ${result.data.deletedCount} log push stock`, { variant: "success" });
+        setPushLogs([]);
+      } else {
+        enqueueSnackbar("Gagal menghapus log", { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Error clearing stock push logs:", error);
+      enqueueSnackbar("Gagal menghapus log: " + error.message, { variant: "error" });
+    } finally {
+      setClearingLogs(false);
+    }
+  };
+
+  // Clear Webhook Logs
+  const clearWebhookLogs = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus semua Order Webhook Logs?")) {
+      return;
+    }
+
+    try {
+      setClearingLogs(true);
+      const clearFn = httpsCallable(functions, "clearWebhookLogs");
+      const result = await clearFn({});
+      if (result.data?.success) {
+        enqueueSnackbar(`Berhasil menghapus ${result.data.deletedCount} log webhook`, { variant: "success" });
+        setOrderLogs([]);
+      } else {
+        enqueueSnackbar("Gagal menghapus log", { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Error clearing webhook logs:", error);
+      enqueueSnackbar("Gagal menghapus log: " + error.message, { variant: "error" });
+    } finally {
+      setClearingLogs(false);
+    }
+  };
+
+  // Clear All Logs
+  const clearAllLogs = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus SEMUA logs (Push & Webhook)?")) {
+      return;
+    }
+
+    try {
+      setClearingLogs(true);
+      await clearStockPushLogs();
+      await clearWebhookLogs();
+      enqueueSnackbar("Semua log berhasil dihapus!", { variant: "success" });
+    } catch (error) {
+      console.error("Error clearing all logs:", error);
+      enqueueSnackbar("Gagal menghapus semua log: " + error.message, { variant: "error" });
+    } finally {
+      setClearingLogs(false);
     }
   };
 
@@ -1195,9 +1263,28 @@ const DestySettings = () => {
       {/* logs Tab */}
       {activeTab === "logs" && (
         <div>
+          <div className="d-flex justify-content-end mb-3">
+            <button
+              className="btn btn-outline-danger btn-sm"
+              onClick={clearAllLogs}
+              disabled={clearingLogs || (pushLogs.length === 0 && orderLogs.length === 0)}
+            >
+              {clearingLogs ? "Menghapus..." : "🗑️ Clear All Logs"}
+            </button>
+          </div>
+
           <div className="card mb-4">
-            <div className="card-header bg-success text-white">
-              <h5 className="mb-0">📤 Stock Push Logs</h5>
+            <div className="card-header bg-success text-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">📤 Stock Push Logs ({pushLogs.length})</h5>
+              {pushLogs.length > 0 && (
+                <button
+                  className="btn btn-sm btn-outline-light"
+                  onClick={clearStockPushLogs}
+                  disabled={clearingLogs}
+                >
+                  {clearingLogs ? "..." : "🗑️ Clear"}
+                </button>
+              )}
             </div>
             <div className="card-body">
               {loadingLogs ? (
@@ -1241,8 +1328,17 @@ const DestySettings = () => {
           </div>
 
           <div className="card">
-            <div className="card-header bg-info text-white">
-              <h5 className="mb-0">📥 Order Webhook Logs</h5>
+            <div className="card-header bg-info text-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">📥 Order Webhook Logs ({orderLogs.length})</h5>
+              {orderLogs.length > 0 && (
+                <button
+                  className="btn btn-sm btn-outline-light"
+                  onClick={clearWebhookLogs}
+                  disabled={clearingLogs}
+                >
+                  {clearingLogs ? "..." : "🗑️ Clear"}
+                </button>
+              )}
             </div>
             <div className="card-body">
               {loadingLogs ? (
