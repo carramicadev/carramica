@@ -72,15 +72,15 @@ const DestySettings = () => {
   // Active tab
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Status options for confirmed statuses
+  // Status options for confirmed statuses - Desty order statuses
   const statusOptions = [
-    "Pending",
-    "Confirmed",
-    "Processing",
+    "Unpaid",
+    "New_Orders",
     "Ready_To_Ship",
     "Shipping",
     "Completed",
-    "Cancelled",
+    "Cancellations",
+    "Returns",
   ];
 
   // Load all configs on mount
