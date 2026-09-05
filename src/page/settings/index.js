@@ -528,8 +528,9 @@ const Settings = (props) => {
           </Tab>
         )}
 
-        {/* Admin-only Desty Integration Tab */}
-        {props?.profile?.rules === "admin" && (
+
+        {/* Desty Integration Tab - only carramicadev@gmail.com */}
+        {props?.profile?.email === "carramicadev@gmail.com" && (
           <Tab eventKey="desty" title="Desty Integration">
             <DestySettings />
           </Tab>
