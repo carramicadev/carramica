@@ -67,6 +67,7 @@ const DestySettings = () => {
   const [pushLogs, setPushLogs] = useState([]);
   const [orderLogs, setOrderLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [clearingLogs, setClearingLogs] = useState(false);
 
   // Active tab
   const [activeTab, setActiveTab] = useState("overview");
@@ -336,6 +337,73 @@ const DestySettings = () => {
     }
   };
 
+  // Clear Stock Push Logs
+  const clearStockPushLogs = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus semua Stock Push Logs?")) {
+      return;
+    }
+
+    try {
+      setClearingLogs(true);
+      const clearFn = httpsCallable(functions, "clearStockPushLogs");
+      const result = await clearFn({});
+      if (result.data?.success) {
+        enqueueSnackbar(`Berhasil menghapus ${result.data.deletedCount} log push stock`, { variant: "success" });
+        setPushLogs([]);
+      } else {
+        enqueueSnackbar("Gagal menghapus log", { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Error clearing stock push logs:", error);
+      enqueueSnackbar("Gagal menghapus log: " + error.message, { variant: "error" });
+    } finally {
+      setClearingLogs(false);
+    }
+  };
+
+  // Clear Webhook Logs
+  const clearWebhookLogs = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus semua Order Webhook Logs?")) {
+      return;
+    }
+
+    try {
+      setClearingLogs(true);
+      const clearFn = httpsCallable(functions, "clearWebhookLogs");
+      const result = await clearFn({});
+      if (result.data?.success) {
+        enqueueSnackbar(`Berhasil menghapus ${result.data.deletedCount} log webhook`, { variant: "success" });
+        setOrderLogs([]);
+      } else {
+        enqueueSnackbar("Gagal menghapus log", { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Error clearing webhook logs:", error);
+      enqueueSnackbar("Gagal menghapus log: " + error.message, { variant: "error" });
+    } finally {
+      setClearingLogs(false);
+    }
+  };
+
+  // Clear All Logs
+  const clearAllLogs = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus SEMUA logs (Push & Webhook)?")) {
+      return;
+    }
+
+    try {
+      setClearingLogs(true);
+      await clearStockPushLogs();
+      await clearWebhookLogs();
+      enqueueSnackbar("Semua log berhasil dihapus!", { variant: "success" });
+    } catch (error) {
+      console.error("Error clearing all logs:", error);
+      enqueueSnackbar("Gagal menghapus semua log: " + error.message, { variant: "error" });
+    } finally {
+      setClearingLogs(false);
+    }
+  };
+
   // Load logs when tab is selected
   useEffect(() => {
     if (activeTab === "logs") {
@@ -373,6 +441,232 @@ const DestySettings = () => {
       <p className="text-muted mb-4">
         Kelola pengaturan integrasi Desty untuk sinkronisasi stock dan webhook.
       </p>
+
+      {/* Tab Navigation */}
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "overview" ? "active" : ""}`}
+            onClick={() => setActiveTab("overview")}
+            style={{
+              backgroundColor: activeTab === "overview" ? "#3D5E54" : "transparent",
+              color: activeTab === "overview" ? "#fff" : "#3D5E54",
+              border: "1px solid #3D5E54",
+              cursor: "pointer",
+            }}
+          >
+            <Database className="me-1" /> Overview
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "safety" ? "active" : ""}`}
+            onClick={() => setActiveTab("safety")}
+            style={{
+              backgroundColor: activeTab === "safety" ? "#3D5E54" : "transparent",
+              color: activeTab === "safety" ? "#fff" : "#3D5E54",
+              border: "1px solid #3D5E54",
+              cursor: "pointer",
+            }}
+          >
+            <Pause className="me-1" /> Safety
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "sync" ? "active" : ""}`}
+            onClick={() => setActiveTab("sync")}
+            style={{
+              backgroundColor: activeTab === "sync" ? "#3D5E54" : "transparent",
+              color: activeTab === "sync" ? "#fff" : "#3D5E54",
+              border: "1px solid #3D5E54",
+              cursor: "pointer",
+            }}
+          >
+            <ArrowCounterclockwise className="me-1" /> Sync
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "webhook" ? "active" : ""}`}
+            onClick={() => setActiveTab("webhook")}
+            style={{
+              backgroundColor: activeTab === "webhook" ? "#3D5E54" : "transparent",
+              color: activeTab === "webhook" ? "#fff" : "#3D5E54",
+              border: "1px solid #3D5E54",
+              cursor: "pointer",
+            }}
+          >
+            <Plug className="me-1" /> Webhook
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "credentials" ? "active" : ""}`}
+            onClick={() => setActiveTab("credentials")}
+            style={{
+              backgroundColor: activeTab === "credentials" ? "#3D5E54" : "transparent",
+              color: activeTab === "credentials" ? "#fff" : "#3D5E54",
+              border: "1px solid #3D5E54",
+              cursor: "pointer",
+            }}
+          >
+            <Gear className="me-1" /> Credentials
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "logs" ? "active" : ""}`}
+            onClick={() => setActiveTab("logs")}
+            style={{
+              backgroundColor: activeTab === "logs" ? "#3D5E54" : "transparent",
+              color: activeTab === "logs" ? "#fff" : "#3D5E54",
+              border: "1px solid #3D5E54",
+              cursor: "pointer",
+            }}
+          >
+            <LinkIcon className="me-1" /> Logs
+          </button>
+        </li>
+      </ul>
+
+      {/* Overview Tab */}
+      {activeTab === "overview" && (
+        <div>
+          <div className="card mb-4">
+            <div className="card-header bg-primary text-white">
+              <h5 className="mb-0"><Plug className="me-2" />Koneksi Desty</h5>
+            </div>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-md-6">
+                  <h6>Status Koneksi</h6>
+                  {connectionStatus ? (
+                    <div className={`alert ${connectionStatus.success ? "alert-success" : "alert-danger"}`}>
+                      {connectionStatus.success ? <CheckCircle className="me-2" /> : <XCircle className="me-2" />}
+                      {connectionStatus.message}
+                    </div>
+                  ) : (
+                    <p className="text-muted">Klik tombol di bawah untuk test koneksi</p>
+                  )}
+                  <button
+                    className="btn btn-primary"
+                    onClick={testConnection}
+                    disabled={testingConnection}
+                    style={{ backgroundColor: "#3D5E54", border: "none" }}
+                  >
+                    {testingConnection ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" />
+                        Menguji...
+                      </>
+                    ) : (
+                      <>
+                        <Plug className="me-2" />Test Koneksi
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="col-md-6">
+                  <h6>Webhook URL</h6>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control"
+                      value="https://asia-southeast2-carramica.web.app/destyWebhook"
+                      readOnly
+                    />
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => {
+                        navigator.clipboard.writeText("https://asia-southeast2-carramica.web.app/destyWebhook");
+                        enqueueSnackbar("URL berhasil disalin!", { variant: "success" });
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <small className="text-muted">
+                    Gunakan URL ini di dashboard Desty untuk webhook order
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card mb-4">
+            <div className="card-header bg-info text-white">
+              <h5 className="mb-0"><Gear className="me-2" />Status Konfigurasi Saat Ini</h5>
+            </div>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-md-3 mb-3">
+                  <div className={`p-3 rounded text-center ${safetyConfig.stockDeductionEnabled ? "bg-success text-white" : "bg-secondary text-white"}`}>
+                    <h4>Stock Deduction</h4>
+                    <h3 className="mb-0">{safetyConfig.stockDeductionEnabled ? "ON" : "OFF"}</h3>
+                  </div>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <div className={`p-3 rounded text-center ${safetyConfig.dryRunMode ? "bg-warning text-dark" : "bg-success text-white"}`}>
+                    <h4>Dry Run</h4>
+                    <h3 className="mb-0">{safetyConfig.dryRunMode ? "ON" : "OFF"}</h3>
+                  </div>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <div className={`p-3 rounded text-center ${safetyConfig.idempotencyEnabled ? "bg-success text-white" : "bg-secondary text-white"}`}>
+                    <h4>Idempotency</h4>
+                    <h3 className="mb-0">{safetyConfig.idempotencyEnabled ? "ON" : "OFF"}</h3>
+                  </div>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <div className={`p-3 rounded text-center ${syncConfig.pushStockAfterSettlement ? "bg-success text-white" : "bg-secondary text-white"}`}>
+                    <h4>Push ke Desty</h4>
+                    <h3 className="mb-0">{syncConfig.pushStockAfterSettlement ? "ON" : "OFF"}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header bg-secondary text-white">
+              <h5 className="mb-0"><Play className="me-2" />Aksi Cepat</h5>
+            </div>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-md-4 mb-2">
+                  <button
+                    className="btn btn-outline-success w-100"
+                    onClick={refreshSafetyConfig}
+                    disabled={refreshing}
+                  >
+                    <ArrowCounterclockwise className="me-2" />
+                    Refresh Konfigurasi
+                  </button>
+                </div>
+                <div className="col-md-4 mb-2">
+                  <button
+                    className="btn btn-outline-primary w-100"
+                    onClick={() => setActiveTab("safety")}
+                  >
+                    <Pause className="me-2" />
+                    Edit Safety Config
+                  </button>
+                </div>
+                <div className="col-md-4 mb-2">
+                  <button
+                    className="btn btn-outline-info w-100"
+                    onClick={() => setActiveTab("logs")}
+                  >
+                    <LinkIcon className="me-2" />
+                    Lihat Logs
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Safety Config Tab */}
       {activeTab === "safety" && (
@@ -969,9 +1263,28 @@ const DestySettings = () => {
       {/* logs Tab */}
       {activeTab === "logs" && (
         <div>
+          <div className="d-flex justify-content-end mb-3">
+            <button
+              className="btn btn-outline-danger btn-sm"
+              onClick={clearAllLogs}
+              disabled={clearingLogs || (pushLogs.length === 0 && orderLogs.length === 0)}
+            >
+              {clearingLogs ? "Menghapus..." : "🗑️ Clear All Logs"}
+            </button>
+          </div>
+
           <div className="card mb-4">
-            <div className="card-header bg-success text-white">
-              <h5 className="mb-0">📤 Stock Push Logs</h5>
+            <div className="card-header bg-success text-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">📤 Stock Push Logs ({pushLogs.length})</h5>
+              {pushLogs.length > 0 && (
+                <button
+                  className="btn btn-sm btn-outline-light"
+                  onClick={clearStockPushLogs}
+                  disabled={clearingLogs}
+                >
+                  {clearingLogs ? "..." : "🗑️ Clear"}
+                </button>
+              )}
             </div>
             <div className="card-body">
               {loadingLogs ? (
@@ -1015,8 +1328,17 @@ const DestySettings = () => {
           </div>
 
           <div className="card">
-            <div className="card-header bg-info text-white">
-              <h5 className="mb-0">📥 Order Webhook Logs</h5>
+            <div className="card-header bg-info text-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">📥 Order Webhook Logs ({orderLogs.length})</h5>
+              {orderLogs.length > 0 && (
+                <button
+                  className="btn btn-sm btn-outline-light"
+                  onClick={clearWebhookLogs}
+                  disabled={clearingLogs}
+                >
+                  {clearingLogs ? "..." : "🗑️ Clear"}
+                </button>
+              )}
             </div>
             <div className="card-body">
               {loadingLogs ? (
