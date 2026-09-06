@@ -823,27 +823,31 @@ const ListProduct = () => {
               style={{
                 tableLayout: "fixed",
                 width: "100%",
-                fontSize: "13px",
+                fontSize: "11px",
               }}
               className="product-table"
             >
               <colgroup>
-                <col style={{ width: "40px" }} />
-                <col style={{ width: "60px" }} />
-                <col style={{ width: "18%" }} />
-                <col style={{ width: "9%" }} />
-                <col style={{ width: "7%" }} />
-                <col style={{ width: "7%" }} />
-                <col style={{ width: "7%" }} />
+                <col style={{ width: "35px" }} />
+                <col style={{ width: "50px" }} />
+                <col style={{ width: "14%" }} />
                 <col style={{ width: "6%" }} />
+                <col style={{ width: "5%" }} />
+                <col style={{ width: "5%" }} />
+                <col style={{ width: "4.5%" }} />
+                <col style={{ width: "4.5%" }} />
+                <col style={{ width: "4.5%" }} />
+                <col style={{ width: "4.5%" }} />
+                <col style={{ width: "5%" }} />
+                <col style={{ width: "5%" }} />
+                <col style={{ width: "7%" }} />
                 <col style={{ width: "10%" }} />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "8%" }} />
-                <col style={{ width: "8%" }} />
+                <col style={{ width: "6%" }} />
+                <col style={{ width: "9%" }} />
               </colgroup>
               <thead>
-                <tr>
-                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>
+                <tr style={{ fontSize: "10px" }}>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
                     <input
                       className="form-check-input"
                       type="checkbox"
@@ -852,19 +856,23 @@ const ListProduct = () => {
                       id="flexCheckChecked"
                     />
                   </th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Image</th>
-                  <th onClick={() => handleSort("nama")} style={{ verticalAlign: "middle", cursor: "pointer" }}>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Img</th>
+                  <th onClick={() => handleSort("nama")} style={{ verticalAlign: "middle", cursor: "pointer", fontSize: "10px" }}>
                     Product Name {renderSortIcon("nama")}
                   </th>
-                  <th style={{ textAlign: "right", verticalAlign: "middle" }}>Price</th>
-                  <th style={{ textAlign: "right", verticalAlign: "middle" }}>COGS</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Inventory</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>QTY Sold</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Order</th>
-                  <th style={{ textAlign: "right", verticalAlign: "middle" }}>Net Revenue</th>
-                  <th style={{ verticalAlign: "middle" }}>SKU Info</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Desty</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle" }}>Action</th>
+                  <th style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>Price</th>
+                  <th style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>COGS</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Inv</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Fisik dari Gudang Online">Fisik</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Promosi dari Gudang Online">Promosi</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Pesanan dari Gudang Online">Pesanan</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Tersedia (Fisik - Promosi - Pesanan)">Tersedia</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Qty Sold</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Order</th>
+                  <th style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>Revenue</th>
+                  <th style={{ verticalAlign: "middle", fontSize: "10px" }}>SKU</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Desty</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -899,12 +907,13 @@ const ListProduct = () => {
                         wordWrap: "break-word",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        fontSize: "11px",
                       }}>
-                        <span title={item?.nama}>{item?.nama}</span>
+                        <span title={item?.nama} style={{ fontSize: "11px" }}>{item?.nama}</span>
                       </td>
-                      <td style={{ textAlign: "right", verticalAlign: "middle" }}>{currency(item?.harga)}</td>
-                      <td style={{ textAlign: "right", verticalAlign: "middle" }}>{item?.cogs ?? 0}</td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                      <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>{currency(item?.harga)}</td>
+                      <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>{item?.cogs ?? 0}</td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
                         {item?.stok}
                         {/* Weight indicator */}
                         {(!item?.weight || item?.weight === 0) && isDestyConnected && (
@@ -912,9 +921,9 @@ const ListProduct = () => {
                             title="⚠️ Berat belum disinkronisasi. Klik produk ini untuk sync berat dari Desty."
                             style={{
                               display: "inline-block",
-                              marginLeft: "5px",
+                              marginLeft: "3px",
                               cursor: "pointer",
-                              fontSize: "14px"
+                              fontSize: "10px"
                             }}
                             onClick={() => navigate(`/products/detailProduct/${item?.id}`)}
                           >
@@ -929,30 +938,56 @@ const ListProduct = () => {
                               display: "inline-block",
                               marginLeft: "2px",
                               cursor: "help",
-                              fontSize: "12px"
+                              fontSize: "10px"
                             }}
                           >
                             📦
                           </span>
                         )}
                       </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>{item?.qty_sold ?? 0}</td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>{item?.orderCount ?? 0}</td>
-                      <td style={{ textAlign: "right", verticalAlign: "middle" }}>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
+                        {item?.onHandStock !== undefined ? item.onHandStock : <span style={{ color: '#999' }}>-</span>}
+                      </td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
+                        {item?.promotionStock !== undefined ? item.promotionStock : <span style={{ color: '#999' }}>-</span>}
+                      </td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
+                        {item?.orderStock !== undefined ? item.orderStock : <span style={{ color: '#999' }}>-</span>}
+                      </td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
+                        {/* Tersedia = Fisik - Promosi - Pesanan */}
+                        {(item?.onHandStock !== undefined || item?.promotionStock !== undefined || item?.orderStock !== undefined) ? (
+                          <span
+                            title={`Fisik: ${item?.onHandStock ?? 0}, Promosi: ${item?.promotionStock ?? 0}, Pesanan: ${item?.orderStock ?? 0}`}
+                            style={{
+                              color: (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0) <= 0 ? 'red' : 'inherit',
+                              fontWeight: (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0) <= 0 ? 'bold' : 'normal',
+                              fontSize: "10px"
+                            }}
+                          >
+                            {Math.max(0, (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0))}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#999', fontSize: "10px" }}>-</span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>{item?.qty_sold ?? 0}</td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>{item?.orderCount ?? 0}</td>
+                      <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>
                         {item?.qty_sold > 0
                           ? currency(parseInt(item?.qty_sold) * parseInt(item?.harga))
                           : "Rp.0"}
                       </td>
-                      <td style={{ fontSize: "11px", verticalAlign: "middle" }}>
+                      <td style={{ fontSize: "9px", verticalAlign: "middle" }}>
                         {/* SKU Info */}
                         <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU Rapin: ${item.sku_rapin || '-'}`}>
-                          Rapin: <code>{item.sku_rapin || '-'}</code>
+                          Rapin: <code style={{ fontSize: "9px" }}>{item.sku_rapin || '-'}</code>
                         </div>
                         <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU CRM: ${item.sku || '-'}`}>
-                          CRM: <code>{item.sku || '-'}</code>
+                          CRM: <code style={{ fontSize: "9px" }}>{item.sku || '-'}</code>
                         </div>
                         <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU Desty: ${item.destySkuNumber || '-'}`}>
-                          Desty: <code>{item.destySkuNumber || '-'}</code>
+                          Desty: <code style={{ fontSize: "9px" }}>{item.destySkuNumber || '-'}</code>
                         </div>
                         {/* SKU Match Status Indicator */}
                         {(() => {
@@ -963,16 +998,16 @@ const ListProduct = () => {
                           const noMatch = !anyMatch && (item.sku_rapin || item.sku || item.destySkuNumber);
 
                           if (allMatch) {
-                            return <Badge bg="success" className="mt-1" title="Semua SKU cocok">Match</Badge>;
+                            return <Badge bg="success" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="Semua SKU cocok">Match</Badge>;
                           }
                           if (rapinMatch && !crmMatch) {
-                            return <Badge bg="info" className="mt-1" title="SKU Rapin = SKU Desty, CRM berbeda">Rapin ✓</Badge>;
+                            return <Badge bg="info" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="SKU Rapin = SKU Desty, CRM berbeda">Rapin ✓</Badge>;
                           }
                           if (crmMatch && !rapinMatch) {
-                            return <Badge bg="primary" className="mt-1" title="SKU CRM = SKU Desty, Rapin berbeda">CRM ✓</Badge>;
+                            return <Badge bg="primary" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="SKU CRM = SKU Desty, Rapin berbeda">CRM ✓</Badge>;
                           }
                           if (noMatch) {
-                            return <Badge bg="danger" className="mt-1" title="Semua SKU tidak cocok">No Match</Badge>;
+                            return <Badge bg="danger" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="Semua SKU tidak cocok">No Match</Badge>;
                           }
                           return null;
                         })()}
@@ -983,7 +1018,7 @@ const ListProduct = () => {
                           <Badge
                             bg="success"
                             title={`Terhubung dengan Desty (SKU: ${item.destySkuNumber || item.sku_rapin || item.sku})`}
-                            style={{ cursor: "pointer" }}
+                            style={{ cursor: "pointer", fontSize: "9px", padding: "2px 4px" }}
                             onClick={() => {
                               if (item.destyLastSync) {
                                 enqueueSnackbar(
@@ -993,11 +1028,11 @@ const ListProduct = () => {
                               }
                             }}
                           >
-                            <LinkIcon /> Desty
+                            Desty
                           </Badge>
                         ) : (
-                          <Badge bg="secondary" title="Tidak terhubung dengan Desty">
-                            ERM Only
+                          <Badge bg="secondary" style={{ fontSize: "9px", padding: "2px 4px" }} title="Tidak terhubung dengan Desty">
+                            ERM
                           </Badge>
                         )}
                       </td>
@@ -1006,17 +1041,17 @@ const ListProduct = () => {
                           onClick={() => {
                             navigate(`/products/detailProduct/${item?.id}`);
                           }}
-                          style={{ backgroundColor: "#998970", marginRight: "5px" }}
+                          style={{ backgroundColor: "#998970", marginRight: "3px", padding: "3px 6px" }}
                           className="button button-primary"
                         >
-                          <PencilSquare />
+                          <PencilSquare size={12} />
                         </button>
                         <button
-                          style={{ backgroundColor: "red" }}
+                          style={{ backgroundColor: "red", padding: "3px 6px" }}
                           className="button button-primary"
                           onClick={() => handleDeleteClick(item?.id)}
                         >
-                          <TrashFill />
+                          <TrashFill size={12} />
                         </button>
                       </td>
                     </tr>
