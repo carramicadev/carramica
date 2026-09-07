@@ -31,6 +31,7 @@ const DestySettings = () => {
     stockDeductionEnabled: false,
     dryRunMode: true,
     confirmedStatuses: ["Ready_To_Ship"],
+    cancelledStatuses: ["Cancellations", "Returns"],
     idempotencyEnabled: true,
     logLevel: "verbose",
   });
@@ -114,6 +115,7 @@ const DestySettings = () => {
           stockDeductionEnabled: false,
           dryRunMode: true,
           confirmedStatuses: ["Ready_To_Ship"],
+          cancelledStatuses: ["Cancellations", "Returns"],
           idempotencyEnabled: true,
           logLevel: "verbose",
         };
@@ -271,6 +273,24 @@ const DestySettings = () => {
         return {
           ...prev,
           confirmedStatuses: [...currentStatuses, status],
+        };
+      }
+    });
+  };
+
+  // Toggle status in cancelledStatuses array
+  const toggleCancelledStatus = (status) => {
+    setSafetyConfig((prev) => {
+      const currentStatuses = prev.cancelledStatuses || [];
+      if (currentStatuses.includes(status)) {
+        return {
+          ...prev,
+          cancelledStatuses: currentStatuses.filter((s) => s !== status),
+        };
+      } else {
+        return {
+          ...prev,
+          cancelledStatuses: [...currentStatuses, status],
         };
       }
     });
@@ -782,6 +802,33 @@ const DestySettings = () => {
                       style={{ cursor: "pointer" }}
                     >
                       {(safetyConfig.confirmedStatuses || []).includes(status) ? "✓ " : ""}
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <hr />
+
+              {/* Cancelled Statuses */}
+              <div className="mb-3">
+                <h6 className="mb-2">Status Order yang Tidak Memicu Sync Stock</h6>
+                <small className="text-muted mb-3 d-block">
+                  Pilih status order yang dianggap sebagai "dibatalkan" atau "retur" dan TIDAK akan memicu sync stock
+                </small>
+                <div className="d-flex flex-wrap gap-2 mt-3">
+                  {statusOptions.map((status) => (
+                    <button
+                      key={status}
+                      className={`btn ${
+                        (safetyConfig.cancelledStatuses || []).includes(status)
+                          ? "btn-danger"
+                          : "btn-outline-secondary"
+                      }`}
+                      onClick={() => toggleCancelledStatus(status)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {(safetyConfig.cancelledStatuses || []).includes(status) ? "✓ " : ""}
                       {status}
                     </button>
                   ))}
