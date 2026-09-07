@@ -1668,6 +1668,19 @@ const OrderList = () => {
           updatedAt: serverTimestamp(),
           [`resiUpdate${indexOrder}`]: serverTimestamp(),
         });
+        
+        // ============================================================
+        // FULFILL STOCK - Call backend to fulfill stock for this order
+        // This will: Fisik -qty, Pesanan -qty
+        // ============================================================
+        try {
+          const fulfillOrder = httpsCallable(functions, "fulfillOrder");
+          await fulfillOrder({ id: idOrder });
+          console.log("Stock fulfilled for order:", idOrder);
+        } catch (fulfillError) {
+          console.error("Failed to fulfill stock:", fulfillError);
+        }
+        
         setEdit(null);
         setUpdate((prevValue) => !prevValue);
       }
@@ -1722,6 +1735,18 @@ const OrderList = () => {
   const handleCancelOrder = async (id) => {
     if (window.confirm(` apakah anda yakin ingin mengcancel order ${id}?`)) {
       try {
+        // ============================================================
+        // CANCEL ORDER STOCK - Call backend to cancel stock reservation
+        // This will: Pesanan -qty, Tersedia +qty
+        // ============================================================
+        try {
+          const cancelOrderStock = httpsCallable(functions, "cancelOrderStock");
+          await cancelOrderStock({ orderId: id });
+          console.log("Stock reservation cancelled for order:", id);
+        } catch (cancelStockError) {
+          console.error("Failed to cancel stock reservation:", cancelStockError);
+        }
+        
         const cancelOrder = httpsCallable(functions, "cancelOrder");
         const result = await cancelOrder({
           id: id,
@@ -1756,6 +1781,18 @@ const OrderList = () => {
   const handleRefundOrder = async (id) => {
     if (window.confirm(` apakah anda yakin ingin refund order ${id}?`)) {
       try {
+        // ============================================================
+        // CANCEL ORDER STOCK - Call backend to cancel stock reservation
+        // This will: Pesanan -qty, Tersedia +qty
+        // ============================================================
+        try {
+          const cancelOrderStock = httpsCallable(functions, "cancelOrderStock");
+          await cancelOrderStock({ orderId: id });
+          console.log("Stock reservation cancelled for refund order:", id);
+        } catch (cancelStockError) {
+          console.error("Failed to cancel stock reservation:", cancelStockError);
+        }
+        
         await setDoc(
           doc(firestore, "orders", id),
           {

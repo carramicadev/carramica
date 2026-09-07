@@ -1153,6 +1153,19 @@ const AddOrder = () => {
             },
             { merge: true }
           );
+          
+          // ============================================================
+          // RESERVE STOCK - Call backend to reserve stock for this order
+          // This will: Pesanan +qty, Tersedia -qty
+          // ============================================================
+          try {
+            const reserveStock = httpsCallable(functions, "reserveOrderStock");
+            await reserveStock({ orderId: newOrderId });
+            console.log("Stock reserved for order:", newOrderId);
+          } catch (reserveError) {
+            console.error("Failed to reserve stock:", reserveError);
+          }
+          
           const contactRef = await setDoc(
             doc(firestore, "contact", formData?.senderPhone),
             {
