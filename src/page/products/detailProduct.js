@@ -77,14 +77,17 @@ export default function DetailProduct() {
 
       if (result.success) {
         enqueueSnackbar(
-          `Stok berhasil di-sync dari Desty. sebelumnya: ${result.previousStock}, sekarang: ${result.newStock}`,
+          `Stok berhasil di-sync dari Desty. Tersedia: ${result.newStock}`,
           { variant: "success" }
         );
-        // Refresh form data
+        // Refresh form data - include breakdown fields
         setForm((prev) => ({
           ...prev,
           stok: result.newStock,
-          weight: result.newWeight || prev.weight,
+          onHandStock: result.onHandStock ?? prev.onHandStock,
+          promotionStock: result.promotionStock ?? prev.promotionStock,
+          orderStock: result.orderStock ?? prev.orderStock,
+          weight: result.newWeight ?? prev.weight,
           destyLastSync: new Date(),
         }));
       } else {
@@ -178,6 +181,10 @@ export default function DetailProduct() {
     destySpuId: "",
     destyLastSync: null,
     isDestyProduct: false,
+    // Stock breakdown from Desty (Gudang Online)
+    onHandStock: 0,
+    promotionStock: 0,
+    orderStock: 0,
   });
   const [error, setError] = useState({
     weight: "",
@@ -794,6 +801,33 @@ export default function DetailProduct() {
                   {syncingDesty ? " Sinkronisasi..." : " Sync Stok dari Desty"}
                 </Button>
               </div>
+
+              {/* Stock Breakdown from Desty (Gudang Online) */}
+              {(form.onHandStock !== 0 || form.promotionStock !== 0 || form.orderStock !== 0) && (
+                <div className="col-12 mb-2">
+                  <div className="alert alert-info mb-0 py-2">
+                    <small className="fw-bold">📦 Breakdown Stok (Gudang Online)</small>
+                    <div className="row g-0 mt-1">
+                      <div className="col-3 text-center">
+                        <small className="text-muted d-block">Fisik</small>
+                        <small className="fw-bold">{form.onHandStock ?? 0}</small>
+                      </div>
+                      <div className="col-3 text-center">
+                        <small className="text-muted d-block">Promosi</small>
+                        <small className="fw-bold">{form.promotionStock ?? 0}</small>
+                      </div>
+                      <div className="col-3 text-center">
+                        <small className="text-muted d-block">Pesanan</small>
+                        <small className="fw-bold">{form.orderStock ?? 0}</small>
+                      </div>
+                      <div className="col-3 text-center">
+                        <small className="text-muted d-block">Tersedia</small>
+                        <small className="fw-bold text-success">{(form.onHandStock ?? 0) - (form.promotionStock ?? 0) - (form.orderStock ?? 0)}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
