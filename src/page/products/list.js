@@ -914,7 +914,8 @@ const ListProduct = () => {
                       <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>{currency(item?.harga)}</td>
                       <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>{item?.cogs ?? 0}</td>
                       <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
-                        {item?.stok}
+                        {/* Inv = Tersedia = Fisik - Promosi - Pesanan = onHandStock - promotionStock - orderStock */}
+                        {item?.onHandStock !== undefined ? Math.max(0, (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0)) : item?.stok}
                         {/* Weight indicator */}
                         {(!item?.weight || item?.weight === 0) && isDestyConnected && (
                           <span
