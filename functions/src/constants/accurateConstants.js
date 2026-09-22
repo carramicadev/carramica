@@ -5,9 +5,9 @@
  */
 
 // Accurate Account API (for OAuth)
-const ACCURATE_ACCOUNT_API = "https://account.accurate.id/api";
+const ACCURATE_ACCOUNT_API = "https://account.accurate.id";
 const ACCURATE_OAUTH_AUTHORIZE = "https://account.accurate.id/oauth/authorize";
-const ACCURATE_OAUTH_TOKEN = "https://account.accurate.id/api/oauth/token";
+const ACCURATE_OAUTH_TOKEN = "https://account.accurate.id/oauth/token";  // TANPA /api!
 
 // Accurate OAuth Credentials
 // TODO: Move to Firebase Functions config for production
