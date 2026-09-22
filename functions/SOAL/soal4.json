@@ -1,0 +1,327 @@
+[
+  {
+    "id": 1,
+    "pertanyaan": "Teks akademik adalah…",
+    "opsi": [
+      { "id": "A", "text": "Tulisan bebas tanpa metode yang penting hasilnya saja" },
+      { "id": "B", "text": "Tulisan berdasarkan pengamatan/penelitian, disusun menurut metode tertentu, dan dapat dipertanggungjawabkan" },
+      { "id": "C", "text": "Tulisan populer untuk umum dengan gaya persuasi" },
+      { "id": "D", "text": "Tulisan singkat yang tidak perlu rujukan" },
+      { "id": "E", "text": "Ringkasan catatan perkuliahan tanpa tujuan ilmiah" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Ciri pokok teks akademik/ilmiah: bersumber pada pengamatan atau penelitian, bermetode, dan akuntabel."
+  },
+  {
+    "id": 2,
+    "pertanyaan": "Abstrak umumnya berisi, kecuali…",
+    "opsi": [
+      { "id": "A", "text": "Latar belakang dan tujuan" },
+      { "id": "B", "text": "Metode singkat" },
+      { "id": "C", "text": "Hasil inti dan simpulan" },
+      { "id": "D", "text": "Kata kunci" },
+      { "id": "E", "text": "Tinjauan pustaka lengkap" }
+    ],
+    "jawaban": "E",
+    "pembahasan": "Abstrak ringkas (±150–250 kata): latar, tujuan, metode, hasil, simpulan, serta kata kunci; kajian pustaka lengkap ada di bagian tersendiri."
+  },
+  {
+    "id": 3,
+    "pertanyaan": "Pernyataan yang tepat tentang abstrak:",
+    "opsi": [
+      { "id": "A", "text": "Boleh memuat tafsir atau penilaian kritis terhadap penulis" },
+      { "id": "B", "text": "Harus memuat kutipan langsung dari teori" },
+      { "id": "C", "text": "Mewakili isi karya secara akurat tanpa tambahan interpretasi" },
+      { "id": "D", "text": "Tidak perlu menyebut metode" },
+      { "id": "E", "text": "Wajib lebih dari 1 halaman" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Abstrak bersifat informatif, ringkas, akurat, tanpa opini atau interpretasi baru."
+  },
+  {
+    "id": 4,
+    "pertanyaan": "Pendahuluan lazim berisi…",
+    "opsi": [
+      { "id": "A", "text": "Rincian uji statistik dan keandalan instrumen" },
+      { "id": "B", "text": "Latar masalah, perumusan masalah, urgensi/topicality, tujuan" },
+      { "id": "C", "text": "Ulasan pustaka sangat rinci dan semua tabel" },
+      { "id": "D", "text": "Daftar alat dan bahan" },
+      { "id": "E", "text": "Rekomendasi kebijakan" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Pendahuluan menuntun pembaca dari umum ke khusus: konteks, celah riset, rumusan masalah, dan tujuan."
+  },
+  {
+    "id": 5,
+    "pertanyaan": "Kajian pustaka yang baik ditandai…",
+    "opsi": [
+      { "id": "A", "text": "Berbentuk opini penulis tanpa rujukan" },
+      { "id": "B", "text": "Didominasi kutipan relevan, terstruktur dari umum ke khusus, ditutup simpulan sementara" },
+      { "id": "C", "text": "Hanya mencantumkan daftar bacaan terbaru tanpa pembahasan" },
+      { "id": "D", "text": "Semua rujukan harus berbahasa Inggris" },
+      { "id": "E", "text": "Mengulang latar belakang kata demi kata" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Literature review memetakan teori dan temuan terkait, serta merumuskan posisi riset."
+  },
+  {
+    "id": 6,
+    "pertanyaan": "Dalam Bagian Hasil, seharusnya berisi…",
+    "opsi": [
+      { "id": "A", "text": "Interpretasi mendalam dan perbandingan dengan teori" },
+      { "id": "B", "text": "Data atau temuan (angka, pola, keluaran prosedur) yang bersih dari kutipan" },
+      { "id": "C", "text": "Ulasan pustaka terbaru" },
+      { "id": "D", "text": "Rumusan masalah" },
+      { "id": "E", "text": "Diskusi kelemahan studi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Bagian 'Hasil' memaparkan temuan apa adanya; penafsirannya dilakukan di bagian 'Pembahasan'."
+  },
+  {
+    "id": 7,
+    "pertanyaan": "Pembahasan memuat…",
+    "opsi": [
+      { "id": "A", "text": "Ringkasan tujuan tanpa data" },
+      { "id": "B", "text": "Perbandingan hasil dengan kajian pustaka, alasan/mekanisme, implikasi" },
+      { "id": "C", "text": "Daftar instrumen dan bahan" },
+      { "id": "D", "text": "Biodata penulis" },
+      { "id": "E", "text": "Lampiran kuisioner mentah" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Fungsi utama pembahasan adalah menjawab 'mengapa' dan 'bagaimana' hasil terjadi, menautkan teori dan temuan."
+  },
+  {
+    "id": 8,
+    "pertanyaan": "Simpulan yang baik…",
+    "opsi": [
+      { "id": "A", "text": "Memperkenalkan teori baru tanpa dukungan" },
+      { "id": "B", "text": "Mengulang data mentah" },
+      { "id": "C", "text": "Menjawab tujuan riset secara ringkas, tanpa kutipan, bisa memuat rekomendasi" },
+      { "id": "D", "text": "Mengutip panjang dari pustaka" },
+      { "id": "E", "text": "Menyajikan tabel statistik baru" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Simpulan menutup argumen dengan ringkas, tepat sasaran, tanpa kutipan, dan boleh disertai saran."
+  },
+  {
+    "id": 9,
+    "pertanyaan": "Daftar pustaka dalam teks akademik…",
+    "opsi": [
+      { "id": "A", "text": "Formatnya tunggal (hanya APA)" },
+      { "id": "B", "text": "Formatnya bisa berbeda tergantung jenis/aturan (APA, IEEE, Vancouver, dsb.)" },
+      { "id": "C", "text": "Tidak wajib asal ada catatan kaki" },
+      { "id": "D", "text": "Boleh hanya mencantumkan URL" },
+      { "id": "E", "text": "Hanya berisi pustaka yang dibaca, meski tidak disitasi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Setiap jenis karya ilmiah memiliki gaya sitasi berbeda, tetapi semua sumber yang disitasi wajib tercantum."
+  },
+  {
+    "id": 10,
+    "pertanyaan": "Sistematika makalah yang tepat:",
+    "opsi": [
+      { "id": "A", "text": "Cover—Metode—Lampiran—Abstrak" },
+      { "id": "B", "text": "Cover/Kata Pengantar/Daftar Isi—Pendahuluan—Studi Pustaka—Pembahasan—Penutup—Daftar Pustaka" },
+      { "id": "C", "text": "Abstrak—Metode—Hasil—Pembahasan—Simpulan" },
+      { "id": "D", "text": "Cover—Abstrak—Metode—Hasil—Lampiran" },
+      { "id": "E", "text": "Identitas—Orientasi—Sinopsis—Evaluasi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Makalah biasanya terdiri dari bagian awal, pendahuluan, kajian pustaka, pembahasan, penutup, dan daftar pustaka."
+  },
+  {
+    "id": 11,
+    "pertanyaan": "Sistematika artikel jurnal lazimnya:",
+    "opsi": [
+      { "id": "A", "text": "Cover—Kata Pengantar—Daftar Isi—Lampiran" },
+      { "id": "B", "text": "Identitas—Orientasi—Sinopsis—Evaluasi" },
+      { "id": "C", "text": "Abstrak—Pendahuluan—(Studi Pustaka)—Metode—Hasil—Simpulan—Daftar Pustaka" },
+      { "id": "D", "text": "Pendahuluan—Metode—Lampiran—Glosarium" },
+      { "id": "E", "text": "Sinopsis—Analisis—Ulasan" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Artikel jurnal mengikuti format IMRaD (Introduction–Methods–Results–and–Discussion) dengan variasi kecil tergantung jurnal."
+  },
+  {
+    "id": 12,
+    "pertanyaan": "Sistematika proposal program/penelitian:",
+    "opsi": [
+      { "id": "A", "text": "Abstrak—Metode—Hasil—Simpulan" },
+      { "id": "B", "text": "Cover/Kata Pengantar/Daftar Isi—Pendahuluan—Studi Pustaka—Metode—Hasil yang diharapkan—Daftar Pustaka" },
+      { "id": "C", "text": "Identitas—Orientasi—Sinopsis—Evaluasi" },
+      { "id": "D", "text": "Pendahuluan—Hasil—Pembahasan—Daftar Pustaka" },
+      { "id": "E", "text": "Cover—Abstrak—Metode—Lampiran saja" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Proposal menekankan urgensi dan rasional, rancangan kerja, serta luaran atau hasil yang diharapkan."
+  },
+  {
+    "id": 13,
+    "pertanyaan": "Sistematika laporan penelitian paling tepat:",
+    "opsi": [
+      { "id": "A", "text": "Cover—Abstrak—Pendahuluan—Studi Pustaka—Metode—Hasil—Pembahasan—Kesimpulan—Daftar Pustaka" },
+      { "id": "B", "text": "Cover—Pendahuluan—Ulasan—Lampiran" },
+      { "id": "C", "text": "Abstrak—Metode—Simpulan—Daftar Isi" },
+      { "id": "D", "text": "Pendahuluan—Hasil—Simpulan—Glosarium" },
+      { "id": "E", "text": "Identitas—Sinopsis—Evaluasi" }
+    ],
+    "jawaban": "A",
+    "pembahasan": "Laporan penelitian lengkap memuat seluruh proses riset dan pelaporannya secara terperinci."
+  },
+  {
+    "id": 14,
+    "pertanyaan": "Resensi buku (unsur) TIDAK mencakup…",
+    "opsi": [
+      { "id": "A", "text": "Identitas buku" },
+      { "id": "B", "text": "Sinopsis dan kutipan singkat" },
+      { "id": "C", "text": "Ulasan keunggulan–kelemahan" },
+      { "id": "D", "text": "Analisis unsur cerita (untuk fiksi)" },
+      { "id": "E", "text": "Daftar rujukan penelitian laboratorium" }
+    ],
+    "jawaban": "E",
+    "pembahasan": "Resensi fokus pada karya yang diulas, bukan laporan riset laboratorium."
+  },
+  {
+    "id": 15,
+    "pertanyaan": "Struktur resensi yang benar:",
+    "opsi": [
+      { "id": "A", "text": "Identitas—Orientasi—Sinopsis—Analisis—Evaluasi" },
+      { "id": "B", "text": "Abstrak—Metode—Hasil—Simpulan" },
+      { "id": "C", "text": "Cover—Daftar Isi—Pendahuluan—Studi Pustaka" },
+      { "id": "D", "text": "Pendahuluan—Metode—Pembahasan" },
+      { "id": "E", "text": "Latar—Tujuan—Metode" }
+    ],
+    "jawaban": "A",
+    "pembahasan": "Resensi umumnya mencakup orientasi, ringkasan isi, analisis, dan evaluasi."
+  },
+  {
+    "id": 16,
+    "pertanyaan": "Dalam Bagian Metode artikel jurnal, yang pasti diperlukan ialah…",
+    "opsi": [
+      { "id": "A", "text": "Daftar seluruh teori yang dikutip" },
+      { "id": "B", "text": "Rencana pengajaran semester depan" },
+      { "id": "C", "text": "Desain riset, sampel/subjek, prosedur, instrumen/alat, teknik analisis" },
+      { "id": "D", "text": "Riwayat penulis" },
+      { "id": "E", "text": "Ulasan kebijakan" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Metode harus operasional dan jelas agar riset dapat direplikasi."
+  },
+  {
+    "id": 17,
+    "pertanyaan": "Pernyataan yang tepat tentang hasil vs pembahasan:",
+    "opsi": [
+      { "id": "A", "text": "Hasil = opini; Pembahasan = data mentah" },
+      { "id": "B", "text": "Hasil = data/temuan; Pembahasan = interpretasi/komparasi/implikasi" },
+      { "id": "C", "text": "Hasil dan pembahasan identik" },
+      { "id": "D", "text": "Hasil wajib memuat rujukan teoritis" },
+      { "id": "E", "text": "Pembahasan bebas dari teori" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Hasil menunjukkan 'apa' ditemukan, sedangkan pembahasan menjelaskan 'mengapa' dan 'apa artinya'."
+  },
+  {
+    "id": 18,
+    "pertanyaan": "Kata kunci pada artikel jurnal berfungsi untuk…",
+    "opsi": [
+      { "id": "A", "text": "Menambah jumlah halaman" },
+      { "id": "B", "text": "Menyembunyikan topik agar eksklusif" },
+      { "id": "C", "text": "Indeksasi dan temu kembali topik/artikel di basis data ilmiah" },
+      { "id": "D", "text": "Menggantikan abstrak" },
+      { "id": "E", "text": "Mengisi ruang kosong halaman" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Kata kunci digunakan untuk membantu indeksasi dan pencarian artikel di database ilmiah."
+  },
+  {
+    "id": 19,
+    "pertanyaan": "Manakah yang bukan ciri teks akademik yang baik?",
+    "opsi": [
+      { "id": "A", "text": "Objektif dan berbasis data" },
+      { "id": "B", "text": "Sistematis dan konsisten" },
+      { "id": "C", "text": "Bahasa komunikatif–baku" },
+      { "id": "D", "text": "Mengandalkan anekdot tanpa verifikasi" },
+      { "id": "E", "text": "Dapat diuji/ditelusuri (rujukan jelas)" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "Anekdot tanpa dukungan data tidak memenuhi standar ilmiah teks akademik."
+  },
+  {
+    "id": 20,
+    "pertanyaan": "Perbedaan utama makalah vs artikel jurnal:",
+    "opsi": [
+      { "id": "A", "text": "Makalah selalu pakai peer-review, artikel tidak" },
+      { "id": "B", "text": "Makalah umumnya tugas/luaran akademik dengan struktur ringkas; artikel jurnal ditujukan terbit di jurnal dengan IMRaD dan standar publikasi" },
+      { "id": "C", "text": "Makalah tidak perlu daftar pustaka" },
+      { "id": "D", "text": "Artikel jurnal tanpa abstrak" },
+      { "id": "E", "text": "Makalah wajib berbahasa asing" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Makalah bersifat akademik internal, sementara artikel jurnal mengikuti standar publikasi dan peer-review."
+  },
+  {
+    "id": 21,
+    "pertanyaan": "Pada proposal, bagian 'Hasil yang diharapkan' sebaiknya memuat…",
+    "opsi": [
+      { "id": "A", "text": "Data uji statistik yang sudah jadi" },
+      { "id": "B", "text": "Prediksi/target luaran (indikator keberhasilan, produk, publikasi) yang terukur" },
+      { "id": "C", "text": "Riwayat proyek penulis" },
+      { "id": "D", "text": "Ringkasan bacaan populer" },
+      { "id": "E", "text": "Gambar bebas" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Proposal masih tahap rencana; karena itu harus mencantumkan luaran dan indikator terukur."
+  },
+  {
+    "id": 22,
+    "pertanyaan": "Ketika menulis pendahuluan, strategi alur yang tepat adalah…",
+    "opsi": [
+      { "id": "A", "text": "Khusus→umum→khusus tanpa arah" },
+      { "id": "B", "text": "Umum→khusus (membuka isu luas, lalu mempersempit ke celah riset & tujuan)" },
+      { "id": "C", "text": "Data mentah→simpulan→metode" },
+      { "id": "D", "text": "Simpulan dulu baru teori" },
+      { "id": "E", "text": "Hasil dan pembahasan digabung" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Pendahuluan umumnya menggunakan pola corong: dari konteks luas menuju fokus riset."
+  },
+  {
+    "id": 23,
+    "pertanyaan": "Dalam resensi, 'penutup resensi' paling tepat berisi…",
+    "opsi": [
+      { "id": "A", "text": "Daftar seluruh bab buku" },
+      { "id": "B", "text": "Alasan buku ditulis & sasaran pembaca, serta rekomendasi singkat" },
+      { "id": "C", "text": "Daftar tabel dan gambar" },
+      { "id": "D", "text": "Persamaan-perbedaan metode statistik" },
+      { "id": "E", "text": "Riwayat hidup pengarang secara rinci" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Penutup resensi biasanya menyampaikan sasaran pembaca dan rekomendasi singkat."
+  },
+  {
+    "id": 24,
+    "pertanyaan": "Praktik etik sitasi & parafrasa yang benar adalah…",
+    "opsi": [
+      { "id": "A", "text": "Menyalin kalimat persis tanpa tanda kutip, lalu menulis sumber di daftar pustaka saja" },
+      { "id": "B", "text": "Memparafrase ide penulis lain dengan mencantumkan sitasi dalam teks dan referensi lengkap" },
+      { "id": "C", "text": "Mengubah beberapa kata lalu tidak perlu sitasi" },
+      { "id": "D", "text": "Menyebutkan 'menurut penelitian' tanpa nama penulis dan tahun" },
+      { "id": "E", "text": "Menyisipkan tautan URL saja di badan teks tanpa daftar pustaka" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Parafrasa tetap wajib mencantumkan sitasi (nama dan tahun) dan referensi lengkap; menyalin tanpa kutip adalah plagiarisme."
+  },
+  {
+    "id": 25,
+    "pertanyaan": "Berikut ini yang bukan struktur atau sistematika resensi adalah…",
+    "opsi": [
+      { "id": "A", "text": "Identitas" },
+      { "id": "B", "text": "Orientasi" },
+      { "id": "C", "text": "Komplikasi" },
+      { "id": "D", "text": "Analisis" },
+      { "id": "E", "text": "Evaluasi" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Komplikasi bukan bagian dari struktur resensi; istilah ini digunakan dalam teks naratif fiksi."
+  }
+]
