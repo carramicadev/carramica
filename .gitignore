@@ -23,5 +23,21 @@ ui-debug.log
 # Build output
 build/
 
-functions/
+# Instead of ignoring ALL of functions/, make it more specific:
+
+# Build output and dependencies
+functions/node_modules/
+functions/lib/
+functions/build/
+
+# Temporary and test files
+functions/SOAL/
+functions/untitled folder/
+functions/backup.js
+functions/output.jsonl
+functions/export.js
+
+# Environment files
+functions/.env
+functions/.env.*
 .DS_Store

@@ -1,0 +1,602 @@
+[
+  {
+    "id": 1,
+    "pertanyaan": "Penulisan huruf kapital yang benar terdapat pada kalimat …",
+    "opsi": [
+      { "id": "A", "text": "Kami pergi ke bandung pada liburan lalu." },
+      { "id": "B", "text": "Paman datang dari Surabaya kemarin." },
+      { "id": "C", "text": "Ayah membeli mobil di jepang." },
+      { "id": "D", "text": "Mereka berlibur ke bali." },
+      { "id": "E", "text": "Kami akan pergi ke malang besok." }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 2,
+    "pertanyaan": "Huruf miring digunakan untuk …",
+    "opsi": [
+      { "id": "A", "text": "Menulis nama orang" },
+      { "id": "B", "text": "Menandai awal kalimat" },
+      { "id": "C", "text": "Menulis kata serapan asing" },
+      { "id": "D", "text": "Menulis nama gelar" },
+      { "id": "E", "text": "Menulis singkatan umum" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 3,
+    "pertanyaan": "Manakah penulisan kata depan yang tepat?",
+    "opsi": [
+      { "id": "A", "text": "Dia pergi kepasar." },
+      { "id": "B", "text": "Mereka belajar dirumah." },
+      { "id": "C", "text": "Buku itu ada di meja." },
+      { "id": "D", "text": "Saya berjalan kepantai." },
+      { "id": "E", "text": "Kami tinggal dikota." }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 4,
+    "pertanyaan": "Penulisan singkatan nama lembaga yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "who" },
+      { "id": "B", "text": "Who" },
+      { "id": "C", "text": "WHO" },
+      { "id": "D", "text": "W.H.O" },
+      { "id": "E", "text": "w.h.o" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 5,
+    "pertanyaan": "Kalimat dengan tanda baca koma yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Saya membeli buku, pensil, dan, penghapus." },
+      { "id": "B", "text": "Saya membeli buku pensil, dan penghapus." },
+      { "id": "C", "text": "Saya membeli, buku, pensil, dan penghapus." },
+      { "id": "D", "text": "Saya membeli buku, pensil, dan penghapus." },
+      { "id": "E", "text": "Saya membeli buku pensil dan penghapus." }
+    ],
+    "jawaban": "D"
+  },
+  {
+    "id": 6,
+    "pertanyaan": "Tanda titik digunakan untuk mengakhiri …",
+    "opsi": [
+      { "id": "A", "text": "Pertanyaan" },
+      { "id": "B", "text": "Perintah" },
+      { "id": "C", "text": "Kalimat pernyataan" },
+      { "id": "D", "text": "Judul tulisan" },
+      { "id": "E", "text": "Sapaan langsung" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 7,
+    "pertanyaan": "Manakah penulisan gelar yang benar?",
+    "opsi": [
+      { "id": "A", "text": "Budi, s.pd." },
+      { "id": "B", "text": "Budi, S.pd" },
+      { "id": "C", "text": "Budi, S.Pd." },
+      { "id": "D", "text": "Budi, S. PD." },
+      { "id": "E", "text": "Budi S.Pd" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 8,
+    "pertanyaan": "Kalimat dengan tanda tanya yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Apakah kamu sudah makan." },
+      { "id": "B", "text": "Apakah kamu sudah makan?" },
+      { "id": "C", "text": "Apakah kamu sudah makan!" },
+      { "id": "D", "text": "Apakah kamu sudah makan," },
+      { "id": "E", "text": "Apakah kamu sudah makan;" }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 9,
+    "pertanyaan": "Manakah yang termasuk singkatan umum?",
+    "opsi": [
+      { "id": "A", "text": "TNI" },
+      { "id": "B", "text": "BUMN" },
+      { "id": "C", "text": "dsb." },
+      { "id": "D", "text": "DPR" },
+      { "id": "E", "text": "WHO" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 10,
+    "pertanyaan": "Penulisan lambang bilangan pada awal kalimat yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "5 orang siswa mengikuti lomba." },
+      { "id": "B", "text": "Lima orang siswa mengikuti lomba." },
+      { "id": "C", "text": "Lima (5) orang siswa mengikuti lomba." },
+      { "id": "D", "text": "5 (lima) orang siswa mengikuti lomba." },
+      { "id": "E", "text": "Sebanyak 5 orang siswa mengikuti lomba." }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 11,
+    "pertanyaan": "Tanda seru digunakan pada kalimat …",
+    "opsi": [
+      { "id": "A", "text": "Ia bertanya padamu" },
+      { "id": "B", "text": "Jangan lari!" },
+      { "id": "C", "text": "Apakah kamu sudah siap" },
+      { "id": "D", "text": "Dia pergi ke pasar" },
+      { "id": "E", "text": "Kami akan datang besok" }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 12,
+    "pertanyaan": "Pemenggalan kata yang tepat adalah …",
+    "opsi": [
+      { "id": "A", "text": "man-di" },
+      { "id": "B", "text": "man-di-" },
+      { "id": "C", "text": "mand-i" },
+      { "id": "D", "text": "ma-ndi" },
+      { "id": "E", "text": "mandi-" }
+    ],
+    "jawaban": "D"
+  },
+  {
+    "id": 13,
+    "pertanyaan": "Huruf kapital tidak dipakai pada …",
+    "opsi": [
+      { "id": "A", "text": "Nama orang" },
+      { "id": "B", "text": "Awal kalimat" },
+      { "id": "C", "text": "Nama kota" },
+      { "id": "D", "text": "Nama jenis tumbuhan" },
+      { "id": "E", "text": "Nama negara" }
+    ],
+    "jawaban": "D"
+  },
+  {
+    "id": 14,
+    "pertanyaan": "Tanda titik koma (;) digunakan untuk …",
+    "opsi": [
+      { "id": "A", "text": "Memisahkan kalimat setara yang sejenis" },
+      { "id": "B", "text": "Mengakhiri pertanyaan" },
+      { "id": "C", "text": "Mengakhiri perintah" },
+      { "id": "D", "text": "Memisahkan angka ribuan" },
+      { "id": "E", "text": "Menulis daftar pustaka" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 15,
+    "pertanyaan": "Manakah penulisan yang benar?",
+    "opsi": [
+      { "id": "A", "text": "Jakarta–Bandung" },
+      { "id": "B", "text": "Jakarta - Bandung" },
+      { "id": "C", "text": "Jakarta — Bandung" },
+      { "id": "D", "text": "Jakarta , Bandung" },
+      { "id": "E", "text": "Jakarta . Bandung" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 16,
+    "pertanyaan": "Tanda petik digunakan untuk …",
+    "opsi": [
+      { "id": "A", "text": "Mengapit kata serapan" },
+      { "id": "B", "text": "Mengapit kata ilmiah" },
+      { "id": "C", "text": "Mengapit petikan langsung" },
+      { "id": "D", "text": "Mengapit singkatan" },
+      { "id": "E", "text": "Mengapit lambang bilangan" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 17,
+    "pertanyaan": "Manakah penulisan kata ulang yang benar?",
+    "opsi": [
+      { "id": "A", "text": "anak anak" },
+      { "id": "B", "text": "anak-anak" },
+      { "id": "C", "text": "anak anak-" },
+      { "id": "D", "text": "anak. anak" },
+      { "id": "E", "text": "anak:anak" }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 18,
+    "pertanyaan": "Kalimat dengan tanda titik dua yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Bacalah ayat: Al-Fatihah." },
+      { "id": "B", "text": "Bacalah ayat, Al-Fatihah." },
+      { "id": "C", "text": "Bacalah ayat. Al-Fatihah." },
+      { "id": "D", "text": "Bacalah ayat Al-Fatihah." },
+      { "id": "E", "text": "Bacalah ayat; Al-Fatihah." }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 19,
+    "pertanyaan": "Manakah penulisan judul buku yang benar?",
+    "opsi": [
+      { "id": "A", "text": "Saya membaca buku 'Negeri 5 Menara'." },
+      { "id": "B", "text": "Saya membaca buku Negeri 5 Menara." },
+      { "id": "C", "text": "Saya membaca buku Negeri Lima Menara." },
+      { "id": "D", "text": "Saya membaca buku Negeri 5 menara." },
+      { "id": "E", "text": "Saya membaca buku negeri 5 Menara." }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 20,
+    "pertanyaan": "Tanda hubung (-) dipakai untuk …",
+    "opsi": [
+      { "id": "A", "text": "Memisahkan kalimat" },
+      { "id": "B", "text": "Menyambung kata ulang" },
+      { "id": "C", "text": "Mengapit petikan langsung" },
+      { "id": "D", "text": "Memenggal huruf kapital" },
+      { "id": "E", "text": "Mengakhiri kalimat" }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 21,
+    "pertanyaan": "Penulisan bilangan tingkat yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Abad ke-20" },
+      { "id": "B", "text": "Abad ke 20" },
+      { "id": "C", "text": "Abad ke dua puluh" },
+      { "id": "D", "text": "Abad ke20" },
+      { "id": "E", "text": "Abad ke- XX" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 22,
+    "pertanyaan": "Singkatan waktu yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "pkl" },
+      { "id": "B", "text": "Pkl" },
+      { "id": "C", "text": "Pkl." },
+      { "id": "D", "text": "pkl." },
+      { "id": "E", "text": "PkL" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 23,
+    "pertanyaan": "Tanda elipsis (…) digunakan untuk …",
+    "opsi": [
+      { "id": "A", "text": "Mengganti kata asing" },
+      { "id": "B", "text": "Menunjukkan jeda panjang" },
+      { "id": "C", "text": "Menunjukkan kata ulang" },
+      { "id": "D", "text": "Mengakhiri pertanyaan" },
+      { "id": "E", "text": "Mengapit gelar" }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 24,
+    "pertanyaan": "Manakah penulisan sapaan yang benar?",
+    "opsi": [
+      { "id": "A", "text": "Adik, sedang apa?" },
+      { "id": "B", "text": "adik sedang apa?" },
+      { "id": "C", "text": "Adik sedang apa" },
+      { "id": "D", "text": "adik, sedang apa" },
+      { "id": "E", "text": "Adik sedang apa?" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 25,
+    "pertanyaan": "Penulisan nomor surat yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Nomor: 12/UNJ/2025" },
+      { "id": "B", "text": "Nomor. 12/UNJ/2025" },
+      { "id": "C", "text": "Nomor 12/UNJ/2025" },
+      { "id": "D", "text": "No 12/UNJ/2025" },
+      { "id": "E", "text": "Nomor-12/UNJ/2025" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 26,
+    "pertanyaan": "Kalimat dengan tanda koma benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Kami pergi ke pasar dan membeli sayur, buah, dan ikan." },
+      { "id": "B", "text": "Kami pergi ke pasar dan membeli sayur buah, dan ikan." },
+      { "id": "C", "text": "Kami pergi, ke pasar, dan membeli sayur buah." },
+      { "id": "D", "text": "Kami pergi ke pasar dan, membeli sayur, buah dan ikan." },
+      { "id": "E", "text": "Kami pergi ke pasar, membeli sayur buah, dan ikan" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 27,
+    "pertanyaan": "Singkatan dari “dan lain-lain” adalah …",
+    "opsi": [
+      { "id": "A", "text": "dll" },
+      { "id": "B", "text": "D.l.l" },
+      { "id": "C", "text": "D.l.l." },
+      { "id": "D", "text": "Dll." },
+      { "id": "E", "text": "dll." }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 28,
+    "pertanyaan": "Penulisan yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Jakarta, 3 Januari 2025" },
+      { "id": "B", "text": "Jakarta. 3 Januari 2025" },
+      { "id": "C", "text": "Jakarta; 3 Januari 2025" },
+      { "id": "D", "text": "Jakarta-3 Januari 2025" },
+      { "id": "E", "text": "Jakarta 3 Januari 2025" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 29,
+    "pertanyaan": "Tanda kurung digunakan untuk …",
+    "opsi": [
+      { "id": "A", "text": "Mengapit lambang bilangan" },
+      { "id": "B", "text": "Mengapit kata ulang" },
+      { "id": "C", "text": "Mengapit kata asing/penjelas" },
+      { "id": "D", "text": "Mengapit judul buku" },
+      { "id": "E", "text": "Mengapit sapaan" }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 30,
+    "pertanyaan": "Huruf kapital dipakai pada …",
+    "opsi": [
+      { "id": "A", "text": "nama bulan" },
+      { "id": "B", "text": "nama hari" },
+      { "id": "C", "text": "nama tahun" },
+      { "id": "D", "text": "nama minggu" },
+      { "id": "E", "text": "nama musim" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 31,
+    "pertanyaan": "Penulisan kata depan yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Ke rumah" },
+      { "id": "B", "text": "Kerumah" },
+      { "id": "C", "text": "keRumah" },
+      { "id": "D", "text": "KeRumah" },
+      { "id": "E", "text": "KErumah" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 32,
+    "pertanyaan": "Tanda pisah (—) digunakan untuk …",
+    "opsi": [
+      { "id": "A", "text": "Mengapit keterangan tambahan" },
+      { "id": "B", "text": "Mengakhiri kalimat" },
+      { "id": "C", "text": "Menandai kata serapan" },
+      { "id": "D", "text": "Mengapit singkatan" },
+      { "id": "E", "text": "Mengapit judul" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 33,
+    "pertanyaan": "Huruf kapital tidak dipakai untuk …",
+    "opsi": [
+      { "id": "A", "text": "Awal kalimat" },
+      { "id": "B", "text": "Nama bangsa" },
+      { "id": "C", "text": "Nama suku" },
+      { "id": "D", "text": "Nama jenis hewan" },
+      { "id": "E", "text": "Nama negara" }
+    ],
+    "jawaban": "D"
+  },
+  {
+    "id": 34,
+    "pertanyaan": "Kalimat dengan tanda titik benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Saya pergi ke pasar." },
+      { "id": "B", "text": "Saya pergi ke pasar?" },
+      { "id": "C", "text": "Saya pergi ke pasar!" },
+      { "id": "D", "text": "Saya pergi ke pasar," },
+      { "id": "E", "text": "Saya pergi ke pasar;" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 35,
+    "pertanyaan": "Penulisan bilangan pecahan yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "1/2" },
+      { "id": "B", "text": "½" },
+      { "id": "C", "text": "satu per dua" },
+      { "id": "D", "text": "1/ 2" },
+      { "id": "E", "text": "1 /2" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 36,
+    "pertanyaan": "Penulisan kata depan “di” yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Saya sedang berada dikampus." },
+      { "id": "B", "text": "Adinda di larikan ke rumah sakit." },
+      { "id": "C", "text": "Amir sedang berada dirumahnya." },
+      { "id": "D", "text": "Andika sedang makan disiang hari." },
+      { "id": "E", "text": "Budi sedang berada di Kota Bandung." }
+    ],
+    "jawaban": "E"
+  },
+  {
+    "id": 37,
+    "pertanyaan": "Kalimat dengan tanda seru yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Hore, kami menang!" },
+      { "id": "B", "text": "Hore, kami menang." },
+      { "id": "C", "text": "Hore, kami menang?" },
+      { "id": "D", "text": "Hore, kami menang;" },
+      { "id": "E", "text": "Hore, kami menang" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 38,
+    "pertanyaan": "Manakah penulisan singkatan gelar benar?",
+    "opsi": [
+      { "id": "A", "text": "Ir." },
+      { "id": "B", "text": "ir." },
+      { "id": "C", "text": "IR" },
+      { "id": "D", "text": "Ir" },
+      { "id": "E", "text": "I.R." }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 39,
+    "pertanyaan": "Huruf kapital dipakai pada …",
+    "opsi": [
+      { "id": "A", "text": "Nama gejala alam" },
+      { "id": "B", "text": "Nama hari" },
+      { "id": "C", "text": "Nama bulan" },
+      { "id": "D", "text": "Nama kota" },
+      { "id": "E", "text": "Semua benar" }
+    ],
+    "jawaban": "E"
+  },
+  {
+    "id": 40,
+    "pertanyaan": "Penulisan lambang bilangan yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Rp. 5.000" },
+      { "id": "B", "text": "Rp5.000" },
+      { "id": "C", "text": "Rp 5.000" },
+      { "id": "D", "text": "Rp,5.000" },
+      { "id": "E", "text": "Rp-5.000" }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 41,
+    "pertanyaan": "Manakah penulisan bilangan yang benar?",
+    "opsi": [
+      { "id": "A", "text": "Perang Dunia II" },
+      { "id": "B", "text": "Perang Dunia Ke-II" },
+      { "id": "C", "text": "Perang Dunia Ke2" },
+      { "id": "D", "text": "Perang Dunia Ke-dua" },
+      { "id": "E", "text": "Perang Dunia KeII" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 42,
+    "pertanyaan": "Kalimat dengan tanda elipsis yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "“Aku … tidak tahu harus berkata apa,” katanya." },
+      { "id": "B", "text": "“Aku .. tidak tahu harus berkata apa,” katanya." },
+      { "id": "C", "text": "“Aku ... tidak tahu harus berkata apa,” katanya." },
+      { "id": "D", "text": "“Aku, tidak tahu harus berkata apa,” katanya." },
+      { "id": "E", "text": "“Aku—tidak tahu harus berkata apa,” katanya." }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 43,
+    "pertanyaan": "Tanda petik tunggal dipakai untuk …",
+    "opsi": [
+      { "id": "A", "text": "Mengapit judul buku" },
+      { "id": "B", "text": "Mengapit arti kata" },
+      { "id": "C", "text": "Mengapit kata ulang" },
+      { "id": "D", "text": "Mengapit singkatan" },
+      { "id": "E", "text": "Mengapit kalimat" }
+    ],
+    "jawaban": "B"
+  },
+  {
+    "id": 44,
+    "pertanyaan": "Kalimat dengan tanda titik koma benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Ia membeli buku; majalah; dan koran." },
+      { "id": "B", "text": "Ia membeli buku, majalah; dan koran." },
+      { "id": "C", "text": "Ia membeli buku; majalah, dan koran." },
+      { "id": "D", "text": "Ia membeli buku majalah; dan koran." },
+      { "id": "E", "text": "Ia membeli buku majalah dan; koran." }
+    ],
+    "jawaban": "C"
+  },
+  {
+    "id": 45,
+    "pertanyaan": "Huruf kapital dipakai pada …",
+    "opsi": [
+      { "id": "A", "text": "Nama diri" },
+      { "id": "B", "text": "Awal kalimat" },
+      { "id": "C", "text": "Nama negara" },
+      { "id": "D", "text": "Nama kota" },
+      { "id": "E", "text": "Semua benar" }
+    ],
+    "jawaban": "E"
+  },
+  {
+    "id": 46,
+    "pertanyaan": "Penulisan bilangan tingkat yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Kelas X" },
+      { "id": "B", "text": "kelas x" },
+      { "id": "C", "text": "Kelas x" },
+      { "id": "D", "text": "kelas-X" },
+      { "id": "E", "text": "KELAS X" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 47,
+    "pertanyaan": "Singkatan jam yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "jam." },
+      { "id": "B", "text": "Jam" },
+      { "id": "C", "text": "Jam." },
+      { "id": "D", "text": "pukul" },
+      { "id": "E", "text": "pkl." }
+    ],
+    "jawaban": "E"
+  },
+  {
+    "id": 48,
+    "pertanyaan": "Berikut ini pernyataan yang benar adalah …",
+    "opsi": [
+      { "id": "A", "text": "Kata depan “ke” penulisannya disatukan dengan kata yang mengikutinya" },
+      { "id": "B", "text": "Kata depan “di” penulisannya digabung dengan kata yang mengikutinya." },
+      { "id": "C", "text": "Kata depan “dari” penulisannya disatukan dengan kata yang mengikutinya." },
+      { "id": "D", "text": "Imbuhan “di” penulisannya dipisah dengan kata yang mengikutinya." },
+      { "id": "E", "text": "Imbuhan “di” penulisannya digabung dengan kata yang mengikutinya." }
+    ],
+    "jawaban": "E"
+  },
+  {
+    "id": 49,
+    "pertanyaan": "Penulisan benar pada alamat adalah …",
+    "opsi": [
+      { "id": "A", "text": "Jl. Merdeka No. 10" },
+      { "id": "B", "text": "Jl Merdeka no 10" },
+      { "id": "C", "text": "Jalan Merdeka no.10" },
+      { "id": "D", "text": "Jl Merdeka Nomor 10" },
+      { "id": "E", "text": "Jln. Merdeka No 10" }
+    ],
+    "jawaban": "A"
+  },
+  {
+    "id": 50,
+    "pertanyaan": "Tanda baca yang digunakan untuk mengakhiri pertanyaan adalah …",
+    "opsi": [
+      { "id": "A", "text": "Titik" },
+      { "id": "B", "text": "Koma" },
+      { "id": "C", "text": "Tanda tanya" },
+      { "id": "D", "text": "Tanda seru" },
+      { "id": "E", "text": "Tanda petik" }
+    ],
+    "jawaban": "C"
+  }
+]

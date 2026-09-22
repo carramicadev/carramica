@@ -1,0 +1,327 @@
+[
+  {
+    "id": 1,
+    "pertanyaan": "Paragraf adalah…",
+    "opsi": [
+      { "id": "A", "text": "Satu kalimat yang berdiri sendiri" },
+      { "id": "B", "text": "Bagian wacana yang memuat satu tema pokok dan ditandai tata tulis paragraf" },
+      { "id": "C", "text": "Deret kata yang memiliki subjek dan predikat" },
+      { "id": "D", "text": "Dua kalimat atau lebih yang memiliki rima" },
+      { "id": "E", "text": "Kumpulan kalimat acak dengan topik berbeda" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Paragraf memuat satu gagasan/tema pokok dan secara tulisan ditandai alinea menjorok/ spasi antarapagraf."
+  },
+  {
+    "id": 2,
+    "pertanyaan": "Unsur paragraf yang benar adalah…",
+    "opsi": [
+      { "id": "A", "text": "Tema, amanat, alur" },
+      { "id": "B", "text": "Pikiran utama, amanat, sudut pandang" },
+      { "id": "C", "text": "Pikiran utama (PU), pikiran penjelas (PP), penegas" },
+      { "id": "D", "text": "Subjek, predikat, objek" },
+      { "id": "E", "text": "Gagasan umum, majas, diksi" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "PU = inti persoalan; PP = uraian yang menjelaskan PU; penegas = pengulang/penekanan PU di akhir."
+  },
+  {
+    "id": 3,
+    "pertanyaan": "Ciri paragraf yang memiliki kesatuan adalah…",
+    "opsi": [
+      { "id": "A", "text": "Semua kalimat membahas satu topik yang sama" },
+      { "id": "B", "text": "Setiap kalimat punya data angka" },
+      { "id": "C", "text": "Ada majas pada kalimat pertama" },
+      { "id": "D", "text": "Minimal lima kalimat" },
+      { "id": "E", "text": "Menggunakan kalimat pasif" }
+    ],
+    "jawaban": "A",
+    "pembahasan": "Kesatuan berarti seluruh kalimat mendukung satu gagasan pokok tanpa melebar ke topik lain."
+  },
+  {
+    "id": 4,
+    "pertanyaan": "Ciri kepaduan (koherensi) paragraf adalah…",
+    "opsi": [
+      { "id": "A", "text": "Memakai rima akhir" },
+      { "id": "B", "text": "Hubungan antarkalimat runut & logis, sering dibantu kata penghubung/konjungsi" },
+      { "id": "C", "text": "Mengulang kalimat pertama di akhir" },
+      { "id": "D", "text": "Semua kalimat memakai kata ganti orang pertama" },
+      { "id": "E", "text": "Menghindari konjungsi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Koherensi = alur gagasan lancar dan saling terhubung (misal: selain itu, oleh karena itu, akibatnya, dll.)."
+  },
+  {
+    "id": 5,
+    "pertanyaan": "Paragraf deduktif ditandai…",
+    "opsi": [
+      { "id": "A", "text": "PU di tengah paragraf" },
+      { "id": "B", "text": "PU di akhir paragraf" },
+      { "id": "C", "text": "PU tersebar pada seluruh paragraf" },
+      { "id": "D", "text": "PU di awal, diikuti PP yang merinci" },
+      { "id": "E", "text": "Tidak ada PU" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "Deduktif memulai dengan kalimat topik (umum) lalu rincian/ilustrasi (khusus)."
+  },
+  {
+    "id": 6,
+    "pertanyaan": "Paragraf induktif ditandai…",
+    "opsi": [
+      { "id": "A", "text": "Kalimat pertama berisi kesimpulan umum" },
+      { "id": "B", "text": "PP di awal, lalu PU/kesimpulan di akhir" },
+      { "id": "C", "text": "Seluruh kalimat berupa contoh tanpa simpulan" },
+      { "id": "D", "text": "PU di awal dan akhir" },
+      { "id": "E", "text": "PU di awal, PP di tengah" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Induktif memapar data/contoh/uraian (khusus) lalu menyimpulkan (umum) di akhir."
+  },
+  {
+    "id": 7,
+    "pertanyaan": "Paragraf campuran adalah…",
+    "opsi": [
+      { "id": "A", "text": "PU di awal, tanpa penutup" },
+      { "id": "B", "text": "PU di tengah, tanpa contoh" },
+      { "id": "C", "text": "PU di awal, diikuti PP, lalu penegasan ulang PU di akhir" },
+      { "id": "D", "text": "PU di akhir, tanpa PP" },
+      { "id": "E", "text": "Tidak memakai PP" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Struktur: umum → khusus → penguatan kembali gagasan umum."
+  },
+  {
+    "id": 8,
+    "pertanyaan": "Paragraf deskriptif (berdasarkan pola pikir dalam materi) dicirikan oleh…",
+    "opsi": [
+      { "id": "A", "text": "PU eksplisit pada kalimat pertama" },
+      { "id": "B", "text": "PU dan PP tersirat di seluruh bagian berupa lukisan/ gambaran objek" },
+      { "id": "C", "text": "Selalu memakai data angka" },
+      { "id": "D", "text": "Selalu berisi ajakan" },
+      { "id": "E", "text": "Selalu memakai perbandingan “lebih/paling”" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Deskriptif melukiskan objek/suasana agar pembaca seolah melihat/merasakan."
+  },
+  {
+    "id": 9,
+    "pertanyaan": "Berdasarkan cara menjelaskan gagasan, paragraf generalisasi adalah…",
+    "opsi": [
+      { "id": "A", "text": "Paragraf yang mengelompokkan objek" },
+      { "id": "B", "text": "Paragraf yang menyajikan perumpamaan" },
+      { "id": "C", "text": "Paragraf yang memberi contoh-contoh" },
+      { "id": "D", "text": "Paragraf dengan pola khusus→umum atau umum→khusus (penarikan/ perluasan simpulan umum)" },
+      { "id": "E", "text": "Paragraf yang menyajikan definisi istilah" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "Generalisasi menyimpulkan atau memperluas dari fakta ke pernyataan umum (atau sebaliknya)."
+  },
+  {
+    "id": 10,
+    "pertanyaan": "Contoh ringkas berikut paling tepat diklasifikasikan sebagai klasifikasi: “Paragraf berdasarkan tujuan terbagi atas lima: deskripsi, eksposisi, persuasi, argumentasi, dan narasi.”",
+    "opsi": [
+      { "id": "A", "text": "Generalisasi" },
+      { "id": "B", "text": "Klasifikasi" },
+      { "id": "C", "text": "Analogi" },
+      { "id": "D", "text": "Contoh" },
+      { "id": "E", "text": "Deskripsi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Ada pengelompokan/pembagian jenis—itulah klasifikasi."
+  },
+  {
+    "id": 11,
+    "pertanyaan": "Paragraf analogi ditandai…",
+    "opsi": [
+      { "id": "A", "text": "Deret data statistik" },
+      { "id": "B", "text": "Urutan sebab–akibat" },
+      { "id": "C", "text": "Perumpamaan antara unsur yang dibandingkan untuk memperjelas gagasan" },
+      { "id": "D", "text": "Ajakan langsung dengan kata “marilah”" },
+      { "id": "E", "text": "Definisi operasional" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Analogi memakai kemiripan (mis. melestarikan hutan diumpamakan melestarikan rumah)."
+  },
+  {
+    "id": 12,
+    "pertanyaan": "Paragraf contoh (eksplikasi dengan contoh) berfungsi untuk…",
+    "opsi": [
+      { "id": "A", "text": "Membujuk pembaca menaati ajakan" },
+      { "id": "B", "text": "Menyerang pendapat lawan" },
+      { "id": "C", "text": "Memperkuat gagasan dengan daftar contoh konkret" },
+      { "id": "D", "text": "Menentukan alur cerita" },
+      { "id": "E", "text": "Mengkritik istilah teknis" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "“Contoh” menghadirkan kasus/ilustrasi guna menguatkan ide."
+  },
+  {
+    "id": 13,
+    "pertanyaan": "Berdasarkan tujuan, pasangan jenis paragraf–tujuan yang tepat ialah…",
+    "opsi": [
+      { "id": "A", "text": "Deskripsi—meyakinkan pembaca melakukan sesuatu" },
+      { "id": "B", "text": "Eksposisi—menggambar-lukiskan suasana" },
+      { "id": "C", "text": "Persuasi—membujuk/ meyakinkan agar menerima atau bertindak" },
+      { "id": "D", "text": "Argumentasi—sekadar memberi tahu tanpa alasan" },
+      { "id": "E", "text": "Narasi—menjelaskan konsep ilmiah" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Deskripsi = melukiskan; Eksposisi = menjelaskan agar paham; Persuasi = membujuk; Argumentasi = alasan + bukti; Narasi = menceritakan peristiwa berurutan."
+  },
+  {
+    "id": 14,
+    "pertanyaan": "Paragraf berikut ini paling mungkin adalah argumentasi: “Jumlah anak jalanan di kota besar meningkat. Mereka memenuhi jalan pusat kota. Berbagai cara mereka lakukan untuk bertahan hidup… Fenomena ini tampak sejak krisis ekonomi melanda; krisis berkepanjangan menjadi penyebab kesulitan di berbagai sektor.”",
+    "opsi": [
+      { "id": "A", "text": "Deskripsi" },
+      { "id": "B", "text": "Eksposisi" },
+      { "id": "C", "text": "Persuasi" },
+      { "id": "D", "text": "Argumentasi" },
+      { "id": "E", "text": "Narasi" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "Memuat pernyataan + alasan/penyebab untuk menopang gagasan."
+  },
+  {
+    "id": 15,
+    "pertanyaan": "Ciri narasi yang tepat adalah…",
+    "opsi": [
+      { "id": "A", "text": "Memuat pembagian jenis" },
+      { "id": "B", "text": "Menyajikan data sebagai simpulan umum" },
+      { "id": "C", "text": "Mengajak pembaca melakukan tindakan" },
+      { "id": "D", "text": "Melukiskan wujud/indera" },
+      { "id": "E", "text": "Menceritakan peristiwa berurutan menurut waktu/kronologi" }
+    ],
+    "jawaban": "E",
+    "pembahasan": "Paragraf narasi menceritakan sesuatu berdasarkan urutan kronologis."
+  },
+  {
+    "id": 16,
+    "pertanyaan": "Letak kalimat utama pada paragraf deduktif adalah…",
+    "opsi": [
+      { "id": "A", "text": "Di akhir paragraf" },
+      { "id": "B", "text": "Di awal paragraf" },
+      { "id": "C", "text": "Di tengah paragraf" },
+      { "id": "D", "text": "Tidak ada kalimat utama" },
+      { "id": "E", "text": "Di awal dan akhir sekaligus" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Deduktif: umum (PU) di awal → diikuti uraian (PP)."
+  },
+  {
+    "id": 17,
+    "pertanyaan": "Paragraf berikut cenderung induktif karena… “Banyak siswa menabung di koperasi sekolah. Orang tua juga mulai membuka rekening anak. Lembaga kursus menawarkan paket literasi finansial. Masyarakat semakin sadar pentingnya menabung.”",
+    "opsi": [
+      { "id": "A", "text": "Menggunakan kalimat majemuk" },
+      { "id": "B", "text": "Memakai kata sambung kausal" },
+      { "id": "C", "text": "PU muncul setelah contoh-contoh" },
+      { "id": "D", "text": "Tidak memakai tanda baca" },
+      { "id": "E", "text": "Semua kalimat berupa definisi" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Contoh/uraian khusus di awal → simpulan umum (PU) di akhir."
+  },
+  {
+    "id": 18,
+    "pertanyaan": "Ciri paragraf campuran yang tepat ialah…",
+    "opsi": [
+      { "id": "A", "text": "PU tersebar acak" },
+      { "id": "B", "text": "PU di awal, lalu PP, dan penegasan ulang PU di akhir" },
+      { "id": "C", "text": "Hanya berisi contoh" },
+      { "id": "D", "text": "Hanya berisi definisi" },
+      { "id": "E", "text": "Tidak memakai konjungsi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Struktur umum → khusus → umum (penegasan)."
+  },
+  {
+    "id": 19,
+    "pertanyaan": "Paragraf yang kohesif memanfaatkan…",
+    "opsi": [
+      { "id": "A", "text": "Rima dan sajak" },
+      { "id": "B", "text": "Diksi puitik" },
+      { "id": "C", "text": "Alat kohesi: rujukan, repetisi, sinonimi, elipsis, dan konjungsi" },
+      { "id": "D", "text": "Kalimat pasif saja" },
+      { "id": "E", "text": "Majas metafora" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Kohesi = keterikatan formal antarkalimat (penanda bahasa)."
+  },
+  {
+    "id": 20,
+    "pertanyaan": "Kalimat transisi/jembatan berfungsi untuk…",
+    "opsi": [
+      { "id": "A", "text": "Menyimpulkan paragraf" },
+      { "id": "B", "text": "Membuka paragraf baru" },
+      { "id": "C", "text": "Mengalihkan fokus dari subgagasan satu ke subgagasan lain" },
+      { "id": "D", "text": "Mengutip pendapat ahli" },
+      { "id": "E", "text": "Menghapus kalimat sumbang" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Transisi menjaga alur agar tetap runtut dan padu (koheren)."
+  },
+  {
+    "id": 21,
+    "pertanyaan": "Temukan kalimat sumbang dalam paragraf deskriptif tentang perpustakaan: (1) Ruangan itu sunyi dengan rak-rak tinggi. (2) Lampu putih memantul di meja baca. (3) Aroma kertas tua terasa lembut. (4) Penjualan buku daring kini meningkat pesat. (5) Sejumlah mahasiswa menyalin catatan.",
+    "opsi": [
+      { "id": "A", "text": "(1)" },
+      { "id": "B", "text": "(2)" },
+      { "id": "C", "text": "(3)" },
+      { "id": "D", "text": "(4)" },
+      { "id": "E", "text": "(5)" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "(1)(2)(3)(5) melukiskan ruang perpustakaan; (4) melebar ke tren penjualan daring (di luar topik)."
+  },
+  {
+    "id": 22,
+    "pertanyaan": "Paragraf definisi biasanya…",
+    "opsi": [
+      { "id": "A", "text": "Mengelompokkan kategori" },
+      { "id": "B", "text": "Menyajikan makna sebuah konsep dan ciri hakikinya" },
+      { "id": "C", "text": "Mengajak pembaca bertindak" },
+      { "id": "D", "text": "Menarasikan kejadian" },
+      { "id": "E", "text": "Membandingkan dua hal" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Definisi menjelaskan konsep agar pembaca memahami inti makna."
+  },
+  {
+    "id": 23,
+    "pertanyaan": "Paragraf sebab–akibat (eksposisi) dicirikan oleh…",
+    "opsi": [
+      { "id": "A", "text": "Adanya tokoh dan alur" },
+      { "id": "B", "text": "Kalimat ajakan langsung" },
+      { "id": "C", "text": "Penanda kausal (sebab, karena, akibatnya, sehingga) yang menghubungkan PU–PP" },
+      { "id": "D", "text": "Metafora dominan" },
+      { "id": "E", "text": "Hanya data numerik" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Hubungan kausal eksplisit membentuk koherensi logis antarbagian paragraf."
+  },
+  {
+    "id": 24,
+    "pertanyaan": "Penanda hubungan pertentangan yang tepat untuk koherensi paragraf ialah…",
+    "opsi": [
+      { "id": "A", "text": "oleh karena itu, akibatnya" },
+      { "id": "B", "text": "selanjutnya, kemudian" },
+      { "id": "C", "text": "namun, sebaliknya, kendati demikian" },
+      { "id": "D", "text": "pertama, kedua" },
+      { "id": "E", "text": "misalnya, contohnya" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Kata sambung seperti 'namun' dan 'sebaliknya' digunakan untuk mengontraskan ide antarbagian paragraf."
+  },
+  {
+    "id": 25,
+    "pertanyaan": "Paragraf persuasi yang efektif umumnya memuat…",
+    "opsi": [
+      { "id": "A", "text": "Definisi murni tanpa data" },
+      { "id": "B", "text": "Ajakan + alasan/keuntungan + (bisa) bukti atau contoh" },
+      { "id": "C", "text": "Urutan kejadian waktu" },
+      { "id": "D", "text": "Hanya humor" },
+      { "id": "E", "text": "Sajak/rima" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Paragraf persuasi tidak sekadar mengajak, tetapi juga meyakinkan pembaca melalui alasan, manfaat, dan bukti."
+  }
+]

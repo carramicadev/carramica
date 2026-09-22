@@ -1,0 +1,329 @@
+[
+  {
+    "id": 1,
+    "pertanyaan": "Berikut ini definisi dari frasa adalah…",
+    "opsi": [
+      { "id": "A", "text": "Satuan setara kalimat" },
+      { "id": "B", "text": "Gabungan morfem menjadi kata" },
+      { "id": "C", "text": "Gabungan dua kata atau lebih yang tidak berpredikat dan menempati satu fungsi kalimat" },
+      { "id": "D", "text": "Gabungan kata yang selalu berpredikat" },
+      { "id": "E", "text": "Satuan bahasa yang diakhiri tanda titik" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Frasa bersifat nonpredikatif dan mengisi satu jabatan (S, O, K, dsb.)."
+  },
+  {
+    "id": 2,
+    "pertanyaan": "Berikut ini definisi dari klausa adalah…",
+    "opsi": [
+      { "id": "A", "text": "Kata yang bermakna leksikal" },
+      { "id": "B", "text": "Kelompok kata minimal memiliki S dan/atau P, berpotensi menjadi kalimat" },
+      { "id": "C", "text": "Gabungan frasa tanpa S-P" },
+      { "id": "D", "text": "Kalimat majemuk" },
+      { "id": "E", "text": "Deret kata tugas" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Klausa punya relasi predikatif dan dapat berdiri menjadi kalimat."
+  },
+  {
+    "id": 3,
+    "pertanyaan": "Kalimat didefinisikan sebagai…",
+    "opsi": [
+      { "id": "A", "text": "Frasa + tanda koma" },
+      { "id": "B", "text": "Satuan bahasa terkecil yang menyampaikan pikiran utuh" },
+      { "id": "C", "text": "Klausa tanpa subjek" },
+      { "id": "D", "text": "Kata yang diawali huruf kapital" },
+      { "id": "E", "text": "Deret nomina" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Inti kalimat: gagasan utuh; secara lisan ditandai intonasi, tulisan ditandai tanda akhir."
+  },
+  {
+    "id": 4,
+    "pertanyaan": "Ciri kalimat lisan yang menonjol ialah…",
+    "opsi": [
+      { "id": "A", "text": "Huruf kapital" },
+      { "id": "B", "text": "Tanda seru" },
+      { "id": "C", "text": "Intonasi akhir dan jeda" },
+      { "id": "D", "text": "Tanda titik" },
+      { "id": "E", "text": "Italik" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Lisan bergantung pada prosodi (naik–turun, jeda)."
+  },
+  {
+    "id": 5,
+    "pertanyaan": "Kalimat deklaratif biasanya berintonasi/tanda…",
+    "opsi": [
+      { "id": "A", "text": "Naik / tanda tanya (?)" },
+      { "id": "B", "text": "Tinggi / tanda seru (!)" },
+      { "id": "C", "text": "Datar / tanda titik (.)" },
+      { "id": "D", "text": "Turun drastis / titik koma (;)" },
+      { "id": "E", "text": "Netral / tanpa tanda" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Menyampaikan informasi/pernyataan."
+  },
+  {
+    "id": 6,
+    "pertanyaan": "Kalimat imperatif dicirikan oleh…",
+    "opsi": [
+      { "id": "A", "text": "Penunjuk “itu/ini”" },
+      { "id": "B", "text": "Deret nomina" },
+      { "id": "C", "text": "Intonasi perintah, sering berakhiran (!)" },
+      { "id": "D", "text": "Konjungsi kausal" },
+      { "id": "E", "text": "Tanda tanya" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Mengandung perintah/larangan/ajakan."
+  },
+  {
+    "id": 7,
+    "pertanyaan": "Kalimat interogatif…",
+    "opsi": [
+      { "id": "A", "text": "Memakai tanda titik" },
+      { "id": "B", "text": "Memakai tanda seru" },
+      { "id": "C", "text": "Memakai tanda tanya dan intonasi naik" },
+      { "id": "D", "text": "Tanpa subjek" },
+      { "id": "E", "text": "Selalu diawali kata tanya" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Tujuan menanyakan; boleh pakai partikel/kata tanya."
+  },
+  {
+    "id": 8,
+    "pertanyaan": "Manakah frasa nominal?",
+    "opsi": [
+      { "id": "A", "text": "sangat cantik" },
+      { "id": "B", "text": "di kampus" },
+      { "id": "C", "text": "sudah berangkat" },
+      { "id": "D", "text": "rumah besar" },
+      { "id": "E", "text": "paling cepat" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "Inti nomina “rumah”; pewatas adjektiva “besar”."
+  },
+  {
+    "id": 9,
+    "pertanyaan": "Manakah frasa verbal?",
+    "opsi": [
+      { "id": "A", "text": "para siswa" },
+      { "id": "B", "text": "ke sekolah" },
+      { "id": "C", "text": "sedang belajar" },
+      { "id": "D", "text": "amat luas" },
+      { "id": "E", "text": "beberapa orang" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Inti verba “belajar” bertanda aspek “sedang”."
+  },
+  {
+    "id": 10,
+    "pertanyaan": "Manakah frasa adjektival?",
+    "opsi": [
+      { "id": "A", "text": "akan pergi" },
+      { "id": "B", "text": "di ruang tamu" },
+      { "id": "C", "text": "lebih ramah" },
+      { "id": "D", "text": "tiga belas" },
+      { "id": "E", "text": "buku tulis" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Adjektiva “ramah” + penanda derajat “lebih”."
+  },
+  {
+    "id": 11,
+    "pertanyaan": "Frasa preposisional ditunjukkan oleh…",
+    "opsi": [
+      { "id": "A", "text": "sangat baik" },
+      { "id": "B", "text": "beberapa buku" },
+      { "id": "C", "text": "ke pasar" },
+      { "id": "D", "text": "makan siang" },
+      { "id": "E", "text": "paling kecil" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Preposisi “ke” + nomina membentuk frasa preposisional."
+  },
+  {
+    "id": 12,
+    "pertanyaan": "Pola MD (Menerangkan–Diterangkan) tampak pada…",
+    "opsi": [
+      { "id": "A", "text": "rumah kayu" },
+      { "id": "B", "text": "buku sejarah" },
+      { "id": "C", "text": "guru bahasa" },
+      { "id": "D", "text": "kain sutra" },
+      { "id": "E", "text": "tiga mobil" }
+    ],
+    "jawaban": "E",
+    "pembahasan": "Numeralia (M) + nomina (D) → “tiga mobil”."
+  },
+  {
+    "id": 13,
+    "pertanyaan": "Pola DM (Diterangkan–Menerangkan) tampak pada…",
+    "opsi": [
+      { "id": "A", "text": "kebun bunga" },
+      { "id": "B", "text": "dua siswa" },
+      { "id": "C", "text": "sangat tinggi" },
+      { "id": "D", "text": "ke kota" },
+      { "id": "E", "text": "telah selesai" }
+    ],
+    "jawaban": "A",
+    "pembahasan": "“kebun” (D/inti) + “bunga” (M/penjelas jenis kebun)."
+  },
+  {
+    "id": 14,
+    "pertanyaan": "Endosentris adalah frasa yang…",
+    "opsi": [
+      { "id": "A", "text": "Tanpa inti" },
+      { "id": "B", "text": "Intinya berada di luar frasa" },
+      { "id": "C", "text": "Mempunyai inti yang mewakili keseluruhan frasa" },
+      { "id": "D", "text": "Selalu koordinatif" },
+      { "id": "E", "text": "Selalu preposisional" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Unsur inti bisa menggantikan keseluruhan frasa."
+  },
+  {
+    "id": 15,
+    "pertanyaan": "Contoh eksosentris ialah…",
+    "opsi": [
+      { "id": "A", "text": "sangat mahal" },
+      { "id": "B", "text": "kue cokelat" },
+      { "id": "C", "text": "ke rumah" },
+      { "id": "D", "text": "dua belas siswa" },
+      { "id": "E", "text": "rumah tua" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Frasa preposisional umumnya eksosentris (inti di luar)."
+  },
+  {
+    "id": 16,
+    "pertanyaan": "Koordinatif ditunjukkan oleh…",
+    "opsi": [
+      { "id": "A", "text": "tinggi besar" },
+      { "id": "B", "text": "paling tinggi" },
+      { "id": "C", "text": "hendak pergi" },
+      { "id": "D", "text": "di sekolah" },
+      { "id": "E", "text": "rumah kayu" }
+    ],
+    "jawaban": "A",
+    "pembahasan": "Dua unsur setara disatukan tanpa hubungan pewatas–inti."
+  },
+  {
+    "id": 17,
+    "pertanyaan": "Apositif ditunjukkan oleh…",
+    "opsi": [
+      { "id": "A", "text": "Sari dan Lina" },
+      { "id": "B", "text": "Sari, ketua kelas, …" },
+      { "id": "C", "text": "Sari paling rajin" },
+      { "id": "D", "text": "Sari di kelas" },
+      { "id": "E", "text": "Sari sudah pergi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Nomina kedua menjelaskan nomina pertama dan disisipi koma."
+  },
+  {
+    "id": 18,
+    "pertanyaan": "Urutan pewatas yang paling alamiah: rumah kayu tua. Inti dan urutannya…",
+    "opsi": [
+      { "id": "A", "text": "Inti “tua”; pewatas “rumah, kayu”" },
+      { "id": "B", "text": "Inti “kayu”; pewatas “rumah, tua”" },
+      { "id": "C", "text": "Inti “rumah”; pewatas “kayu, tua”" },
+      { "id": "D", "text": "Inti “rumah”; pewatas “tua, kayu”" },
+      { "id": "E", "text": "Inti “tua”; pewatas “kayu, rumah”" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Jenis/bahan dekat inti (“kayu”), lalu sifat/usia (“tua”)."
+  },
+  {
+    "id": 19,
+    "pertanyaan": "Fungsi frasa nominal yang paling lazim dalam kalimat ialah…",
+    "opsi": [
+      { "id": "A", "text": "Predikat verba" },
+      { "id": "B", "text": "Keterangan tempat" },
+      { "id": "C", "text": "Subjek atau objek" },
+      { "id": "D", "text": "Pelengkap preposisi" },
+      { "id": "E", "text": "Predikat adjektiva" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Nominal sering mengisi S/O/Pel. nominal."
+  },
+  {
+    "id": 20,
+    "pertanyaan": "Manakah bukan frasa adjektival?",
+    "opsi": [
+      { "id": "A", "text": "amat lebar" },
+      { "id": "B", "text": "kurang tepat" },
+      { "id": "C", "text": "lebih rapi" },
+      { "id": "D", "text": "hendak pergi" },
+      { "id": "E", "text": "paling indah" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "“hendak pergi” = frasa verbal (modalitas + verba)."
+  },
+  {
+    "id": 21,
+    "pertanyaan": "Derajat superlatif tampak pada…",
+    "opsi": [
+      { "id": "A", "text": "lebih cepat" },
+      { "id": "B", "text": "secepat" },
+      { "id": "C", "text": "cepat sekali" },
+      { "id": "D", "text": "paling cepat" },
+      { "id": "E", "text": "cukup cepat" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "Penanda superlatif: “paling”."
+  },
+  {
+    "id": 22,
+    "pertanyaan": "Frasa keterangan sebab yang tepat…",
+    "opsi": [
+      { "id": "A", "text": "di bawah kursi" },
+      { "id": "B", "text": "ke arah barat" },
+      { "id": "C", "text": "pada pukul tujuh" },
+      { "id": "D", "text": "karena macet" },
+      { "id": "E", "text": "untuk besok" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "“karena …” menyatakan sebab."
+  },
+  {
+    "id": 23,
+    "pertanyaan": "Kesepadanan dalam kalimat efektif berkaitan dengan…",
+    "opsi": [
+      { "id": "A", "text": "Kesamaan bentuk kata dalam deret" },
+      { "id": "B", "text": "Keseimbangan isi (gagasan) dan struktur kalimat" },
+      { "id": "C", "text": "Menghemat kata sandang" },
+      { "id": "D", "text": "Menghindari kalimat pasif" },
+      { "id": "E", "text": "Menambah konjungsi" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Ide utama selaras dengan struktur yang dipakai."
+  },
+  {
+    "id": 24,
+    "pertanyaan": "Kepararelan (kesejajaran) menuntut…",
+    "opsi": [
+      { "id": "A", "text": "Deret berbeda kelas kata" },
+      { "id": "B", "text": "Deret sama kelas kata/bentuk" },
+      { "id": "C", "text": "Kalimat pasif seluruhnya" },
+      { "id": "D", "text": "Penghilangan konjungsi" },
+      { "id": "E", "text": "Pengulangan subjek" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Semua unsur dalam deret harus sejajar bentuknya."
+  },
+  {
+    "id": 25,
+    "pertanyaan": "Contoh perbaikan kehematan yang benar ialah…",
+    "opsi": [
+      { "id": "A", "text": "Para hadirin sekalian dipersilakan… → tetap" },
+      { "id": "B", "text": "Naik ke atas → naik" },
+      { "id": "C", "text": "Turun ke bawah → turun ke bawah" },
+      { "id": "D", "text": "Para tamu undangan diundang… → dipertahankan" },
+      { "id": "E", "text": "Masing-masing individu → tidak perlu diubah" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Hindari kemubaziran makna ganda (“ke atas” pada “naik” sudah implisit)."
+  }
+
+
+]

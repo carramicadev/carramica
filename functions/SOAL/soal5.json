@@ -1,0 +1,328 @@
+[
+  {
+    "id": 1,
+    "pertanyaan": "Plagiarisme pada karya ilmiah pada dasarnya adalah…",
+    "opsi": [
+      { "id": "A", "text": "Pengembangan ide sendiri tanpa rujukan" },
+      { "id": "B", "text": "Penggunaan ide/karya orang lain tanpa atribusi yang sesuai" },
+      { "id": "C", "text": "Pengutipan langsung dengan tanda kutip" },
+      { "id": "D", "text": "Menggunakan data terbuka" },
+      { "id": "E", "text": "Penyuntingan bahasa naskah orang lain" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Plagiarisme berarti menggunakan ide, kata, atau karya orang lain tanpa pengakuan/atribusi yang sesuai."
+  },
+  {
+    "id": 2,
+    "pertanyaan": "Jenis plagiarisme menurut aspek yang dicuri TIDAK mencakup…",
+    "opsi": [
+      { "id": "A", "text": "Ide" },
+      { "id": "B", "text": "Isi/data penelitian" },
+      { "id": "C", "text": "Kata/kalimat/paragraf" },
+      { "id": "D", "text": "Total" },
+      { "id": "E", "text": "Gaya selingkung jurnal" }
+    ],
+    "jawaban": "E",
+    "pembahasan": "Empat jenis plagiarisme utama: ide, isi/data, kata–kalimat–paragraf, dan total."
+  },
+  {
+    "id": 3,
+    "pertanyaan": "Menyalin kata demi kata dari sumber tanpa menyebut sumber merupakan…",
+    "opsi": [
+      { "id": "A", "text": "Mosaik" },
+      { "id": "B", "text": "Parafrasa" },
+      { "id": "C", "text": "Word-for-word plagiarizing" },
+      { "id": "D", "text": "Swaplagiat" },
+      { "id": "E", "text": "Kain perca" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Plagiarisme kata demi kata terjadi saat teks disalin utuh tanpa mencantumkan sumber."
+  },
+  {
+    "id": 4,
+    "pertanyaan": "Menggabungkan potongan gagasan dari beberapa sumber lalu diakui sebagai milik sendiri adalah…",
+    "opsi": [
+      { "id": "A", "text": "Verbatim" },
+      { "id": "B", "text": "Mosaik/patchwork" },
+      { "id": "C", "text": "Parafrasa sah" },
+      { "id": "D", "text": "Struktur gagasan" },
+      { "id": "E", "text": "Kata kunci" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Plagiarisme mosaik = menggabungkan ide dari berbagai sumber dan mengakuinya sebagai gagasan sendiri."
+  },
+  {
+    "id": 5,
+    "pertanyaan": "Menerbitkan kembali tulisan sendiri tanpa rujukan merupakan…",
+    "opsi": [
+      { "id": "A", "text": "Kain perca" },
+      { "id": "B", "text": "Kata kunci" },
+      { "id": "C", "text": "Swaplagiat/self-plagiarism" },
+      { "id": "D", "text": "Verbatim" },
+      { "id": "E", "text": "Struktur gagasan" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Self-plagiarism berarti memublikasikan kembali karya sendiri tanpa menyebut sumber."
+  },
+  {
+    "id": 6,
+    "pertanyaan": "Plagiarisme tidak disengaja umumnya terjadi karena…",
+    "opsi": [
+      { "id": "A", "text": "Menolak memakai kutipan" },
+      { "id": "B", "text": "Tidak melampirkan daftar pustaka" },
+      { "id": "C", "text": "Kelalaian atribusi/pencantuman sumber yang tidak lengkap" },
+      { "id": "D", "text": "Menggunakan bahasa nonbaku" },
+      { "id": "E", "text": "Mengutip terlalu banyak" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Plagiarisme tidak disengaja sering disebabkan karena lupa atau salah mencantumkan sumber."
+  },
+  {
+    "id": 7,
+    "pertanyaan": "Kategori bobot plagiarisme berdasarkan angka kesamaan:",
+    "opsi": [
+      { "id": "A", "text": "<10% ringan; 10–40% sedang; >40% berat" },
+      { "id": "B", "text": "<30% ringan; 30–70% sedang; >70% berat" },
+      { "id": "C", "text": "<20% ringan; 20–50% sedang; >50% berat" },
+      { "id": "D", "text": "<25% ringan; 25–60% sedang; >60% berat" },
+      { "id": "E", "text": "<15% ringan; 15–40% sedang; >40% berat" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Ambang kesamaan umum: <30% ringan; 30–70% sedang; >70% berat."
+  },
+  {
+    "id": 8,
+    "pertanyaan": "Langkah pencegahan plagiarisme yang benar ialah…",
+    "opsi": [
+      { "id": "A", "text": "Mengutip tanpa tanda kutip agar ringkas" },
+      { "id": "B", "text": "Parafrasa tanpa menyebut sumber" },
+      { "id": "C", "text": "Memberi atribusi sesuai gaya (mis. APA/MLA)" },
+      { "id": "D", "text": "Menyebut 'menurut penelitian' tanpa rujukan" },
+      { "id": "E", "text": "Memakai URL saja tanpa daftar pustaka" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Atribusi harus mengikuti gaya sitasi resmi seperti APA atau MLA."
+  },
+  {
+    "id": 9,
+    "pertanyaan": "Kutipan langsung pendek ditulis…",
+    "opsi": [
+      { "id": "A", "text": ">40 kata, blok, spasi tunggal" },
+      { "id": "B", "text": "<40 kata/<5 baris, di antara '…' dan terpadu dalam teks" },
+      { "id": "C", "text": "Tanpa tanda kutip" },
+      { "id": "D", "text": "Tanpa nomor halaman" },
+      { "id": "E", "text": "Hanya di catatan kaki" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Kutipan langsung pendek harus diapit tanda kutip dan disertai sumber."
+  },
+  {
+    "id": 10,
+    "pertanyaan": "Kutipan panjang harus…",
+    "opsi": [
+      { "id": "A", "text": "Tetap diapit '…'" },
+      { "id": "B", "text": "Disatukan dengan paragraf" },
+      { "id": "C", "text": "Dipisah (blok), spasi tunggal, diawali indented, dan tetap mencantumkan sumber" },
+      { "id": "D", "text": "Tanpa sumber karena sudah blok" },
+      { "id": "E", "text": "Selalu dicetak miring" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Kutipan panjang (≥40 kata) ditulis blok tersendiri, spasi tunggal, dan tetap ada sumber."
+  },
+
+  {
+    "id": 11,
+    "pertanyaan": "Dalam kutipan langsung, sumber boleh diletakkan…",
+    "opsi": [
+      { "id": "A", "text": "Hanya di awal kutipan" },
+      { "id": "B", "text": "Hanya di akhir kutipan" },
+      { "id": "C", "text": "Di awal atau akhir kutipan" },
+      { "id": "D", "text": "Di daftar pustaka saja" },
+      { "id": "E", "text": "Hanya di catatan kaki" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Sumber dapat dituliskan di awal atau di akhir kutipan, sesuai gaya sitasi yang digunakan."
+  },
+  {
+    "id": 12,
+    "pertanyaan": "Kutipan tidak langsung (parafrasa) ditulis…",
+    "opsi": [
+      { "id": "A", "text": "Dengan tanda kutip" },
+      { "id": "B", "text": "Harus menyebut nomor halaman" },
+      { "id": "C", "text": "Tanpa tanda kutip; tetap menyebut penulis & tahun" },
+      { "id": "D", "text": "Tanpa menyebut penulis" },
+      { "id": "E", "text": "Di catatan kaki saja" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Parafrasa tidak memakai tanda kutip namun tetap wajib mencantumkan penulis dan tahun (halaman tidak selalu wajib)."
+  },
+  {
+    "id": 13,
+    "pertanyaan": "Mengutip sumber sekunder (penulis X dikutip dalam Y), format yang tepat ialah…",
+    "opsi": [
+      { "id": "A", "text": "Menyebut X saja" },
+      { "id": "B", "text": "Menyebut Y saja" },
+      { "id": "C", "text": "Menyebut X (Y, tahun: halaman)" },
+      { "id": "D", "text": "URL saja" },
+      { "id": "E", "text": "Tanpa apa pun" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Cantumkan penulis asli dan sumber perantara: mis. X (dalam Y, tahun: hlm.)."
+  },
+  {
+    "id": 14,
+    "pertanyaan": "Fungsi kutipan TIDAK termasuk…",
+    "opsi": [
+      { "id": "A", "text": "Penguat gagasan" },
+      { "id": "B", "text": "Titik pangkal pembahasan" },
+      { "id": "C", "text": "Penguat penyusunan simpulan" },
+      { "id": "D", "text": "Unsur utama membuat simpulan" },
+      { "id": "E", "text": "Mengganti seluruh argumen penulis" }
+    ],
+    "jawaban": "E",
+    "pembahasan": "Kutipan memperkuat atau menjadi bahan pembahasan, tetapi tidak menggantikan argumen penulis."
+  },
+  {
+    "id": 15,
+    "pertanyaan": "Daftar rujukan (umum) harus memuat, antara lain…",
+    "opsi": [
+      { "id": "A", "text": "Gelar akademik penulis" },
+      { "id": "B", "text": "Penerbit tanpa kota" },
+      { "id": "C", "text": "Nama akhir–awal, tahun, judul, tempat, penerbit" },
+      { "id": "D", "text": "Hanya judul buku dan tahun" },
+      { "id": "E", "text": "Nama depan saja" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Elemen pokok bibliografi: penulis (tanpa gelar), tahun, judul, tempat, penerbit."
+  },
+  {
+    "id": 16,
+    "pertanyaan": "Aturan footnote berikut yang benar ialah…",
+    "opsi": [
+      { "id": "A", "text": "Diletakkan di akhir bab, spasi 2" },
+      { "id": "B", "text": "Diletakkan di bawah halaman, spasi 1, bernomor" },
+      { "id": "C", "text": "Disisip di tengah paragraf" },
+      { "id": "D", "text": "Tanpa penomoran" },
+      { "id": "E", "text": "Tanpa garis pemisah" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Catatan kaki ditempatkan di bawah halaman, diberi nomor, spasi 1, dan dipisah garis dari isi teks."
+  },
+  {
+    "id": 17,
+    "pertanyaan": "Ibid., op.cit., loc.cit.: pernyataan yang tepat ialah…",
+    "opsi": [
+      { "id": "A", "text": "Ibid. dipakai untuk sumber yang tidak pernah dikutip sebelumnya" },
+      { "id": "B", "text": "Op.cit. dipakai saat sumber sama dan halaman sama dengan kutipan sebelumnya" },
+      { "id": "C", "text": "Loc.cit. dipakai untuk halaman yang sama dari sumber yang baru saja dikutip" },
+      { "id": "D", "text": "Op.cit. untuk halaman yang sama tanpa jeda" },
+      { "id": "E", "text": "Loc.cit. untuk sumber yang diselingi beberapa kutipan lain" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Ibid. = rujuk pada catatan sebelumnya; Op.cit. = sumber yang pernah dikutip tetapi diselingi; Loc.cit. = merujuk halaman yang sama dari sumber yang baru saja dikutip."
+  },
+  {
+    "id": 18,
+    "pertanyaan": "Dalam unsur footnote, penulisan nomor halaman yang benar adalah…",
+    "opsi": [
+      { "id": "A", "text": "\"halaman:\"" },
+      { "id": "B", "text": "\"p.\"" },
+      { "id": "C", "text": "\"hlm.\" diikuti nomor halaman" },
+      { "id": "D", "text": "Tanpa penanda" },
+      { "id": "E", "text": "\"pg.\"" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Penanda yang tepat dalam konteks bahasa Indonesia adalah 'hlm.' diikuti nomor halaman."
+  },
+  {
+    "id": 19,
+    "pertanyaan": "Saat mengutip sumber elektronik secara langsung, informasi yang perlu ada:",
+    "opsi": [
+      { "id": "A", "text": "Penulis, tahun, judul halaman/situs, URL, tanggal akses" },
+      { "id": "B", "text": "Judul situs dan URL saja" },
+      { "id": "C", "text": "Nama lembaga saja" },
+      { "id": "D", "text": "Tanggal akses saja" },
+      { "id": "E", "text": "Kota penerbit dan penerbit" }
+    ],
+    "jawaban": "A",
+    "pembahasan": "Untuk sumber elektronik diperlukan penulis, tahun, judul, URL, dan tanggal akses (jika relevan)."
+  },
+  {
+    "id": 20,
+    "pertanyaan": "Perbedaan kutipan langsung vs tidak langsung yang benar ialah…",
+    "opsi": [
+      { "id": "A", "text": "Keduanya wajib tanda kutip" },
+      { "id": "B", "text": "Parafrasa wajib mencantumkan halaman" },
+      { "id": "C", "text": "Kutipan langsung pakai “…” dan mencantumkan halaman; parafrasa tanpa “…” dan halaman tidak wajib" },
+      { "id": "D", "text": "Parafrasa tidak membutuhkan rujukan" },
+      { "id": "E", "text": "Kutipan langsung tidak mencantumkan penulis" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Kutipan langsung menggunakan tanda kutip dan biasanya mencantumkan halaman; parafrasa tidak memakai tanda kutip tetapi tetap harus dirujuk."
+  },
+  {
+    "id": 21,
+    "pertanyaan": "Penempatan informasi sumber pada kutipan langsung yang dibenarkan ialah…",
+    "opsi": [
+      { "id": "A", "text": "Hanya di catatan kaki" },
+      { "id": "B", "text": "Boleh di awal atau akhir kalimat kutipan" },
+      { "id": "C", "text": "Wajib setelah tanda kutip penutup" },
+      { "id": "D", "text": "Hanya di daftar pustaka" },
+      { "id": "E", "text": "Hanya dalam judul" }
+    ],
+    "jawaban": "B",
+    "pembahasan": "Sumber kutipan bisa ditempatkan di awal atau akhir kalimat kutipan sesuai gaya sitasi."
+  },
+  {
+    "id": 22,
+    "pertanyaan": "Manfaat mengutip di luar menghindari plagiarisme adalah…",
+    "opsi": [
+      { "id": "A", "text": "Menambah halaman" },
+      { "id": "B", "text": "Menggantikan analisis penulis" },
+      { "id": "C", "text": "Memperkuat argumen dan menghormati penulis asli" },
+      { "id": "D", "text": "Menghindari penyuntingan" },
+      { "id": "E", "text": "Menutup kelemahan metodologi" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Mengutip memperkuat argumen dan menunjukkan penghormatan terhadap karya dan hak kekayaan intelektual penulis lain."
+  },
+  {
+    "id": 23,
+    "pertanyaan": "Ragam plagiarisme menurut Soelistyo (2011) yang benar ialah…",
+    "opsi": [
+      { "id": "A", "text": "Verbatim, mosaik, parafrasa, kata kunci, struktur gagasan" },
+      { "id": "B", "text": "Verbatim, naratif, eksposisi, argumentasi" },
+      { "id": "C", "text": "Verbatim, deduktif, induktif" },
+      { "id": "D", "text": "Mosaik, kronologis, proses" },
+      { "id": "E", "text": "Parafrasa, definisi, klasifikasi" }
+    ],
+    "jawaban": "A",
+    "pembahasan": "Ragam yang umum disebutkan meliputi verbatim, mosaik (kain perca), parafrasa, kata kunci, dan struktur gagasan."
+  },
+  {
+    "id": 24,
+    "pertanyaan": "Aturan teknis catatan kaki berikut yang tepat, kecuali…",
+    "opsi": [
+      { "id": "A", "text": "Spasi 1" },
+      { "id": "B", "text": "Diletakkan di bawah halaman dan dipisahkan garis" },
+      { "id": "C", "text": "Diberi nomor" },
+      { "id": "D", "text": "Baris kedua menjorok ke kanan lebih jauh dari baris pertama" },
+      { "id": "E", "text": "Jarak baris terakhir ∼3 cm dari tepi bawah halaman" }
+    ],
+    "jawaban": "D",
+    "pembahasan": "Baris kedua seharusnya mengikuti margin biasa (bukan makin menjorok); pernyataan D salah."
+  },
+  {
+    "id": 25,
+    "pertanyaan": "Penulisan footnote untuk lebih dari tiga penulis ialah…",
+    "opsi": [
+      { "id": "A", "text": "Tulis semua nama penulis" },
+      { "id": "B", "text": "Tulis nama editor saja" },
+      { "id": "C", "text": "Tulis nama penulis pertama diikuti 'dkk.'/'al.'" },
+      { "id": "D", "text": "Tulis nama belakang saja" },
+      { "id": "E", "text": "Gunakan akronim nama" }
+    ],
+    "jawaban": "C",
+    "pembahasan": "Untuk lebih dari tiga penulis, umum ditulis penulis pertama diikuti 'dkk.' (atau 'et al.')."
+  }
+]

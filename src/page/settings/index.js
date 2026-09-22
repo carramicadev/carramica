@@ -37,6 +37,7 @@ import Warehouse from "./warehouse";
 import Layout from "../../components/Layout";
 import Agen from "./agen";
 import DestySettings from "./DestySettings";
+import AccurateSettings from "./AccurateSettings";
 import { usePaymentNotification } from "../../components/PaymentNotification";
 
 const Settings = (props) => {
@@ -533,6 +534,13 @@ const Settings = (props) => {
         {props?.profile?.email === "carramicadev@gmail.com" && (
           <Tab eventKey="desty" title="Desty Integration">
             <DestySettings />
+          </Tab>
+        )}
+
+        {/* Accurate Integration Tab - only carramicadev@gmail.com */}
+        {props?.profile?.email === "carramicadev@gmail.com" && (
+          <Tab eventKey="accurate" title="Accurate Integration">
+            <AccurateSettings />
           </Tab>
         )}
         <Tab eventKey="profile" title="Profile">
