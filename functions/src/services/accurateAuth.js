@@ -41,7 +41,8 @@ function getAuthorizationUrl() {
     client_id: ACCURATE_CLIENT_ID,
     redirect_uri: ACCURATE_CALLBACK_URL,
     response_type: "code",
-    scope: "item.read item.write sales-order.read sales-order.write customer.read customer.write branch.read",
+    // Accurate API scopes - sesuai dengan yang berhasil di Postman
+    scope: "item_view customer_view sales_order_save sales_order_view",
   });
 
   return `${ACCURATE_OAUTH_AUTHORIZE}?${params.toString()}`;
@@ -57,18 +58,22 @@ async function exchangeCodeForToken(code) {
   try {
     console.log("[ACCURATE-AUTH] Exchanging authorization code for token...");
 
+    // Create Basic Auth header (base64 of client_id:client_secret)
+    const auth = Buffer.from(`${ACCURATE_CLIENT_ID}:${ACCURATE_CLIENT_SECRET}`).toString("base64");
+
+    // Accurate requires x-www-form-urlencoded format
+    const params = new URLSearchParams();
+    params.append("grant_type", "authorization_code");
+    params.append("code", code);
+    params.append("redirect_uri", ACCURATE_CALLBACK_URL);
+
     const response = await axios.post(
       ACCURATE_OAUTH_TOKEN,
-      {
-        grant_type: "authorization_code",
-        code: code,
-        client_id: ACCURATE_CLIENT_ID,
-        client_secret: ACCURATE_CLIENT_SECRET,
-        redirect_uri: ACCURATE_CALLBACK_URL,
-      },
+      params.toString(),
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Basic ${auth}`,  // Basic Auth header
         },
         timeout: 30000,
       }
@@ -105,17 +110,21 @@ async function refreshAccessToken(refreshToken) {
   try {
     console.log("[ACCURATE-AUTH] Refreshing access token...");
 
+    // Create Basic Auth header (base64 of client_id:client_secret)
+    const auth = Buffer.from(`${ACCURATE_CLIENT_ID}:${ACCURATE_CLIENT_SECRET}`).toString("base64");
+
+    // Accurate requires x-www-form-urlencoded format
+    const params = new URLSearchParams();
+    params.append("grant_type", "refresh_token");
+    params.append("refresh_token", refreshToken);
+
     const response = await axios.post(
       ACCURATE_OAUTH_TOKEN,
-      {
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-        client_id: ACCURATE_CLIENT_ID,
-        client_secret: ACCURATE_CLIENT_SECRET,
-      },
+      params.toString(),
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Basic ${auth}`,  // Basic Auth header
         },
         timeout: 30000,
       }
