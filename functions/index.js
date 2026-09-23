@@ -23,7 +23,9 @@ const {
 } = require("firebase-admin/firestore");
 const nodemailer = require("nodemailer");
 
-admin.initializeApp();
+admin.initializeApp({
+  projectId: "carramica-prod"
+});
 
 // ==========================================
 // SAFETY CONFIG - EMERGENCY STOP MECHANISM
@@ -5394,17 +5396,20 @@ exports.accurateOAuthCallback = jakartaFn.https.onRequest(async (req, res) => {
   try {
     const { code, error, error_description } = req.query;
 
+    console.log("[ACCURATE-CB] Query params:", JSON.stringify(req.query));
+
     // Check for OAuth errors
     if (error) {
       console.error("[ACCURATE-CB] OAuth error:", error, error_description);
       return res.status(400).send(`
         <html>
           <body>
-            <h1>OAuth Error</h1>
-            <p>${error}: ${error_description}</p>
+            <h1 style="color: red;">OAuth Error</h1>
+            <p><strong>Error:</strong> ${error}</p>
+            <p><strong>Description:</strong> ${error_description || 'N/A'}</p>
             <p>Please close this window and try again.</p>
             <script>
-              setTimeout(() => window.close(), 5000);
+              setTimeout(() => window.close(), 10000);
             </script>
           </body>
         </html>
@@ -5412,58 +5417,113 @@ exports.accurateOAuthCallback = jakartaFn.https.onRequest(async (req, res) => {
     }
 
     if (!code) {
+      console.error("[ACCURATE-CB] No authorization code received");
       return res.status(400).send(`
         <html>
           <body>
-            <h1>Missing Authorization Code</h1>
-            <p>No authorization code received.</p>
+            <h1 style="color: orange;">Missing Authorization Code</h1>
+            <p>No authorization code received in callback.</p>
             <p>Please close this window and try again.</p>
+            <script>
+              setTimeout(() => window.close(), 10000);
+            </script>
           </body>
         </html>
       `);
     }
 
-    console.log("[ACCURATE-CB] Received authorization code");
+    console.log("[ACCURATE-CB] Received authorization code, length:", code.length);
 
     // Import auth service dynamically
     const accurateAuth = require("./src/services/accurateAuth");
+    console.log("[ACCURATE-CB] accurateAuth module loaded");
 
     // Exchange code for tokens
+    console.log("[ACCURATE-CB] Calling exchangeCodeForToken...");
     const tokens = await accurateAuth.exchangeCodeForToken(code);
-    console.log("[ACCURATE-CB] Tokens obtained successfully");
+    console.log("[ACCURATE-CB] Tokens obtained - accessToken:", tokens.accessToken ? "EXISTS" : "MISSING", "refreshToken:", tokens.refreshToken ? "EXISTS" : "MISSING");
 
-    // Store tokens in Firestore
-    await accurateAuth.storeTokens(tokens);
-    console.log("[ACCURATE-CB] Tokens stored in Firestore");
+    // Store tokens in Firestore DIRECTLY in index.js
+    console.log("[ACCURATE-CB] Storing tokens in Firestore...");
+    let storeResult = false;
+    let storeErrorMsg = "";
 
-    // Open database to get session and host
-    const dbInfo = await accurateAuth.openDatabase();
-    if (dbInfo) {
-      console.log("[ACCURATE-CB] Database opened:", dbInfo.databaseName, dbInfo.host);
+    try {
+      const COLLECTION_ACCURATE_TOKENS = "accurate_settings/tokens";
+      console.log("[ACCURATE-CB] Getting Firestore...");
+      const db = getFirestore();
+      console.log("[ACCURATE-CB] Got Firestore, type:", typeof db);
+
+      if (!db) {
+        storeErrorMsg = "Firestore is undefined";
+        console.error("[ACCURATE-CB]", storeErrorMsg);
+      } else {
+        const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
+        const tokenDoc = {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          tokenType: tokens.tokenType || "Bearer",
+          expiresAt: Timestamp.fromDate(expiresAt),
+          connectedAt: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        };
+
+        console.log("[ACCURATE-CB] Writing to Firestore...");
+        // Store at accurate_settings/tokens (matching frontend: doc(firestore, "accurate_settings", "tokens"))
+        // Path: collection "accurate_settings", document ID "tokens"
+        const tokenRef = db.collection("accurate_settings").doc("tokens");
+        await tokenRef.set(tokenDoc);
+        console.log("[ACCURATE-CB] Write completed!");
+        storeResult = true;
+      }
+    } catch (storeError) {
+      storeErrorMsg = storeError.message;
+      console.error("[ACCURATE-CB] Store error:", storeErrorMsg);
     }
 
-    // Success page
+    console.log("[ACCURATE-CB] Store result:", storeResult);
+
+    // Open database to get session and host
+    let dbInfo = null;
+    if (storeResult) {
+      try {
+        dbInfo = await accurateAuth.openDatabase();
+        console.log("[ACCURATE-CB] Database opened");
+      } catch (dbError) {
+        console.error("[ACCURATE-CB] openDatabase error:", dbError.message);
+      }
+    }
+
+    // Return result page with ALL details
     return res.status(200).send(`
       <html>
         <body>
-          <h1 style="color: green;">Berhasil!</h1>
-          <p>Carramica berhasil terhubung ke Accurate.</p>
-          <p>Database: <strong>${dbInfo?.databaseName || 'PT Carramica Kreasi Indonesia'}</strong></p>
-          <p>Anda dapat menutup halaman ini sekarang.</p>
+          <h1 style="color: ${storeResult ? 'green' : 'orange'}; font-size: 48px;">
+            ${storeResult ? 'SUCCESS!' : 'PARTIAL SUCCESS'}
+          </h1>
+          <p style="font-size: 20px;">OAuth completed. Tokens ${storeResult ? 'stored' : 'NOT stored'}.</p>
+          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0; font-family: monospace;">
+            <p><strong>Token stored:</strong> ${storeResult ? 'YES' : 'NO'}</p>
+            ${dbInfo ? '<p><strong>Database:</strong> ' + dbInfo.databaseName + '</p><p><strong>Host:</strong> ' + dbInfo.host + '</p>' : ''}
+            ${!storeResult ? '<p style="color: red;"><strong>Store Error:</strong> ' + storeErrorMsg + '</p>' : ''}
+          </div>
+          <hr>
+          <p>Please CLOSE this window and check Firebase Firestore manually.</p>
+          <p>Path to check: <code>accurate_settings/tokens/main</code></p>
           <script>
-            setTimeout(() => window.close(), 3000);
+            console.log("Store result:", ${storeResult});
+            console.log("Store error:", "${storeErrorMsg}");
           </script>
         </body>
       </html>
     `);
   } catch (error) {
-    console.error("[ACCURATE-CB] Error:", error);
+    console.error("[ACCURATE-CB] FULL ERROR:", error);
     return res.status(500).send(`
       <html>
         <body>
           <h1 style="color: red;">Error</h1>
-          <p>${error.message}</p>
-          <p>Please close this window and try again.</p>
+          <p><strong>Message:</strong> ${error.message}</p>
         </body>
       </html>
     `);

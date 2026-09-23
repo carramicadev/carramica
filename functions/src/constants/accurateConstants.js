@@ -8,6 +8,7 @@
 const ACCURATE_ACCOUNT_API = "https://account.accurate.id";
 const ACCURATE_OAUTH_AUTHORIZE = "https://account.accurate.id/oauth/authorize";
 const ACCURATE_OAUTH_TOKEN = "https://account.accurate.id/oauth/token";  // TANPA /api!
+const ACCURATE_API_HOST = "https://account.accurate.id";  // Untuk API calls yang butuh /api/ prefix
 
 // Accurate OAuth Credentials
 // TODO: Move to Firebase Functions config for production
@@ -62,6 +63,7 @@ const ACCURATE_ENDPOINTS = {
 module.exports = {
   // API URLs
   ACCURATE_ACCOUNT_API,
+  ACCURATE_API_HOST,
   ACCURATE_OAUTH_AUTHORIZE,
   ACCURATE_OAUTH_TOKEN,
   ACCURATE_CLIENT_ID,
