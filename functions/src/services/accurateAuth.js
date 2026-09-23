@@ -11,6 +11,7 @@ const axios = require("axios");
 const admin = require("firebase-admin");
 const {
   ACCURATE_ACCOUNT_API,
+  ACCURATE_API_HOST,
   ACCURATE_OAUTH_AUTHORIZE,
   ACCURATE_OAUTH_TOKEN,
   ACCURATE_CLIENT_ID,
@@ -22,9 +23,6 @@ const {
   TOKEN_EXPIRATION_BUFFER_MS,
   TOKEN_CACHE_DURATION,
 } = require("../constants/accurateConstants");
-
-// Initialize Firestore
-const firestore = admin.firestore();
 
 // Token cache (in-memory)
 let cachedTokens = null;
@@ -57,9 +55,12 @@ function getAuthorizationUrl() {
 async function exchangeCodeForToken(code) {
   try {
     console.log("[ACCURATE-AUTH] Exchanging authorization code for token...");
+    console.log("[ACCURATE-AUTH] Code length:", code ? code.length : 0);
+    console.log("[ACCURATE-AUTH] OAuth URL:", ACCURATE_OAUTH_TOKEN);
 
     // Create Basic Auth header (base64 of client_id:client_secret)
     const auth = Buffer.from(`${ACCURATE_CLIENT_ID}:${ACCURATE_CLIENT_SECRET}`).toString("base64");
+    console.log("[ACCURATE-AUTH] Auth header created, length:", auth.length);
 
     // Accurate requires x-www-form-urlencoded format
     const params = new URLSearchParams();
@@ -67,17 +68,23 @@ async function exchangeCodeForToken(code) {
     params.append("code", code);
     params.append("redirect_uri", ACCURATE_CALLBACK_URL);
 
+    const bodyString = params.toString();
+    console.log("[ACCURATE-AUTH] Request body:", bodyString);
+
     const response = await axios.post(
       ACCURATE_OAUTH_TOKEN,
-      params.toString(),
+      bodyString,
       {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization": `Basic ${auth}`,  // Basic Auth header
+          "Authorization": `Basic ${auth}`,
         },
         timeout: 30000,
       }
     );
+
+    console.log("[ACCURATE-AUTH] Response status:", response.status);
+    console.log("[ACCURATE-AUTH] Response data keys:", Object.keys(response.data || {}));
 
     if (response.data.access_token) {
       console.log("[ACCURATE-AUTH] Token obtained successfully");
@@ -93,8 +100,14 @@ async function exchangeCodeForToken(code) {
     throw new Error("No access_token in response: " + JSON.stringify(response.data));
   } catch (error) {
     console.error("[ACCURATE-AUTH] Error exchanging code for token:", error.message);
+    console.error("[ACCURATE-AUTH] Error name:", error.name);
     if (error.response) {
+      console.error("[ACCURATE-AUTH] Response status:", error.response.status);
       console.error("[ACCURATE-AUTH] Response data:", JSON.stringify(error.response.data));
+      console.error("[ACCURATE-AUTH] Response headers:", JSON.stringify(error.response.headers));
+    } else if (error.request) {
+      console.error("[ACCURATE-AUTH] No response received");
+      console.error("[ACCURATE-AUTH] Error request:", error.request);
     }
     throw error;
   }
@@ -164,7 +177,9 @@ async function getCachedTokens() {
 
   // Fetch from Firestore
   try {
-    const tokensDoc = await firestore.collection(COLLECTION_ACCURATE_TOKENS).doc("main").get();
+    console.log("[ACCURATE-AUTH] Fetching tokens from Firestore...");
+    const db = admin.firestore();
+    const tokensDoc = await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").get();
 
     if (tokensDoc.exists) {
       const data = tokensDoc.data();
@@ -236,7 +251,8 @@ async function refreshToken() {
     const expiresAt = new Date(Date.now() + newTokens.expiresIn * 1000);
 
     // Update in Firestore
-    await firestore.collection(COLLECTION_ACCURATE_TOKENS).doc("main").set(
+    const db = admin.firestore();
+    await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").set(
       {
         ...tokens,
         ...newTokens,
@@ -270,29 +286,79 @@ async function refreshToken() {
  * @returns {boolean} Success status
  */
 async function storeTokens(tokenData) {
+  console.log("[ACCURATE-AUTH] storeTokens called with:", {
+    hasAccessToken: !!tokenData.accessToken,
+    hasRefreshToken: !!tokenData.refreshToken,
+    expiresIn: tokenData.expiresIn,
+    tokenType: tokenData.tokenType
+  });
+
   try {
-    const expiresAt = new Date(Date.now() + tokenData.expiresIn * 1000);
+    console.log("[ACCURATE-AUTH] Using Firebase Admin SDK...");
 
-    const tokenDoc = {
-      accessToken: tokenData.accessToken,
-      refreshToken: tokenData.refreshToken,
-      tokenType: tokenData.tokenType || "Bearer",
-      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-      connectedAt: admin.firestore.Timestamp.now(),
-      updatedAt: admin.firestore.Timestamp.now(),
-      lastRefreshAt: null,
-    };
+    // Set a timeout for the entire operation
+    const timeout = 10000; // 10 seconds
 
-    await firestore.collection(COLLECTION_ACCURATE_TOKENS).doc("main").set(tokenDoc);
+    // Create a promise that rejects after timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Operation timed out after 10 seconds")), timeout);
+    });
 
-    // Update cache
-    cachedTokens = tokenDoc;
-    tokenCacheTime = Date.now();
+    // The actual store operation
+    const storePromise = (async () => {
+      // Get Firestore instance
+      let db;
+      try {
+        console.log("[ACCURATE-AUTH] Getting Firestore...");
+        db = admin.firestore();
+        console.log("[ACCURATE-AUTH] Firestore instance obtained, type:", typeof db);
+        console.log("[ACCURATE-AUTH] Firestore app:", db.app ? "exists" : "no app");
+      } catch (firestoreError) {
+        console.error("[ACCURATE-AUTH] Error getting Firestore:", firestoreError.message);
+        throw firestoreError;
+      }
 
-    console.log("[ACCURATE-AUTH] Tokens stored in Firestore");
-    return true;
+      const expiresAt = new Date(Date.now() + tokenData.expiresIn * 1000);
+
+      const tokenDoc = {
+        accessToken: tokenData.accessToken,
+        refreshToken: tokenData.refreshToken,
+        tokenType: tokenData.tokenType || "Bearer",
+        expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+        connectedAt: admin.firestore.Timestamp.now(),
+        updatedAt: admin.firestore.Timestamp.now(),
+        lastRefreshAt: null,
+      };
+
+      console.log("[ACCURATE-AUTH] Token document prepared, writing to:", `${COLLECTION_ACCURATE_TOKENS}/main`);
+
+      try {
+        await db.doc(`${COLLECTION_ACCURATE_TOKENS}/main`).set(tokenDoc);
+        console.log("[ACCURATE-AUTH] Firestore write completed!");
+      } catch (writeError) {
+        console.error("[ACCURATE-AUTH] Error writing to Firestore:", writeError.message);
+        console.error("[ACCURATE-AUTH] Write error code:", writeError.code);
+        throw writeError;
+      }
+
+      // Update cache
+      cachedTokens = tokenDoc;
+      tokenCacheTime = Date.now();
+
+      return true;
+    })();
+
+    // Race between store operation and timeout
+    const result = await Promise.race([storePromise, timeoutPromise]);
+
+    console.log("[ACCURATE-AUTH] Tokens stored successfully - returning TRUE");
+    return result;
   } catch (error) {
-    console.error("[ACCURATE-AUTH] Error storing tokens:", error.message);
+    console.error("[ACCURATE-AUTH] STORE FAILED - Error details:");
+    console.error("[ACCURATE-AUTH]   Message:", error.message);
+    console.error("[ACCURATE-AUTH]   Name:", error.name);
+    console.error("[ACCURATE-AUTH]   Stack:", error.stack);
+
     return false;
   }
 }
@@ -313,14 +379,17 @@ async function openDatabase() {
     }
 
     console.log("[ACCURATE-AUTH] Opening database:", ACCURATE_DEFAULT_DATABASE_ID);
+    console.log("[ACCURATE-AUTH] Using API host:", ACCURATE_API_HOST);
 
-    const response = await axios.get(`${ACCURATE_ACCOUNT_API}/open-db.do`, {
+    const response = await axios.get(`${ACCURATE_API_HOST}/api/open-db.do`, {
       params: { id: ACCURATE_DEFAULT_DATABASE_ID },
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
       timeout: 30000,
     });
+
+    console.log("[ACCURATE-AUTH] Response:", JSON.stringify(response.data));
 
     if (response.data.s) {
       const { session, host } = response.data;
@@ -330,7 +399,8 @@ async function openDatabase() {
       console.log("[ACCURATE-AUTH] Session:", session ? session.substring(0, 20) + "..." : "N/A");
 
       // Update host in Firestore for reference
-      await firestore.collection(COLLECTION_ACCURATE_TOKENS).doc("main").set(
+      const db = admin.firestore();
+      await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").set(
         {
           session: session,
           host: host,
@@ -350,12 +420,17 @@ async function openDatabase() {
       };
     }
 
-    console.error("[ACCURATE-AUTH] Failed to open database:", response.data);
+    console.error("[ACCURATE-AUTH] Failed to open database - s flag is false:", response.data);
     return null;
   } catch (error) {
     console.error("[ACCURATE-AUTH] Error opening database:", error.message);
+    console.error("[ACCURATE-AUTH] Error name:", error.name);
     if (error.response) {
-      console.error("[ACCURATE-AUTH] Response:", JSON.stringify(error.response.data));
+      console.error("[ACCURATE-AUTH] Response status:", error.response.status);
+      console.error("[ACCURATE-AUTH] Response data:", JSON.stringify(error.response.data));
+      console.error("[ACCURATE-AUTH] Response headers:", JSON.stringify(error.response.headers));
+    } else if (error.request) {
+      console.error("[ACCURATE-AUTH] No response received - request:", error.request);
     }
     return null;
   }
@@ -435,7 +510,8 @@ async function isConnected() {
  */
 async function disconnect() {
   try {
-    await firestore.collection(COLLECTION_ACCURATE_TOKENS).doc("main").delete();
+    const db = admin.firestore();
+    await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").delete();
 
     // Clear cache
     cachedTokens = null;

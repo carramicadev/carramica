@@ -107,7 +107,8 @@ const AccurateSettings = () => {
   // Load OAuth tokens from Firestore
   const loadTokens = async () => {
     try {
-      const docRef = doc(firestore, "accurate_settings/tokens", "main");
+      // Simple path: collection "accurate_settings", doc ID "tokens"
+      const docRef = doc(firestore, "accurate_settings", "tokens");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
