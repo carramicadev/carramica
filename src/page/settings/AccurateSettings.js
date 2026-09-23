@@ -81,6 +81,29 @@ const AccurateSettings = () => {
     loadAll();
   }, []);
 
+  // Check connection status when window comes into focus (after OAuth popup closes)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Window became visible again (e.g., after OAuth popup closed)
+        console.log("[ACCURATE] Window visible again, reloading connection status...");
+        loadTokens();
+      }
+    };
+
+    // Also poll periodically for connection status
+    const interval = setInterval(() => {
+      loadTokens();
+    }, 3000); // Check every 3 seconds
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, []);
+
   // Load OAuth tokens from Firestore
   const loadTokens = async () => {
     try {
@@ -227,21 +250,24 @@ const AccurateSettings = () => {
         // Open OAuth page in new window
         const authWindow = window.open(result.data.authorizationUrl, "_blank", "width=600,height=700");
 
-        // Poll for callback
-        const pollTimer = setInterval(async () => {
-          try {
-            if (authWindow.closed) {
-              clearInterval(pollTimer);
-              // Check if connected
-              await loadTokens();
-              if (isConnected) {
-                enqueueSnackbar("Berhasil terhubung ke Accurate!", { variant: "success" });
+        if (authWindow) {
+          // Poll for callback - check if window is closed
+          const pollTimer = setInterval(async () => {
+            try {
+              if (authWindow.closed) {
+                clearInterval(pollTimer);
+                console.log("[ACCURATE] OAuth window closed, checking connection status...");
+                // Check if connected by reloading tokens
+                await loadTokens();
               }
+            } catch (error) {
+              console.error("Polling error:", error);
             }
-          } catch (error) {
-            console.error("Polling error:", error);
-          }
-        }, 1000);
+          }, 1000);
+        } else {
+          // Popup blocked - show fallback
+          alert("Popup blocked! Please allow popups for this site.");
+        }
       } else {
         // Fallback: manually open authorization URL
         const authUrl = result.data?.authorizationUrl || `https://account.accurate.id/oauth/authorize?client_id=54be850d-61c2-40c6-ab61-9ed9b92c5a72&redirect_uri=https://asia-southeast2-carramica-prod.cloudfunctions.net/accurateOAuthCallback&response_type=code`;
@@ -251,6 +277,12 @@ const AccurateSettings = () => {
       console.error("Error initiating OAuth:", error);
       enqueueSnackbar("Gagal memulai OAuth: " + error.message, { variant: "error" });
     }
+  };
+
+  // Manual refresh connection status
+  const refreshConnection = async () => {
+    await loadTokens();
+    enqueueSnackbar("Status koneksi diperbarui", { variant: "info" });
   };
 
   // Disconnect from Accurate
@@ -506,24 +538,37 @@ const AccurateSettings = () => {
 
                 <div className="col-md-6">
                   <h6>Test Koneksi</h6>
-                  <button
-                    className="btn btn-outline-primary"
-                    onClick={testConnection}
-                    disabled={!isConnected || testingConnection}
-                    style={{ border: "1px solid #3D5E54", color: "#3D5E54" }}
-                  >
-                    {testingConnection ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" />
-                        Menguji...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="me-2" />
-                        Test Koneksi API
-                      </>
-                    )}
-                  </button>
+                  <div className="d-flex gap-2 mb-2">
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={refreshConnection}
+                      style={{ border: "1px solid #3D5E54", color: "#3D5E54" }}
+                    >
+                      <ArrowCounterclockwise className="me-2" />
+                      Refresh Status
+                    </button>
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={testConnection}
+                      disabled={!isConnected || testingConnection}
+                      style={{ border: "1px solid #3D5E54", color: "#3D5E54" }}
+                    >
+                      {testingConnection ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" />
+                          Menguji...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="me-2" />
+                          Test Koneksi API
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <small className="text-muted">
+                    Klik "Refresh Status" setelah menghubungkan Accurate untuk memperbarui status koneksi.
+                  </small>
 
                   {connectionStatus && (
                     <div className={`alert mt-3 ${connectionStatus.success ? "alert-success" : "alert-danger"}`}>
