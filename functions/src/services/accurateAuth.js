@@ -18,6 +18,7 @@ const {
   ACCURATE_CLIENT_SECRET,
   ACCURATE_CALLBACK_URL,
   ACCURATE_DEFAULT_DATABASE_ID,
+  ACCURATE_DEFAULT_DATABASE_NAME,
   COLLECTION_ACCURATE_TOKENS,
   COLLECTION_ACCURATE_CONFIG,
   TOKEN_EXPIRATION_BUFFER_MS,
@@ -179,7 +180,8 @@ async function getCachedTokens() {
   try {
     console.log("[ACCURATE-AUTH] Fetching tokens from Firestore...");
     const db = admin.firestore();
-    const tokensDoc = await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").get();
+    // Read from accurate_settings/tokens (matching OAuth callback path)
+    const tokensDoc = await db.collection("accurate_settings").doc("tokens").get();
 
     if (tokensDoc.exists) {
       const data = tokensDoc.data();
@@ -250,9 +252,9 @@ async function refreshToken() {
     // Calculate expiration time
     const expiresAt = new Date(Date.now() + newTokens.expiresIn * 1000);
 
-    // Update in Firestore
+    // Update in Firestore - use "tokens" doc ID
     const db = admin.firestore();
-    await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").set(
+    await db.collection("accurate_settings").doc("tokens").set(
       {
         ...tokens,
         ...newTokens,
@@ -330,10 +332,11 @@ async function storeTokens(tokenData) {
         lastRefreshAt: null,
       };
 
-      console.log("[ACCURATE-AUTH] Token document prepared, writing to:", `${COLLECTION_ACCURATE_TOKENS}/main`);
+      console.log("[ACCURATE-AUTH] Token document prepared, writing to: accurate_settings/tokens");
 
       try {
-        await db.doc(`${COLLECTION_ACCURATE_TOKENS}/main`).set(tokenDoc);
+        // Store at accurate_settings/tokens (collection: "accurate_settings", doc ID: "tokens")
+        await db.collection("accurate_settings").doc("tokens").set(tokenDoc);
         console.log("[ACCURATE-AUTH] Firestore write completed!");
       } catch (writeError) {
         console.error("[ACCURATE-AUTH] Error writing to Firestore:", writeError.message);
@@ -398,9 +401,9 @@ async function openDatabase() {
       console.log("[ACCURATE-AUTH] Host:", host);
       console.log("[ACCURATE-AUTH] Session:", session ? session.substring(0, 20) + "..." : "N/A");
 
-      // Update host in Firestore for reference
+      // Update host in Firestore for reference - use accurate_settings/tokens (doc ID "tokens")
       const db = admin.firestore();
-      await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").set(
+      await db.collection("accurate_settings").doc("tokens").set(
         {
           session: session,
           host: host,
@@ -511,7 +514,8 @@ async function isConnected() {
 async function disconnect() {
   try {
     const db = admin.firestore();
-    await db.collection(COLLECTION_ACCURATE_TOKENS).doc("main").delete();
+    // Delete from accurate_settings/tokens (doc ID "tokens")
+    await db.collection("accurate_settings").doc("tokens").delete();
 
     // Clear cache
     cachedTokens = null;
