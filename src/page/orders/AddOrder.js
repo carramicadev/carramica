@@ -1436,7 +1436,7 @@ const AddOrder = () => {
             <div className="form-group">
               <Form.Label className="label">No Hp Pengirim </Form.Label>
               <PhoneInput
-                onBlur={(e) => handleCheckPhone(formData.senderPhone)}
+                // onBlur={(e) => handleCheckPhone(formData.senderPhone)}
                 inputClass="input"
                 inputStyle={{ width: "100%" }}
                 name="senderPhone"
@@ -1449,7 +1449,7 @@ const AddOrder = () => {
               <Form.Control
                 style={{ display: "none" }}
                 isInvalid={formError.senderPhone ? true : false}
-                onBlur={handleCheckPhone}
+                // onBlur={handleCheckPhone}
                 className="input"
                 type="text"
                 name="senderPhone"
