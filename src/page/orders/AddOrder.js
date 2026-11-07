@@ -44,6 +44,7 @@ import { Form } from "react-bootstrap";
 import { useSnackbar } from "notistack";
 import PhoneInput from "react-phone-input-2";
 import { useNavigate } from "react-router-dom";
+import { calcOrderTotals, lineDiscount } from "./orderTotals";
 
 function findUndefinedOrEmptyFields(obj, path = "") {
   let result = [];
@@ -804,43 +805,17 @@ const AddOrder = () => {
   );
   // console.log(totalAmountAfterReduce)
 
-  // diskon
-  const diskon = orders?.map((ord) => {
-    return ord?.products?.map((prod) => {
-      return prod?.discount > 0
-        ? prod?.discount_type === "%"
-          ? (parseInt(prod?.discount) / 100) * prod?.price
-          : parseInt(prod?.discount)
-        : 0;
-    });
-  });
-
-  const diskonTotal = diskon?.map((tot) => {
-    return tot.reduce((val, nilaiSekarang) => {
-      return val + nilaiSekarang;
-    }, 0);
-  });
-
-  const diskonAfterReduce = diskonTotal?.reduce((val, nilaiSekarang) => {
-    return val + nilaiSekarang;
-  }, 0);
-
   const ongkir = orders.map((ord) =>
     ord.ongkir > 0 ? parseInt(ord.ongkir) : 0
   );
   const totalOngkir = ongkir?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
   }, 0);
-  // total after ongkir & diskon
-  const disc = diskonAfterReduce ? diskonAfterReduce : 0;
-  const addDisc = formData?.additionalDiscount
-    ? formData.additionalDiscount
-    : 0;
-  const totalAfterDiskonDanOngkir =
-    parseInt(totalAfterReduce) -
-    parseInt(disc) -
-    parseInt(addDisc) +
-    parseInt(totalOngkir);
+
+  // diskon & total — "%" discount is applied to price × quantity (see orderTotals.js)
+  const orderTotals = calcOrderTotals(orders, formData?.additionalDiscount);
+  const diskonAfterReduce = orderTotals.productDiscount;
+  const totalAfterDiskonDanOngkir = orderTotals.total;
   // console.log(totalOngkir, diskonAfterReduce, totalAfterReduce, totalAfterDiskonDanOngkir)
 
   // orderLalamove
@@ -878,18 +853,13 @@ const AddOrder = () => {
         price: prod.price,
         quantity: prod.quantity,
       });
-      if (prod.discount > 0 && prod?.discount_type == "%") {
+      // one discount line per product, for the whole line (price × qty)
+      const discountForLine = lineDiscount(prod);
+      if (discountForLine > 0) {
         product.push({
           name: `discount-${prod.nama?.slice(0, 40)}`,
           id: prod?.sku,
-          price: -((prod.discount / 100) * prod.price),
-          quantity: 1,
-        });
-      } else if (prod.discount > 0 && prod?.discount_type == "Rp") {
-        product.push({
-          name: `discount-${prod.nama?.slice(0, 40)}`,
-          id: prod?.sku,
-          price: -prod.discount,
+          price: -discountForLine,
           quantity: 1,
         });
       }

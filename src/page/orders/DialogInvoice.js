@@ -12,6 +12,7 @@ import html2pdf from "html2pdf.js";
 import { firestore } from "../../FirebaseFrovider";
 import htmlDocx from "html-docx-js/dist/html-docx";
 import { saveAs } from "file-saver";
+import { calcOrderTotals } from "./orderTotals";
 
 export default function DownloadInvoiceDialog(props) {
   const item = props?.show?.data;
@@ -124,26 +125,13 @@ export default function DownloadInvoiceDialog(props) {
 
   // Combine into the desired format
   const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  const gross = allProduct?.map((prod) => parseInt(prod?.amount));
-  const allGross = gross?.reduce((val, nilaiSekarang) => {
-    return val + nilaiSekarang;
-  }, 0);
-  const allDisc = allProduct?.map((prod) => {
-    return prod?.discount > 0
-      ? prod?.discount_type === "%"
-        ? (parseInt(prod?.discount) / 100) * prod?.price
-        : parseInt(prod?.discount)
-      : 0;
-  });
-  const discreduce = allDisc?.reduce((val, nilaiSekarang) => {
-    return val + nilaiSekarang;
-  }, 0);
-  //   console.log(findOrder);
-  // all ongkir
-  const ongkir = findOrder?.orders?.map((ord) => parseInt(ord?.ongkir));
-  const allOngkir = ongkir?.reduce((val, nilaiSekarang) => {
-    return val + nilaiSekarang;
-  }, 0);
+  // Totals: Sub Total = Σ price × qty, Total Discount = line discounts
+  // (% applied to price × qty) + additional discount. Same formula as the stored
+  // order total and the Midtrans payment (see orderTotals.js).
+  const totals = calcOrderTotals(
+    findOrder?.orders,
+    findOrder?.additionalDiscount
+  );
   const hideModal = () => {
     allProduct = [];
     props?.onHide();
@@ -155,11 +143,7 @@ export default function DownloadInvoiceDialog(props) {
     (p) => p.id <= props?.show?.id
   );
   const cumulative = previousPayments?.reduce?.((sum, p) => sum + p.jumlah, 0);
-  const sisa =
-    parseInt(allGross) +
-    parseInt(allOngkir) -
-    (findOrder?.additionalDiscount ? findOrder?.additionalDiscount : 0) -
-    cumulative;
+  const sisa = totals.total - cumulative;
   // console.log("all product=>", props?.show?.data);
   // console.log(new Date(item?.[0]?.createdAt * 1000));
   // console.log(item?.[0]?.invoice_id);
@@ -198,6 +182,9 @@ export default function DownloadInvoiceDialog(props) {
         th {color: #ffffff;border: 1px solid #6c757d; }, td { border: 1px solid #6c757d; }
         .td-head { font-size: 15pt; margin-bottom :10px}
         .td-invoice { margin-bottom:20px}
+        .invoice-product-table { table-layout: fixed; width: 100%; }
+        .invoice-product-table td { word-wrap: break-word; overflow-wrap: break-word; vertical-align: top; }
+        .invoice-product-table tr { page-break-inside: avoid; }
       </style>
     </head>
     <body>${content}</body>
@@ -523,28 +510,46 @@ export default function DownloadInvoiceDialog(props) {
                   </tr>
                 </table>
 
-                <table style={styles.table}>
+                <table
+                  className="invoice-product-table"
+                  width="100%"
+                  cellPadding="0"
+                  cellSpacing="0"
+                  style={styles.table}
+                >
+                  {/* Fixed column widths so the table always fits the page (A4) width */}
+                  <colgroup>
+                    {PRODUCT_COLUMNS.map((col) => (
+                      <col key={col.label} width={col.width} style={{ width: col.width }} />
+                    ))}
+                  </colgroup>
                   <thead>
                     <tr>
-                      <th style={styles.th}>Product</th>
-                      <th style={styles.th}>Qty</th>
-                      <th style={styles.th}>Price</th>
-                      <th style={styles.th}>Disc</th>
-                      <th style={styles.th}>Amount</th>
+                      {PRODUCT_COLUMNS.map((col) => (
+                        <th
+                          key={col.label}
+                          width={col.width}
+                          style={{ ...styles.th, width: col.width, textAlign: col.align }}
+                        >
+                          {col.label}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {allProduct?.map((prod, i) => (
-                      <tr key={prod?.id + i}>
-                        <td style={styles.td}>{prod?.nama}</td>
-                        <td style={styles.td}>{prod?.quantity}</td>
-                        <td style={styles.td}>{currency(prod?.price)}</td>
-                        <td style={styles.td}>
+                      <tr key={prod?.id + i} style={styles.row}>
+                        <td style={styles.tdProduct}>{prod?.nama}</td>
+                        <td style={{ ...styles.tdNumber, textAlign: "center" }}>
+                          {prod?.quantity}
+                        </td>
+                        <td style={styles.tdNumber}>{currency(prod?.price)}</td>
+                        <td style={styles.tdNumber}>
                           {prod?.discount_type === "%"
                             ? prod?.discount + "%"
                             : currency(prod?.discount || 0)}
                         </td>
-                        <td style={styles.td}>{currency(prod?.amount)}</td>
+                        <td style={styles.tdNumber}>{currency(prod?.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -638,28 +643,21 @@ export default function DownloadInvoiceDialog(props) {
                             }}
                           >
                             <p style={{ margin: "0px" }}>
-                              {currency(allGross)}
+                              {currency(totals.subTotal)}
                             </p>
                             <p style={{ margin: "0px" }}>
-                              {currency(allOngkir)}
+                              {currency(totals.totalOngkir)}
                             </p>
                             <p style={{ margin: "0px" }}>
-                              {currency(findOrder?.additionalDiscount)}
+                              {currency(totals.additionalDiscount)}
                             </p>
 
                             <p style={{ color: "red", margin: "0px" }}>
-                              -
-                              {currency(
-                                discreduce + findOrder?.additionalDiscount
-                              )}
+                              -{currency(totals.totalDiscount)}
                             </p>
 
                             <p style={{ margin: "0px" }}>
-                              {currency(
-                                parseInt(allGross) +
-                                  parseInt(allOngkir) -
-                                  (findOrder?.additionalDiscount || 0)
-                              )}
+                              {currency(totals.total)}
                             </p>
 
                             {props?.show?.type === "dp" && (
@@ -740,11 +738,7 @@ export default function DownloadInvoiceDialog(props) {
                                 <p style={{ margin: "0px" }}>
                                   {itm?.paymentStatus === "settlement"
                                     ? currency(0)
-                                    : currency(
-                                        parseInt(allGross) +
-                                          parseInt(allOngkir) -
-                                          (findOrder?.additionalDiscount || 0)
-                                      )}
+                                    : currency(totals.total)}
                                 </p>
                               </td>
                             </tr>
@@ -806,6 +800,15 @@ export default function DownloadInvoiceDialog(props) {
   );
 }
 
+// Product table columns (widths sum to 100% of the printable page width)
+const PRODUCT_COLUMNS = [
+  { label: "Product", width: "36%", align: "left" },
+  { label: "Qty", width: "8%", align: "center" },
+  { label: "Price", width: "18%", align: "right" },
+  { label: "Disc", width: "16%", align: "right" },
+  { label: "Amount", width: "22%", align: "right" },
+];
+
 const styles = {
   container: {
     maxWidth: "900px",
@@ -848,23 +851,43 @@ const styles = {
   },
   table: {
     width: "100%",
+    tableLayout: "fixed",
     borderCollapse: "collapse",
     marginTop: "20px",
     color: "#000",
   },
   th: {
-    padding: "10px",
+    padding: "10px 8px",
     textAlign: "left",
     fontWeight: "bold",
     fontSize: "14px",
     backgroundColor: "#2e3e4e",
+    whiteSpace: "nowrap",
     // color: '#000'
   },
-  td: {
-    padding: "10px",
+  row: {
+    // keep each product row on one page when printing / exporting PDF
+    pageBreakInside: "avoid",
+    breakInside: "avoid",
+  },
+  tdProduct: {
+    padding: "10px 8px",
     borderBottom: "1px solid #ccc",
     textAlign: "left",
+    verticalAlign: "top",
     fontSize: "14px",
+    lineHeight: "1.4",
+    whiteSpace: "normal",
+    wordBreak: "break-word",
+    overflowWrap: "anywhere",
+  },
+  tdNumber: {
+    padding: "10px 8px",
+    borderBottom: "1px solid #ccc",
+    textAlign: "right",
+    verticalAlign: "top",
+    fontSize: "14px",
+    whiteSpace: "nowrap",
   },
   summaryBlock: {
     textAlign: "right",

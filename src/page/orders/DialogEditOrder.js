@@ -15,6 +15,7 @@ import PhoneInput from "react-phone-input-2";
 import MapComponent from "../../components/MapComponent";
 import { firestore, functions } from "../../FirebaseFrovider";
 import { currency } from "../../formatter";
+import { calcOrderTotals } from "./orderTotals";
 // import MapComponent from "./MapComponent";
 
 export default function EditOrders(props) {
@@ -212,8 +213,20 @@ export default function EditOrders(props) {
 
           // console.log('Updated orders array:', arrayField);
 
+          // Recalculate the stored totals so invoice, net revenue and
+          // "Buat Invoice Manual" stay in sync with the edited products.
+          const totals = calcOrderTotals(
+            arrayField,
+            getDataOrd.data()?.additionalDiscount
+          );
+
           // Perform the update within the transaction
-          transaction.update(getDocOrd, { orders: arrayField });
+          transaction.update(getDocOrd, {
+            orders: arrayField,
+            totalHargaProduk: totals.subTotal,
+            totalOngkir: totals.totalOngkir,
+            totalAfterDiskonDanOngkir: totals.total,
+          });
         }
       });
 

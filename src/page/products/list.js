@@ -5,21 +5,22 @@ import {
   onSnapshot,
   orderBy,
   query,
-  updateDoc,
-  where,
-  getDocs,
 } from "firebase/firestore";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup, Table, Badge, Nav } from "react-bootstrap";
+import { Button, ButtonGroup, Table } from "react-bootstrap";
 import {
-  ArrowCounterclockwise,
+  Archive,
+  CheckCircle,
   CloudArrowDown,
+  FileEarmarkText,
   Filter,
+  Grid,
   Images,
-  Link as LinkIcon,
+  PauseCircle,
   PencilSquare,
   Search,
+  SlashCircle,
   SortAlphaDown,
   SortAlphaDownAlt,
   SortDown,
@@ -28,20 +29,39 @@ import {
 import { Typeahead } from "react-bootstrap-typeahead";
 import DialogAddProduct from "./DialogAddProduct";
 import { firestore } from "../../FirebaseFrovider";
-import firebaseConfig from "../../firebase";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
 import { FilterProduct } from "./filterDialog";
 import { currency } from "../../formatter";
 import { CSVLink } from "react-csv";
 
-// Get function URL based on environment
-const getFunctionUrl = (functionName) => {
-  const region = "asia-southeast2";
-  const projectId = firebaseConfig.projectId;
-  const url = `https://${region}-${projectId}.cloudfunctions.net/${functionName}`;
-  console.log(`[URL] Calling function: ${url}`);
-  return url;
+const STATUS_TABS = [
+  { key: null, label: "Semua", Icon: Grid },
+  { key: "Live", label: "Live", Icon: CheckCircle },
+  { key: "Hold", label: "Hold", Icon: PauseCircle },
+  { key: "Out of Stock", label: "Out of Stock", Icon: SlashCircle },
+  { key: "Discontinued", label: "Discontinued", Icon: Archive },
+  { key: "Draft", label: "Draft", Icon: FileEarmarkText },
+];
+
+// Soft badge colors per product status (background, text)
+const STATUS_BADGE = {
+  Live: { bg: "#e6f4ea", color: "#1e7a3c", Icon: CheckCircle },
+  Hold: { bg: "#fdf3dc", color: "#946200", Icon: PauseCircle },
+  "Out of Stock": { bg: "#fde8e8", color: "#b42318", Icon: SlashCircle },
+  Discontinued: { bg: "#eef0f2", color: "#5b6470", Icon: Archive },
+  Draft: { bg: "#e8f0fb", color: "#2f5fa7", Icon: FileEarmarkText },
+};
+
+const StatusBadge = ({ status }) => {
+  const label = status || "Live";
+  const { bg, color, Icon } = STATUS_BADGE[label] || STATUS_BADGE.Discontinued;
+  return (
+    <span className="status-badge" style={{ backgroundColor: bg, color }} title={label}>
+      <Icon size={11} />
+      <span>{label}</span>
+    </span>
+  );
 };
 
 const ListProduct = () => {
@@ -64,16 +84,6 @@ const ListProduct = () => {
   // Status filter state
   const [selectedStatus, setSelectedStatus] = useState(null); // null = all, or 'Live', 'Hold', 'Out of Stock', 'Discontinued', 'Draft'
 
-  // Desty sync state
-  const [syncing, setSyncing] = useState(false);
-  const [syncStats, setSyncStats] = useState({
-    totalProducts: 0,
-    destyConnected: 0,
-    isDestyProduct: 0,
-    ermOnly: 0,
-  });
-  const [activeTab, setActiveTab] = useState("all"); // 'all' | 'desty' | 'erm'
-
   // Product status counts
   const [statusCounts, setStatusCounts] = useState({
     all: 0,
@@ -84,23 +94,10 @@ const ListProduct = () => {
     Draft: 0,
   });
 
-  // Product status counts - calculated from filtered products based on active tab
+  // Product status counts - calculated from all products
   useEffect(() => {
-    // First filter by tab
-    let filteredProducts = allOfProduct;
-    if (activeTab === "desty") {
-      filteredProducts = allOfProduct.filter(
-        (p) => p.destyConnected === true || p.isDestyProduct === true
-      );
-    } else if (activeTab === "erm") {
-      filteredProducts = allOfProduct.filter(
-        (p) => p.destyConnected !== true && p.isDestyProduct !== true
-      );
-    }
-
-    // Then calculate status counts
     const counts = {
-      all: filteredProducts.length,
+      all: allOfProduct.length,
       Live: 0,
       Hold: 0,
       "Out of Stock": 0,
@@ -108,7 +105,7 @@ const ListProduct = () => {
       Draft: 0,
     };
 
-    filteredProducts.forEach((product) => {
+    allOfProduct.forEach((product) => {
       const status = product.status || "Live";
       if (counts.hasOwnProperty(status)) {
         counts[status]++;
@@ -116,13 +113,7 @@ const ListProduct = () => {
     });
 
     setStatusCounts(counts);
-  }, [allOfProduct, activeTab]);
-
-  // Reset page when tab changes
-  useEffect(() => {
-    setPage(1);
-    setSearch([]); // Clear search when switching tabs
-  }, [activeTab]);
+  }, [allOfProduct]);
 
   // Reset page when pageSize changes
   useEffect(() => {
@@ -133,237 +124,6 @@ const ListProduct = () => {
   useEffect(() => {
     setPage(1);
   }, [search]);
-
-  // Calculate stats from local products (no external fetch needed)
-  const calculateLocalStats = (products) => {
-    const destyProducts = products.filter(p => p.destyConnected === true || p.isDestyProduct === true);
-    const ermOnly = products.filter(p => p.destyConnected !== true && p.isDestyProduct !== true);
-    return {
-      totalProducts: products.length,
-      destyConnected: destyProducts.length,
-      isDestyProduct: 0,
-      ermOnly: ermOnly.length,
-    };
-  };
-
-  // Update stats when products change
-  useEffect(() => {
-    if (allOfProduct.length > 0) {
-      const stats = calculateLocalStats(allOfProduct);
-      setSyncStats(stats);
-    }
-  }, [allOfProduct]);
-
-  // Fetch Desty connection statistics (manual only)
-  const fetchDestyStats = async () => {
-    // Use HTTP endpoint instead of callable
-    try {
-      const response = await fetch(getFunctionUrl("syncDestyWeightAll"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({})
-      });
-      const result = await response.json();
-      if (result.success) {
-        setSyncStats((prev) => ({ ...prev, lastSync: new Date() }));
-        enqueueSnackbar("Sinkronisasi berhasil!", { variant: "success" });
-      }
-    } catch (error) {
-      console.warn("HTTP sync skipped:", error);
-    }
-  };
-
-  // Handle Desty sync (sync weight only for existing connected products)
-  const handleSyncDesty = async () => {
-    if (!window.confirm("Apakah Anda yakin ingin sync berat dari Desty? Berat produk yang terhubung dengan Desty akan di-sync.")) {
-      return;
-    }
-
-    setSyncing(true);
-    try {
-      // Use syncDestyWeightAll - this syncs weight only for existing Desty-connected products
-      const response = await fetch(getFunctionUrl("syncDestyWeightAll"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ updateStock: false })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        const { synced, skipped, total } = result.results;
-        enqueueSnackbar(
-          `Sinkronisasi berat berhasil! Disync: ${synced}, Dilewati: ${skipped} (dari total ${total} produk)`,
-          { variant: "success" }
-        );
-        // Refresh data
-        setUpdate((prev) => !prev);
-      } else {
-        enqueueSnackbar(`Sinkronisasi gagal: ${result.error || 'Unknown error'}`, { variant: "error" });
-      }
-    } catch (error) {
-      console.error("Sync error:", error);
-      enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  // Handle Desty produk sync (sync ALL products from Desty)
-  const handleSyncProdukDesty = async () => {
-    setSyncing(true);
-    try {
-      // Step 1: Sync all products from Desty
-      enqueueSnackbar(`Memulai sinkronisasi produk dari Desty...`, { variant: "info" });
-
-      const productsResponse = await fetch(getFunctionUrl("syncDestyProductsHttp"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({})
-      });
-
-      const productsResult = await productsResponse.json();
-
-      if (!productsResult.success) {
-        enqueueSnackbar(`Sync produk gagal: ${productsResult.error || 'Unknown error'}`, { variant: "error" });
-        setSyncing(false);
-        return;
-      }
-
-      const { created, updated, skipped, totalFetched, errors } = productsResult.results;
-      const syncedSkus = productsResult.results.syncedSkus || [];
-
-      // Create Set with trimmed SKU values for comparison
-      const syncedSkusSet = new Set(syncedSkus.map(sku => sku.trim().toUpperCase()));
-
-      enqueueSnackbar(
-        `Sinkronisasi Desty selesai! Created: ${created}, Updated: ${updated}, Total fetched: ${totalFetched}`,
-        { variant: "success" }
-      );
-
-      console.log(`[SYNC] Total SKUs from Desty: ${syncedSkus.length}`);
-      console.log(`[SYNC] Synced SKUs: ${syncedSkus.join(", ")}`);
-
-      // Step 2: Sync weight for all Desty-connected products
-      enqueueSnackbar(`Memulai sync berat produk...`, { variant: "info" });
-
-      const weightResponse = await fetch(getFunctionUrl("syncDestyWeightAll"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ updateStock: false })
-      });
-
-      const weightResult = await weightResponse.json();
-
-      if (weightResult.success) {
-        const { synced, skipped: weightSkipped, total } = weightResult.results;
-        enqueueSnackbar(
-          `Sync berat berhasil! Disync: ${synced}, Dilewati: ${weightSkipped} (dari total ${total} produk)`,
-          { variant: "success" }
-        );
-      } else {
-        enqueueSnackbar(`Sync berat gagal: ${weightResult.error || 'Unknown error'}`, { variant: "warning" });
-      }
-
-      // Step 3: Set status for all products with destySkuNumber
-      // - Products in syncedSkus = Live
-      // - Products NOT in syncedSkus = Hold
-      enqueueSnackbar(`Memproses status produk Desty...`, { variant: "info" });
-
-      try {
-        const allProductsQuery = query(collection(firestore, "product"));
-        const allSnapshot = await getDocs(allProductsQuery);
-
-        let liveCount = 0;
-        let holdCount = 0;
-        let unchangedCount = 0;
-
-        for (const docSnap of allSnapshot.docs) {
-          const data = docSnap.data();
-          const destySku = data.destySkuNumber;
-          const isDestyProduct = data.destyConnected === true || data.isDestyProduct === true;
-
-          // Process all products that are connected to Desty
-          if (!isDestyProduct) {
-            continue;
-          }
-
-          // If product has destySkuNumber, check if it exists in Desty
-          if (destySku && destySku.trim() !== "") {
-            const trimmedSku = destySku.trim().toUpperCase();
-            const isInSyncedList = syncedSkusSet.has(trimmedSku);
-            const currentStatus = data.status;
-
-            // Determine target status based on whether SKU exists in Desty
-            const targetStatus = isInSyncedList ? "Live" : "Hold";
-
-            // Only update if status is different
-            if (currentStatus !== targetStatus) {
-              await updateDoc(doc(firestore, "product", docSnap.id), {
-                status: targetStatus,
-                updatedAt: new Date()
-              });
-
-              if (targetStatus === "Live") {
-                liveCount++;
-                console.log(`[SYNC] Set to Live: ${destySku}`);
-              } else {
-                holdCount++;
-                console.log(`[SYNC] Set to Hold: ${destySku}`);
-              }
-            } else {
-              unchangedCount++;
-              console.log(`[SYNC] Status unchanged (${currentStatus}): ${destySku}`);
-            }
-          } else {
-            // Product is connected to Desty but has no destySkuNumber - mark as Hold
-            const currentStatus = data.status;
-            if (currentStatus !== "Hold") {
-              await updateDoc(doc(firestore, "product", docSnap.id), {
-                status: "Hold",
-                updatedAt: new Date()
-              });
-              holdCount++;
-              console.log(`[SYNC] Set to Hold (no SKU): ${docSnap.id}`);
-            } else {
-              unchangedCount++;
-              console.log(`[SYNC] Status unchanged (${currentStatus}): ${docSnap.id} (no destySkuNumber)`);
-            }
-          }
-        }
-
-        console.log(`[SYNC] Summary - Live: ${liveCount}, Hold: ${holdCount}, Unchanged: ${unchangedCount}`);
-
-        // Show appropriate notification
-        if (holdCount > 0) {
-          enqueueSnackbar(
-            `${holdCount} produk ditandai sebagai Hold (tidak ada di Desty)`,
-            { variant: "warning" }
-          );
-        }
-        if (liveCount > 0) {
-          enqueueSnackbar(
-            `${liveCount} produk ditandai sebagai Live (ada di Desty)`,
-            { variant: "success" }
-          );
-        }
-        if (liveCount === 0 && holdCount === 0) {
-          enqueueSnackbar(`Semua produk Desty sudah sinkron`, { variant: "info" });
-        }
-      } catch (ermError) {
-        console.error("Error processing product status:", ermError);
-        enqueueSnackbar(`Gagal memproses status produk: ${ermError.message}`, { variant: "warning" });
-      }
-
-      // Refresh data
-      setUpdate((prev) => !prev);
-    } catch (error) {
-      console.error("Sync error:", error);
-      enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
-    } finally {
-      setSyncing(false);
-    }
-  };;
 
   // Load all products (used for all tabs with client-side pagination)
   useEffect(() => {
@@ -387,34 +147,18 @@ const ListProduct = () => {
   //   setPage(1)
   // };
 
-  // Filter products by tab and status
-  const getFilteredByTab = (products) => {
-    // First filter by source (tab)
-    let filtered = products;
-    if (activeTab === "desty") {
-      // Products connected to Desty (either from sync or created from Desty)
-      filtered = products.filter(
-        (p) => p.destyConnected === true || p.isDestyProduct === true
-      );
-    } else if (activeTab === "erm") {
-      // Products that are NOT connected to Desty
-      filtered = products.filter(
-        (p) => p.destyConnected !== true && p.isDestyProduct !== true
-      );
-    }
-
-    // Then filter by status
+  // Filter products by status
+  const getFilteredByStatus = (products) => {
     if (selectedStatus) {
-      filtered = filtered.filter((p) => p.status === selectedStatus);
+      return products.filter((p) => p.status === selectedStatus);
     }
-
-    return filtered;
+    return products;
   };
 
   // Get all filtered data (before pagination)
   const getAllFilteredData = () => {
     if (search.length > 0) return search;
-    return getFilteredByTab(allOfProduct);
+    return getFilteredByStatus(allOfProduct);
   };
 
   // Get paginated data for display
@@ -531,167 +275,38 @@ const ListProduct = () => {
     <div className="container">
       <h1 className="page-title">Product</h1>
 
-      {/* Tab Navigation for Product Source */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <Nav variant="tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
-          <Nav.Item>
-            <Nav.Link eventKey="all">
-              Semua Produk
-              {syncStats && (
-                <Badge bg="secondary" className="ms-2">{syncStats.totalProducts}</Badge>
-              )}
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="desty">
-              <LinkIcon className="me-1" />
-              Produk Desty
-              {syncStats && (
-                <Badge bg="success" className="ms-2">
-                  {(syncStats.destyConnected || 0) + (syncStats.isDestyProduct || 0)}
-                </Badge>
-              )}
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="erm">
-              Produk ERM Carramica
-              {syncStats && (
-                <Badge bg="info" className="ms-2">{syncStats.ermOnly}</Badge>
-              )}
-            </Nav.Link>
-          </Nav.Item>
-        </Nav>
-
-        {/* Sync Buttons */}
-        <div className="d-flex gap-2">
-          {/* Sync Produk Desty - sync all products from /api/product/page */}
-          <Button
-            variant="outline-success"
-            onClick={handleSyncProdukDesty}
-            disabled={syncing}
-            title="Sinkronisasi semua produk dari Desty (stok & data produk)"
-          >
-            <CloudArrowDown className={syncing ? "spin" : ""} />
-            {syncing ? " Sync..." : " Sync Produk Desty"}
-          </Button>
-
-          {/* Sync Berat Desty - sync weight only */}
-          <Button
-            variant="outline-primary"
-            onClick={handleSyncDesty}
-            disabled={syncing}
-            title="Sinkronisasi berat produk dari Desty"
-          >
-            <ArrowCounterclockwise className={syncing ? "spin" : ""} />
-            {syncing ? " Sync..." : " Sync Berat Desty"}
-          </Button>
-        </div>
-      </div>
-
       {/* Legend for indicators */}
       <div style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
-        <span style={{ marginRight: "15px" }}>
-          <span style={{ fontSize: "14px", marginRight: "3px" }}>⚠️</span>
-          Berat belum di-sync dari Desty (klik produk → sync manual)
-        </span>
         <span>
           <span style={{ fontSize: "12px", marginRight: "3px" }}>📦</span>
           Ukuran belum diinput (input manual diperlukan)
         </span>
       </div>
 
-      {/* Product Status Filter Buttons */}
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "15px" }}>
-        {/* All Status Button */}
-        <Button
-          variant={selectedStatus === null ? "primary" : "outline-secondary"}
-          size="sm"
-          onClick={() => {
-            setSelectedStatus(null);
-            setPage(1);
-          }}
-          style={{
-            fontWeight: selectedStatus === null ? "bold" : "normal",
-          }}
-        >
-          Semua ({statusCounts.all})
-        </Button>
-
-        {/* Live */}
-        <Button
-          variant={selectedStatus === "Live" ? "success" : "outline-success"}
-          size="sm"
-          onClick={() => {
-            setSelectedStatus(selectedStatus === "Live" ? null : "Live");
-            setPage(1);
-          }}
-          style={{
-            fontWeight: selectedStatus === "Live" ? "bold" : "normal",
-          }}
-        >
-          🟢 Live ({statusCounts.Live})
-        </Button>
-
-        {/* Hold */}
-        <Button
-          variant={selectedStatus === "Hold" ? "warning" : "outline-warning"}
-          size="sm"
-          onClick={() => {
-            setSelectedStatus(selectedStatus === "Hold" ? null : "Hold");
-            setPage(1);
-          }}
-          style={{
-            fontWeight: selectedStatus === "Hold" ? "bold" : "normal",
-          }}
-        >
-          🟡 Hold ({statusCounts.Hold})
-        </Button>
-
-        {/* Out of Stock */}
-        <Button
-          variant={selectedStatus === "Out of Stock" ? "danger" : "outline-danger"}
-          size="sm"
-          onClick={() => {
-            setSelectedStatus(selectedStatus === "Out of Stock" ? null : "Out of Stock");
-            setPage(1);
-          }}
-          style={{
-            fontWeight: selectedStatus === "Out of Stock" ? "bold" : "normal",
-          }}
-        >
-          🔴 Out of Stock ({statusCounts["Out of Stock"]})
-        </Button>
-
-        {/* Discontinued */}
-        <Button
-          variant={selectedStatus === "Discontinued" ? "secondary" : "outline-secondary"}
-          size="sm"
-          onClick={() => {
-            setSelectedStatus(selectedStatus === "Discontinued" ? null : "Discontinued");
-            setPage(1);
-          }}
-          style={{
-            fontWeight: selectedStatus === "Discontinued" ? "bold" : "normal",
-          }}
-        >
-          ⚫ Discontinued ({statusCounts.Discontinued})
-        </Button>
-
-        {/* Draft */}
-        <Button
-          variant={selectedStatus === "Draft" ? "info" : "outline-info"}
-          size="sm"
-          onClick={() => {
-            setSelectedStatus(selectedStatus === "Draft" ? null : "Draft");
-            setPage(1);
-          }}
-          style={{
-            fontWeight: selectedStatus === "Draft" ? "bold" : "normal",
-          }}
-        >
-          📝 Draft ({statusCounts.Draft})
-        </Button>
+      {/* Product Status Filter Tabs */}
+      <div className="status-tabs" role="tablist">
+        {STATUS_TABS.map(({ key, label, Icon }) => {
+          const isActive = selectedStatus === key;
+          return (
+            <button
+              key={label}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={`status-tab${isActive ? " active" : ""}`}
+              onClick={() => {
+                setSelectedStatus(key);
+                setPage(1);
+              }}
+            >
+              <Icon size={14} />
+              <span>{label}</span>
+              <span className="status-tab-count">
+                {key === null ? statusCounts.all : statusCounts[key]}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div
@@ -722,7 +337,7 @@ const ListProduct = () => {
               id="product-search"
               labelKey="nama"
               onChange={setSearch}
-              options={getFilteredByTab(allOfProduct)}
+              options={getFilteredByStatus(allOfProduct)}
               placeholder="Cari produk..."
               selected={search}
               maxResults={20}
@@ -765,7 +380,7 @@ const ListProduct = () => {
               marginRight: "10px",
               whiteSpace: "nowrap",
             }}
-            data={selectedData.length > 0 ? selectedData : getFilteredByTab(allOfProduct)}
+            data={selectedData.length > 0 ? selectedData : getFilteredByStatus(allOfProduct)}
             separator={";"}
             filename={"table_orders.csv"}
             className="btn btn-outline-secondary"
@@ -830,19 +445,15 @@ const ListProduct = () => {
               <colgroup>
                 <col style={{ width: "35px" }} />
                 <col style={{ width: "50px" }} />
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "6%" }} />
-                <col style={{ width: "5%" }} />
-                <col style={{ width: "5%" }} />
-                <col style={{ width: "4.5%" }} />
-                <col style={{ width: "4.5%" }} />
-                <col style={{ width: "4.5%" }} />
-                <col style={{ width: "4.5%" }} />
-                <col style={{ width: "5%" }} />
-                <col style={{ width: "5%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "8%" }} />
                 <col style={{ width: "7%" }} />
-                <col style={{ width: "10%" }} />
                 <col style={{ width: "6%" }} />
+                <col style={{ width: "6%" }} />
+                <col style={{ width: "6%" }} />
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "11%" }} />
+                <col style={{ width: "12%" }} />
                 <col style={{ width: "9%" }} />
               </colgroup>
               <thead>
@@ -862,22 +473,17 @@ const ListProduct = () => {
                   </th>
                   <th style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>Price</th>
                   <th style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>COGS</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Inv</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Fisik dari Gudang Online">Fisik</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Promosi dari Gudang Online">Promosi</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Pesanan dari Gudang Online">Pesanan</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "9px" }} title="Stok Tersedia (Fisik - Promosi - Pesanan)">Tersedia</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Stock</th>
                   <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Qty Sold</th>
                   <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Order</th>
                   <th style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>Revenue</th>
                   <th style={{ verticalAlign: "middle", fontSize: "10px" }}>SKU</th>
-                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Desty</th>
+                  <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Status</th>
                   <th style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedData?.map?.((item, i) => {
-                  const isDestyConnected = item.destyConnected === true || item.isDestyProduct === true;
                   return (
                     <tr key={item.id}>
                       <td style={{ textAlign: "center", verticalAlign: "middle" }}>
@@ -914,23 +520,7 @@ const ListProduct = () => {
                       <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>{currency(item?.harga)}</td>
                       <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>{item?.cogs ?? 0}</td>
                       <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
-                        {/* Inv = Tersedia = Fisik - Promosi - Pesanan = onHandStock - promotionStock - orderStock */}
-                        {item?.onHandStock !== undefined ? Math.max(0, (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0)) : item?.stok}
-                        {/* Weight indicator */}
-                        {(!item?.weight || item?.weight === 0) && isDestyConnected && (
-                          <span
-                            title="⚠️ Berat belum disinkronisasi. Klik produk ini untuk sync berat dari Desty."
-                            style={{
-                              display: "inline-block",
-                              marginLeft: "3px",
-                              cursor: "pointer",
-                              fontSize: "10px"
-                            }}
-                            onClick={() => navigate(`/products/detailProduct/${item?.id}`)}
-                          >
-                            ⚠️
-                          </span>
-                        )}
+                        {item?.stok ?? 0}
                         {/* Dimension indicator - needs manual input */}
                         {(!item?.length || !item?.width || !item?.height) && (
                           <span
@@ -946,32 +536,6 @@ const ListProduct = () => {
                           </span>
                         )}
                       </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
-                        {item?.onHandStock !== undefined ? item.onHandStock : <span style={{ color: '#999' }}>-</span>}
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
-                        {item?.promotionStock !== undefined ? item.promotionStock : <span style={{ color: '#999' }}>-</span>}
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
-                        {item?.orderStock !== undefined ? item.orderStock : <span style={{ color: '#999' }}>-</span>}
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>
-                        {/* Tersedia = Fisik - Promosi - Pesanan */}
-                        {(item?.onHandStock !== undefined || item?.promotionStock !== undefined || item?.orderStock !== undefined) ? (
-                          <span
-                            title={`Fisik: ${item?.onHandStock ?? 0}, Promosi: ${item?.promotionStock ?? 0}, Pesanan: ${item?.orderStock ?? 0}`}
-                            style={{
-                              color: (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0) <= 0 ? 'red' : 'inherit',
-                              fontWeight: (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0) <= 0 ? 'bold' : 'normal',
-                              fontSize: "10px"
-                            }}
-                          >
-                            {Math.max(0, (item?.onHandStock ?? 0) - (item?.promotionStock ?? 0) - (item?.orderStock ?? 0))}
-                          </span>
-                        ) : (
-                          <span style={{ color: '#999', fontSize: "10px" }}>-</span>
-                        )}
-                      </td>
                       <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>{item?.qty_sold ?? 0}</td>
                       <td style={{ textAlign: "center", verticalAlign: "middle", fontSize: "10px" }}>{item?.orderCount ?? 0}</td>
                       <td style={{ textAlign: "right", verticalAlign: "middle", fontSize: "10px" }}>
@@ -979,63 +543,13 @@ const ListProduct = () => {
                           ? currency(parseInt(item?.qty_sold) * parseInt(item?.harga))
                           : "Rp.0"}
                       </td>
-                      <td style={{ fontSize: "9px", verticalAlign: "middle" }}>
-                        {/* SKU Info */}
-                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU Rapin: ${item.sku_rapin || '-'}`}>
-                          Rapin: <code style={{ fontSize: "9px" }}>{item.sku_rapin || '-'}</code>
+                      <td style={{ fontSize: "10px", verticalAlign: "middle" }}>
+                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={item.sku || '-'}>
+                          {item.sku || '-'}
                         </div>
-                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU CRM: ${item.sku || '-'}`}>
-                          CRM: <code style={{ fontSize: "9px" }}>{item.sku || '-'}</code>
-                        </div>
-                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={`SKU Desty: ${item.destySkuNumber || '-'}`}>
-                          Desty: <code style={{ fontSize: "9px" }}>{item.destySkuNumber || '-'}</code>
-                        </div>
-                        {/* SKU Match Status Indicator */}
-                        {(() => {
-                          const rapinMatch = item.sku_rapin && item.destySkuNumber && item.sku_rapin === item.destySkuNumber;
-                          const crmMatch = item.sku && item.destySkuNumber && item.sku === item.destySkuNumber;
-                          const allMatch = rapinMatch && crmMatch;
-                          const anyMatch = rapinMatch || crmMatch;
-                          const noMatch = !anyMatch && (item.sku_rapin || item.sku || item.destySkuNumber);
-
-                          if (allMatch) {
-                            return <Badge bg="success" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="Semua SKU cocok">Match</Badge>;
-                          }
-                          if (rapinMatch && !crmMatch) {
-                            return <Badge bg="info" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="SKU Rapin = SKU Desty, CRM berbeda">Rapin ✓</Badge>;
-                          }
-                          if (crmMatch && !rapinMatch) {
-                            return <Badge bg="primary" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="SKU CRM = SKU Desty, Rapin berbeda">CRM ✓</Badge>;
-                          }
-                          if (noMatch) {
-                            return <Badge bg="danger" className="mt-1" style={{ fontSize: "9px", padding: "1px 4px" }} title="Semua SKU tidak cocok">No Match</Badge>;
-                          }
-                          return null;
-                        })()}
                       </td>
                       <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        {/* Desty Connection Indicator */}
-                        {isDestyConnected ? (
-                          <Badge
-                            bg="success"
-                            title={`Terhubung dengan Desty (SKU: ${item.destySkuNumber || item.sku_rapin || item.sku})`}
-                            style={{ cursor: "pointer", fontSize: "9px", padding: "2px 4px" }}
-                            onClick={() => {
-                              if (item.destyLastSync) {
-                                enqueueSnackbar(
-                                  `Terakhir sync: ${new Date(item.destyLastSync.seconds * 1000).toLocaleString("id-ID")}`,
-                                  { variant: "info" }
-                                );
-                              }
-                            }}
-                          >
-                            Desty
-                          </Badge>
-                        ) : (
-                          <Badge bg="secondary" style={{ fontSize: "9px", padding: "2px 4px" }} title="Tidak terhubung dengan Desty">
-                            ERM
-                          </Badge>
-                        )}
+                        <StatusBadge status={item?.status} />
                       </td>
                       <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <button
@@ -1147,12 +661,75 @@ const ListProduct = () => {
 
       {/* Custom CSS */}
       <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        /* Status filter tabs */
+        .status-tabs {
+          display: flex;
+          gap: 4px;
+          overflow-x: auto;
+          border-bottom: 1px solid #e5e7eb;
+          margin-bottom: 16px;
         }
-        .spin {
-          animation: spin 1s linear infinite;
+        .status-tab {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 14px;
+          margin-bottom: -1px;
+          background: none;
+          border: none;
+          border-bottom: 2px solid transparent;
+          color: #6b7280;
+          font-size: 13px;
+          font-weight: 500;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: color 0.15s ease, border-color 0.15s ease;
+        }
+        .status-tab:hover {
+          color: #3D5E54;
+        }
+        .status-tab:focus-visible {
+          outline: 2px solid rgba(61, 94, 84, 0.4);
+          outline-offset: -2px;
+          border-radius: 4px;
+        }
+        .status-tab.active {
+          color: #3D5E54;
+          font-weight: 600;
+          border-bottom-color: #3D5E54;
+        }
+        .status-tab-count {
+          min-width: 22px;
+          padding: 1px 7px;
+          border-radius: 999px;
+          background: #f1f3f2;
+          color: #6b7280;
+          font-size: 11px;
+          font-weight: 600;
+          text-align: center;
+        }
+        .status-tab.active .status-tab-count {
+          background: #3D5E54;
+          color: #fff;
+        }
+        /* Status badge in table */
+        .product-table td .status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          max-width: 100%;
+          padding: 2px 7px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 600;
+          line-height: 1.2;
+          white-space: nowrap;
+        }
+        .product-table td .status-badge svg {
+          flex-shrink: 0;
+        }
+        .product-table td .status-badge span {
+          display: inline;
         }
         /* Table styling */
         .product-table {
