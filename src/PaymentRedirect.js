@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { firestore } from "./FirebaseFrovider";
 import { useParams } from "react-router-dom";
+import { calcOrderTotals } from "./page/orders/orderTotals";
 
 export default function PaymentRedirect() {
     const { id } = useParams();
@@ -39,7 +40,9 @@ export default function PaymentRedirect() {
         // Cleanup subscription on component unmount
         return () => unsubscribe();
     }, [id]);
-    const totalDiscount = (form?.additionalDiscount + form?.totalOngkir + form?.totalHargaProduk) - form?.totalAfterDiskonDanOngkir
+    // Product discount only (additional discount has its own row), same formula
+    // as Add Order / invoice: "%" applied to price × qty, "Rp" once per line.
+    const totalDiscount = calcOrderTotals(form?.orders, form?.additionalDiscount).productDiscount
     console.log(form, id)
     return (
         <div style={{

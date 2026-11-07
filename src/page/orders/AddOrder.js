@@ -40,10 +40,17 @@ import {
   useFirestoreQueryData,
 } from "@react-query-firebase/firestore";
 import { useAuth } from "../../AuthContext";
-import { Form } from "react-bootstrap";
+import { Form, Modal } from "react-bootstrap";
 import { useSnackbar } from "notistack";
 import PhoneInput from "react-phone-input-2";
 import { useNavigate } from "react-router-dom";
+import {
+  calcOrderTotals,
+  lineAmount,
+  lineDiscount,
+  lineGross,
+} from "./orderTotals";
+import useBiteshipRates from "./useBiteshipRates";
 
 function findUndefinedOrEmptyFields(obj, path = "") {
   let result = [];
@@ -63,6 +70,27 @@ function findUndefinedOrEmptyFields(obj, path = "") {
 
   return result;
 }
+
+// Highest discount allowed for one product line:
+// "%" → 100, "Rp" → price × qty (the line's amount before discount).
+// Returns null when the product has no price yet (nothing to cap against).
+const maxLineDiscount = (prod) => {
+  if (prod?.discount_type === "%") return 100;
+  if (!Number(prod?.price)) return null;
+  return lineGross(prod);
+};
+
+// Keep a typed discount inside 0 … maxLineDiscount so the user can't enter
+// an "Rp" discount bigger than the line amount (or a % above 100).
+const clampLineDiscount = (prod) => {
+  if (prod?.discount === "" || prod?.discount === undefined) return prod;
+  const discount = Number(prod.discount);
+  if (!Number.isFinite(discount) || discount < 0) return { ...prod, discount: 0 };
+  const max = maxLineDiscount(prod);
+  if (max !== null && discount > max) return { ...prod, discount: max };
+  return prod;
+};
+
 const AddOrder = () => {
   const { currentUser } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
@@ -129,22 +157,24 @@ const AddOrder = () => {
   useEffect(() => {
     setTimeout(() => {
       if (hour > 14) {
-        const nowN = new Date();
-        const tomorrowUpdate = new Date(nowN);
-        tomorrowUpdate.setDate(now.getDate() + 1);
-        const tomorrowDayUpdate = tomorrowUpdate?.getDate();
-        const bulanNew = new Date(nowN).getMonth() + 1;
-        const shippingDateUpdate = `${tahun.toString()}-${bulan
+        // Ship tomorrow: take day, month AND year from the real "tomorrow" date
+        // so month-end (30 Nov -> 1 Dec) and year-end (31 Dec -> 1 Jan) roll over.
+        const tomorrowUpdate = new Date();
+        tomorrowUpdate.setDate(tomorrowUpdate.getDate() + 1);
+        const tomorrowDayUpdate = tomorrowUpdate.getDate();
+        const tomorrowMonthUpdate = tomorrowUpdate.getMonth() + 1;
+        const tomorrowYearUpdate = tomorrowUpdate.getFullYear();
+        const shippingDateUpdate = `${tomorrowYearUpdate}-${tomorrowMonthUpdate
           .toString()
-          .padStart(2, "0")}-${tomorrowDayUpdate?.toString().padStart(2, "0")}`;
+          .padStart(2, "0")}-${tomorrowDayUpdate.toString().padStart(2, "0")}`;
         const shippingDateTimestampUpdate = Timestamp.fromDate(
           new Date(shippingDateUpdate)
         );
-        // console.log('newdate', tomorrowDayUpdate)
         setFormData((prev) => ({
           ...prev,
           day: tomorrowDayUpdate,
-          // month: bulanNew.toString().padStart(2, '0'),
+          month: tomorrowMonthUpdate,
+          year: tomorrowYearUpdate.toString(),
           shippingDate: shippingDateTimestampUpdate,
         }));
       }
@@ -226,10 +256,6 @@ const AddOrder = () => {
     open: false,
     id: "",
   });
-  const [koordinateReceiver, setKoordinateReceiver] = useState({
-    lat: "",
-    lng: "",
-  });
   const [koordinateOrigin, setKoordinateOrigin] = useState({
     lat: "",
     lng: "",
@@ -237,73 +263,201 @@ const AddOrder = () => {
   // select kurir
   const [ListKurir, setListKurir] = useState(["Biteship", "Dedicated"]);
 
-  // validate
+  // validate sender data + order summary (additional discount / total)
   const validate = () => {
-    const newError = { ...formError };
-    // console.log('er')
+    // always start from a clean state so fixed fields don't keep old messages
+    const newError = {
+      email: "",
+      warehouse: "",
+      senderName: "",
+      senderPhone: "",
+      additionalDiscount: "",
+      deliveryFee: "",
+      total: "",
+    };
 
     if (!formData.senderName) {
-      // console.log('er')
-      newError.senderName = "Sender name is required";
+      newError.senderName = "Nama pengirim belum diisi";
     }
 
-    if (formData.senderPhone.length <= 2) {
-      newError.senderPhone = "Sender phone is required";
+    if (!formData.senderPhone || formData.senderPhone.length <= 2) {
+      newError.senderPhone = "Nomor HP pengirim belum diisi";
+    }
+
+    const totals = calcOrderTotals(orders, formData?.additionalDiscount);
+    const addDisc = Number(formData?.additionalDiscount) || 0;
+    const maxAddDisc = totals.subTotal - totals.productDiscount;
+    const allProductsChosen = orders.every((ord) =>
+      (ord?.products || []).every((prod) => prod?.nama)
+    );
+
+    if (addDisc < 0) {
+      newError.additionalDiscount = "Additional discount tidak boleh negatif";
+    } else if (allProductsChosen && addDisc > maxAddDisc) {
+      newError.additionalDiscount = `Additional discount melebihi total harga produk setelah diskon (maksimal ${currency(
+        maxAddDisc
+      )})`;
+    } else if (allProductsChosen && totals.total <= 0) {
+      newError.total = "Total pembayaran harus lebih dari Rp0";
     }
 
     return newError;
   };
 
-  // validateOrder
+  // validate ALL orders (receiver, shipping, products, discount, stock)
   const validateOrd = () => {
-    // console.log(indexOrder)
-    const newErrors = [...ordersErr];
-    const currentOrder = orders[indexOrder]; // Get the specific order to validate
-
-    // Validate receiverName
-    if (!currentOrder?.receiverName) {
-      newErrors[indexOrder].receiverName = "Receiver name is required";
-    }
-
-    // Validate receiverPhone
-    if (
-      !currentOrder?.receiverPhone ||
-      currentOrder?.receiverPhone.length <= 2
-    ) {
-      newErrors[indexOrder].receiverPhone = "Receiver phone number is required";
-    }
-
-    // Validate address
-    if (!currentOrder?.address) {
-      newErrors[indexOrder].address = "Address is required";
-    }
-
-    if (!currentOrder?.kurir) {
-      newErrors[indexOrder].kurir = "kurir is required";
-    }
-    if (!currentOrder?.ongkir) {
-      newErrors[indexOrder].ongkir = "ongkir is required";
-    }
-    // console.log(indexOrder)
-
-    newErrors[indexOrder].products = currentOrder?.products?.map?.(
-      (product, j) => {
-        const productErrors = { ...newErrors[indexOrder].products[j] };
-
-        if (!product?.nama) {
-          productErrors.nama = "Product name is required";
+    // total qty per product across all orders, compared against stock
+    const qtyPerProduct = {};
+    orders.forEach((ord) =>
+      (ord?.products || []).forEach((prod) => {
+        if (prod?.id) {
+          qtyPerProduct[prod.id] =
+            (qtyPerProduct[prod.id] || 0) + (Number(prod?.quantity) || 0);
         }
-
-        if (!product?.quantity || product?.quantity <= 0) {
-          productErrors.quantity =
-            "Quantity is required and must be greater than 0";
-        }
-
-        return productErrors;
-      }
+      })
     );
 
-    return newErrors;
+    return orders.map((currentOrder) => {
+      const orderErr = { ...initialOrderErr, products: [] };
+
+      if (!currentOrder?.receiverName) {
+        orderErr.receiverName = "Nama penerima belum diisi";
+      }
+      if (
+        !currentOrder?.receiverPhone ||
+        currentOrder?.receiverPhone.length <= 2
+      ) {
+        orderErr.receiverPhone = "Nomor HP penerima belum diisi";
+      }
+      if (!currentOrder?.address) {
+        orderErr.address = "Alamat penerima belum diisi";
+      }
+      if (!currentOrder?.kurir) {
+        orderErr.kurir = "Kurir belum dipilih";
+      }
+
+      const ongkirValue = currentOrder?.ongkir;
+      if (
+        ongkirValue === "" ||
+        ongkirValue === undefined ||
+        ongkirValue === null ||
+        Number.isNaN(Number(ongkirValue))
+      ) {
+        orderErr.ongkir =
+          "Ongkir belum diisi (pilih jenis service atau isi ongkir)";
+      } else if (Number(ongkirValue) < 0) {
+        orderErr.ongkir = "Ongkir tidak boleh negatif";
+      }
+
+      orderErr.products = (currentOrder?.products || []).map((product) => {
+        const productErr = {
+          nama: "",
+          quantity: "",
+          price: "",
+          discount: "",
+          amount: "",
+        };
+
+        if (!product?.nama) {
+          productErr.nama = "Produk belum dipilih";
+          return productErr;
+        }
+
+        // quantity + stock
+        const qty = Number(product?.quantity);
+        if (product?.quantity === "" || !Number.isInteger(qty) || qty <= 0) {
+          productErr.quantity = "Qty belum diisi atau harus lebih dari 0";
+        } else {
+          const liveProduct = allProduct.find((p) => p?.id === product?.id);
+          if (!liveProduct) {
+            productErr.quantity =
+              "Produk ini tidak tersedia lagi (status bukan Live atau stok habis)";
+          } else {
+            const stock = Number(liveProduct?.stok) || 0;
+            const totalQty = qtyPerProduct[product.id] || 0;
+            if (totalQty > stock) {
+              productErr.quantity =
+                totalQty > qty
+                  ? `Qty melebihi stok: total qty produk ini di semua order ${totalQty}, stok tersedia ${stock}`
+                  : `Qty melebihi stok (stok tersedia ${stock})`;
+            }
+          }
+        }
+
+        // discount range
+        const discount = Number(product?.discount) || 0;
+        const gross = lineGross(product);
+        if (discount < 0) {
+          productErr.discount = "Diskon tidak boleh negatif";
+        } else if (product?.discount_type === "%" && discount > 100) {
+          productErr.discount = "Diskon % tidak boleh lebih dari 100%";
+        } else if (product?.discount_type !== "%" && discount > gross) {
+          productErr.discount = `Diskon melebihi harga × qty (maksimal ${currency(
+            gross
+          )})`;
+        }
+
+        return productErr;
+      });
+
+      return orderErr;
+    });
+  };
+
+  // list every validation message, grouped per section, for the popup
+  const collectValidationMessages = (senderErr, ordersErrList) => {
+    const sections = [];
+    const senderMessages = Object.values(senderErr || {}).filter(
+      (msg) => typeof msg === "string" && msg
+    );
+    if (senderMessages.length) {
+      sections.push({ title: "Data Pengirim & Ringkasan", messages: senderMessages });
+    }
+
+    (ordersErrList || []).forEach((orderErr, i) => {
+      const orderMessages = Object.entries(orderErr || {})
+        .filter(([key, msg]) => key !== "products" && typeof msg === "string" && msg)
+        .map(([, msg]) => msg);
+      if (orderMessages.length) {
+        sections.push({
+          title: `Order ${i + 1} – Penerima & Pengiriman`,
+          messages: orderMessages,
+        });
+      }
+
+      (orderErr?.products || []).forEach((productErr, j) => {
+        const productMessages = Object.values(productErr || {}).filter(
+          (msg) => typeof msg === "string" && msg
+        );
+        if (productMessages.length) {
+          const productName = orders?.[i]?.products?.[j]?.nama;
+          sections.push({
+            title: `Order ${i + 1} – Produk ${j + 1}${
+              productName ? ` (${productName})` : ""
+            }`,
+            messages: productMessages,
+          });
+        }
+      });
+    });
+
+    return sections;
+  };
+
+  // run all validations; show the popup listing what is missing / invalid
+  const [validationPopup, setValidationPopup] = useState([]);
+  const runValidation = () => {
+    const senderErr = validate();
+    const ordersErrList = validateOrd();
+    setFormError(senderErr);
+    setOrdersErr(ordersErrList);
+
+    const sections = collectValidationMessages(senderErr, ordersErrList);
+    if (sections.length > 0) {
+      setValidationPopup(sections);
+      return false;
+    }
+    return true;
   };
 
   // console.log(orders);
@@ -393,114 +547,90 @@ const AddOrder = () => {
       setKurirAktif(value);
     }
     if (productIndex !== undefined) {
+      // set when a quantity change leaves an existing "Rp" discount above the
+      // new price × qty (the discount isn't cut silently, the user is told)
+      let quantityDiscountError = null;
       const updatedOrders = orders.map((order, i) =>
         i === orderIndex
           ? {
               ...order,
               products: order.products.map((product, j) => {
-                const hargaProd = product?.price;
-                let hargaAmountAfterDiscon =
-                  parseInt(product?.price) * parseInt(product?.quantity);
-                if (
-                  typeof e === "object" &&
-                  name === "discount_type" &&
-                  value === "%" &&
-                  product?.discount
-                ) {
-                  // console.log('%')
-                  hargaAmountAfterDiscon =
-                    (1 -
-                      parseInt(product?.discount ? product?.discount : 0) /
-                        100) *
-                    hargaAmountAfterDiscon;
-                } else if (
-                  typeof e === "object" &&
-                  name === "discount_type" &&
-                  value === "Rp" &&
-                  product?.discount
-                ) {
-                  // console.log('Rp')
-                  hargaAmountAfterDiscon =
-                    hargaAmountAfterDiscon -
-                    parseInt(product?.discount ? product?.discount : 0);
-                } else if (
-                  typeof e === "object" &&
-                  name === "discount" &&
-                  product?.discount_type === "%"
-                ) {
-                  hargaAmountAfterDiscon =
-                    (1 - parseInt(value ? value : 0) / 100) *
-                    hargaAmountAfterDiscon;
-                } else if (
-                  typeof e === "object" &&
-                  name === "discount" &&
-                  product?.discount_type === "Rp"
-                ) {
-                  // console.log('Rp')
-                  hargaAmountAfterDiscon =
-                    hargaAmountAfterDiscon - parseInt(value ? value : 0);
+                if (j !== productIndex) return product;
+
+                let next;
+                if (Array.isArray(e)) {
+                  // product selected from the typeahead
+                  next = {
+                    ...product,
+                    prod: e,
+                    nama: e?.[0]?.nama,
+                    price: e?.[0]?.harga,
+                    weight: e?.[0]?.weight,
+                    height: e?.[0]?.height,
+                    width: e?.[0]?.width,
+                    length: e?.[0]?.length,
+                    sku: e?.[0]?.sku,
+                    id: e?.[0]?.id,
+                    stock: e?.[0]?.stok,
+                    discount: 0,
+                  };
+                } else if (name === "discount_type") {
+                  next = { ...product, discount_type: value };
+                } else {
+                  // quantity / discount: keep "" while the field is cleared
+                  // (never store NaN)
+                  const parsed = value === "" ? "" : parseInt(value, 10);
+                  next = {
+                    ...product,
+                    [name]: Number.isNaN(parsed) ? "" : parsed,
+                  };
                 }
-                // console.log(hargaAmountAfterDiscon)
-                return j === productIndex
-                  ? Array.isArray(e)
-                    ? {
-                        ...product,
-                        prod: e,
-                        nama: e?.[0]?.nama,
-                        price: e?.[0]?.harga,
-                        weight: e?.[0]?.weight,
-                        height: e?.[0]?.height,
-                        width: e?.[0]?.width,
-                        length: e?.[0]?.length,
-                        amount: e?.[0]?.harga * product?.quantity,
-                        sku: e?.[0]?.sku,
-                        id: e?.[0]?.id,
-                        stock: e?.[0]?.stok,
-                        // quantity: e?.[0]?.quantity,
-                        discount: 0,
-                      }
-                    : name === "quantity"
-                    ? {
-                        ...product,
-                        [name]: parseInt(value),
-                        amount:
-                          product?.discount_type === "%"
-                            ? (1 - product?.discount / 100) *
-                              (hargaProd * parseInt(value))
-                            : hargaProd * parseInt(value) -
-                              parseInt(
-                                product?.discount ? product.discount : 0
-                              ),
-                      }
-                    : name === "discount_type"
-                    ? {
-                        ...product,
-                        [name]: value,
-                        amount: hargaAmountAfterDiscon,
-                      }
-                    : {
-                        ...product,
-                        [name]: parseInt(value),
-                        amount: hargaAmountAfterDiscon,
-                      }
-                  : product;
+
+                // the discount can't go above the line amount (Rp) or 100 (%)
+                if (name === "discount" || name === "discount_type") {
+                  next = clampLineDiscount(next);
+                }
+
+                // Lowering qty is not clamped (typing "10" passes through "1"),
+                // so warn right away instead; validation blocks saving.
+                if (name === "quantity") {
+                  const gross = lineGross(next);
+                  quantityDiscountError =
+                    next?.discount_type !== "%" &&
+                    next?.quantity !== "" &&
+                    Number(next?.price) > 0 &&
+                    Number(next?.discount) > gross
+                      ? `Diskon melebihi harga × qty (maksimal ${currency(
+                          gross
+                        )})`
+                      : "";
+                }
+
+                // amount = price × qty − line discount (same rule as totals)
+                return { ...next, amount: lineAmount(next) };
               }),
             }
           : order
       );
-      // err
-      const updatedOrdersErr = ordersErr.map((err, i) =>
-        i === orderIndex
-          ? {
-              ...err,
-              products: err.products.map((productErr, j) => {
-                return j === productIndex
-                  ? { ...productErr, [name]: "" }
-                  : productErr;
-              }),
-            }
-          : err
-      );
+      // clear the error(s) of the field that just changed
+      const clearedFields = Array.isArray(e)
+        ? ["nama", "quantity", "discount"]
+        : name === "discount_type"
+        ? ["discount_type", "discount"]
+        : [name];
+      const updatedOrdersErr = ordersErr.map((err, i) => {
+        if (i !== orderIndex) return err;
+        const productsErr = [...(err?.products || [])];
+        const cleared = { ...(productsErr[productIndex] || {}) };
+        clearedFields.forEach((field) => {
+          cleared[field] = "";
+        });
+        if (quantityDiscountError !== null) {
+          cleared.discount = quantityDiscountError;
+        }
+        productsErr[productIndex] = cleared;
+        return { ...err, products: productsErr };
+      });
       setOrders(updatedOrders);
       setOrdersErr(updatedOrdersErr);
     } else {
@@ -513,7 +643,8 @@ const AddOrder = () => {
           ? typeof e !== "object"
             ? { ...order, receiverPhone: e }
             : name === "kurir"
-            ? { ...order, [name]: value, ongkir: "" }
+            ? // a service from the previous courier type doesn't apply anymore
+              { ...order, [name]: value, ongkir: "", kurirService: "" }
             : name === "kurirService"
             ? {
                 ...order,
@@ -550,7 +681,12 @@ const AddOrder = () => {
     } else {
       const { name, value } = e?.target;
       if (e.target.type === "number") {
-        setFormData({ ...formData, [name]: parseInt(value) });
+        // keep "" while the field is cleared (never store NaN)
+        const parsed = value === "" ? "" : parseInt(value, 10);
+        setFormData({
+          ...formData,
+          [name]: Number.isNaN(parsed) ? "" : parsed,
+        });
       } else if (name === "warehouse") {
         setFormData({ ...formData, [name]: value });
         const findWH = warehouseOptions?.find((wh) => wh?.name === value);
@@ -616,51 +752,19 @@ const AddOrder = () => {
 
   const addOrderField = async (e) => {
     e.preventDefault();
-    const findErros = validate();
-    const findErrorsOrd = validateOrd();
+    if (!runValidation()) return;
 
-    if (
-      Object.values(findErros).some(
-        (err) =>
-          (typeof err === "string" && err !== "") ||
-          (typeof err === "object" &&
-            Object.values(err).some((subErr) => subErr !== ""))
-      )
-    ) {
-      alert("harap isi dulu field yang belum diisi!");
-      // console.log('Errors found:', findErros);
-      setFormError(findErros);
-    } else if (
-      findErrorsOrd.some((order) =>
-        Object.values(order).some(
-          (err) =>
-            (typeof err === "string" && err !== "") ||
-            (Array.isArray(err) &&
-              err.some((prodErr) =>
-                Object.values(prodErr).some(
-                  (prodErrField) => prodErrField !== ""
-                )
-              ))
-        )
-      )
-    ) {
-      // console.log('Errors found:', findErrorsOrd);
-      alert("harap isi dulu field yang belum diisi!");
-
-      setOrdersErr(findErrorsOrd);
-    } else {
-      try {
-        setOrders([...orders, initialOrder]);
-        setIndexOrder(indexOrder + 1);
-        // await setDoc(settingsRef, {
-        //   // invoiceId: increment(1),
-        //   orderId: increment(1)
-        // }, { merge: true })
-        setUpdate((prevValue) => !prevValue);
-        setOrdersErr((err) => [...err, initialOrderErr]);
-      } catch (e) {
-        console.log(e.message);
-      }
+    try {
+      setOrders([...orders, initialOrder]);
+      setIndexOrder(indexOrder + 1);
+      // await setDoc(settingsRef, {
+      //   // invoiceId: increment(1),
+      //   orderId: increment(1)
+      // }, { merge: true })
+      setUpdate((prevValue) => !prevValue);
+      setOrdersErr((err) => [...err, initialOrderErr]);
+    } catch (e) {
+      console.log(e.message);
     }
   };
 
@@ -668,71 +772,40 @@ const AddOrder = () => {
     // setIndexOrder(indexOrder + 1)
     e.preventDefault();
 
-    const findErros = validate();
-    const findErrorsOrd = validateOrd();
+    if (!runValidation()) return;
 
-    if (
-      Object.values(findErros).some(
-        (err) =>
-          (typeof err === "string" && err !== "") ||
-          (typeof err === "object" &&
-            Object.values(err).some((subErr) => subErr !== ""))
-      )
-    ) {
-      alert("harap isi dulu field yang belum diisi!");
-      setFormError(findErros);
-    } else if (
-      findErrorsOrd.some((order) =>
-        Object.values(order).some(
-          (err) =>
-            (typeof err === "string" && err !== "") ||
-            (Array.isArray(err) &&
-              err.some((prodErr) =>
-                Object.values(prodErr).some(
-                  (prodErrField) => prodErrField !== ""
-                )
-              ))
-        )
-      )
-    ) {
-      // console.log('Errors found:', findErrorsOrd);
-      alert("harap isi dulu field yang belum diisi!");
-      setOrdersErr(findErrorsOrd);
-    } else {
-      const lastOrder = orders[orders.length - 1];
-      const duplicatedOrder = {
-        ...lastOrder,
-        receiverName: "",
-        receiverPhone: "62",
-        address: "",
-        kecamatan: "",
-        // kurir: '',
-        // giftCard: '',
-        kurirProduk: "",
-        // products: [{ nama: '', quantity: '', price: '', discount: '', amount: '' }]
-      };
-      setOrders([...orders, duplicatedOrder]);
-      setFormData({
-        ...formData,
-      });
-      const lastService = listService?.[orders.length - 1];
-      setListService({
-        ...listService,
-        [orders.length]: lastService,
-      });
+    const lastOrder = orders[orders.length - 1];
+    const duplicatedOrder = {
+      ...lastOrder,
+      receiverName: "",
+      receiverPhone: "62",
+      address: "",
+      kecamatan: "",
+      // kurir: '',
+      // giftCard: '',
+      kurirProduk: "",
+      // products: [{ nama: '', quantity: '', price: '', discount: '', amount: '' }]
+      // Biteship ongkir depends on the receiver's location, and this is a new
+      // receiver: the service must be picked again after its map pin is set.
+      ...(lastOrder?.kurir === "Biteship" ? { kurirService: "", ongkir: "" } : {}),
+    };
+    setOrders([...orders, duplicatedOrder]);
+    setFormData({
+      ...formData,
+    });
 
-      setIndexOrder(indexOrder + 1);
+    setIndexOrder(indexOrder + 1);
 
-      // await setDoc(settingsRef, {
-      //   // invoiceId: increment(1),
-      //   orderId: increment(1)
-      // }, { merge: true });
-      setUpdate((prevValue) => !prevValue);
-      setOrdersErr((err) => [...err, initialOrderErr]);
-    }
+    // await setDoc(settingsRef, {
+    //   // invoiceId: increment(1),
+    //   orderId: increment(1)
+    // }, { merge: true });
+    setUpdate((prevValue) => !prevValue);
+    setOrdersErr((err) => [...err, initialOrderErr]);
   };
 
   const deleteLastOrderField = () => {
+    forgetRates(orders.length - 1);
     setOrders(orders.slice(0, -1));
     setOrdersErr(ordersErr.slice(0, -1));
     setIndexOrder(indexOrder - 1);
@@ -804,43 +877,17 @@ const AddOrder = () => {
   );
   // console.log(totalAmountAfterReduce)
 
-  // diskon
-  const diskon = orders?.map((ord) => {
-    return ord?.products?.map((prod) => {
-      return prod?.discount > 0
-        ? prod?.discount_type === "%"
-          ? (parseInt(prod?.discount) / 100) * prod?.price
-          : parseInt(prod?.discount)
-        : 0;
-    });
-  });
-
-  const diskonTotal = diskon?.map((tot) => {
-    return tot.reduce((val, nilaiSekarang) => {
-      return val + nilaiSekarang;
-    }, 0);
-  });
-
-  const diskonAfterReduce = diskonTotal?.reduce((val, nilaiSekarang) => {
-    return val + nilaiSekarang;
-  }, 0);
-
   const ongkir = orders.map((ord) =>
     ord.ongkir > 0 ? parseInt(ord.ongkir) : 0
   );
   const totalOngkir = ongkir?.reduce((val, nilaiSekarang) => {
     return val + nilaiSekarang;
   }, 0);
-  // total after ongkir & diskon
-  const disc = diskonAfterReduce ? diskonAfterReduce : 0;
-  const addDisc = formData?.additionalDiscount
-    ? formData.additionalDiscount
-    : 0;
-  const totalAfterDiskonDanOngkir =
-    parseInt(totalAfterReduce) -
-    parseInt(disc) -
-    parseInt(addDisc) +
-    parseInt(totalOngkir);
+
+  // diskon & total — "%" discount is applied to price × quantity (see orderTotals.js)
+  const orderTotals = calcOrderTotals(orders, formData?.additionalDiscount);
+  const diskonAfterReduce = orderTotals.productDiscount;
+  const totalAfterDiskonDanOngkir = orderTotals.total;
   // console.log(totalOngkir, diskonAfterReduce, totalAfterReduce, totalAfterDiskonDanOngkir)
 
   // orderLalamove
@@ -878,18 +925,13 @@ const AddOrder = () => {
         price: prod.price,
         quantity: prod.quantity,
       });
-      if (prod.discount > 0 && prod?.discount_type == "%") {
+      // one discount line per product, for the whole line (price × qty)
+      const discountForLine = lineDiscount(prod);
+      if (discountForLine > 0) {
         product.push({
           name: `discount-${prod.nama?.slice(0, 40)}`,
           id: prod?.sku,
-          price: -((prod.discount / 100) * prod.price),
-          quantity: 1,
-        });
-      } else if (prod.discount > 0 && prod?.discount_type == "Rp") {
-        product.push({
-          name: `discount-${prod.nama?.slice(0, 40)}`,
-          id: prod?.sku,
-          price: -prod.discount,
+          price: -discountForLine,
           quantity: 1,
         });
       }
@@ -899,44 +941,9 @@ const AddOrder = () => {
 
   const handleShowSaveInvoice = (e) => {
     e.preventDefault();
-    const findErros = validate();
-    const findErrorsOrd = validateOrd();
+    if (!runValidation()) return;
 
-    if (
-      Object.values(findErros).some(
-        (err) =>
-          (typeof err === "string" && err !== "") ||
-          (typeof err === "object" &&
-            Object.values(err).some((subErr) => subErr !== ""))
-      )
-    ) {
-      // console.log('Errors found:', findErros);
-      // enqueueSnackbar(`harap isi dulu field yang belum diisi `, { variant: 'error' })
-      alert("harap isi dulu field yang belum diisi!");
-
-      setFormError(findErros);
-    } else if (
-      findErrorsOrd.some((order) =>
-        Object.values(order).some(
-          (err) =>
-            (typeof err === "string" && err !== "") ||
-            (Array.isArray(err) &&
-              err.some((prodErr) =>
-                Object.values(prodErr).some(
-                  (prodErrField) => prodErrField !== ""
-                )
-              ))
-        )
-      )
-    ) {
-      // console.log('Errors found:', findErrorsOrd);
-      // enqueueSnackbar(`harap isi dulu field yang belum diisi `, { variant: 'error' })
-      alert("harap isi dulu field yang belum diisi!");
-
-      setOrdersErr(findErrorsOrd);
-    } else {
-      setModalShow(true);
-    }
+    setModalShow(true);
   };
 
   const undefinedOrEmptyFields = orders?.flatMap((item) =>
@@ -1080,6 +1087,8 @@ const AddOrder = () => {
             orderRef,
             {
               ...formData,
+              // never store "" / NaN — always a number
+              additionalDiscount: Number(formData?.additionalDiscount) || 0,
               orders: updateOrder ?? [],
               totalOngkir: totalOngkir ?? 0,
               createdAt: serverTimestamp(),
@@ -1138,6 +1147,8 @@ const AddOrder = () => {
             doc(firestore, "orders-backup", newOrderId),
             {
               ...formData,
+              // never store "" / NaN — always a number
+              additionalDiscount: Number(formData?.additionalDiscount) || 0,
               orders: updateOrder ?? [],
               totalOngkir: totalOngkir ?? 0,
               createdAt: serverTimestamp(),
@@ -1244,79 +1255,15 @@ const AddOrder = () => {
     }
   }, [value]);
 
-  // call getRate
-  const [loadingRate, setLoadingRate] = useState(false);
-  useEffect(() => {
-    // console.log('run')
-
-    if (
-      selected &&
-      orders?.[indexOrder]?.products?.length > 0 &&
-      koordinateReceiver?.lat &&
-      koordinateReceiver.lng &&
-      koordinateOrigin?.lat &&
-      koordinateOrigin.lng
-    ) {
-      const ordersProduct = orders?.[indexOrder].products?.map((prod) => {
-        return {
-          name: prod?.nama,
-          sku: prod?.sku,
-          weight: prod?.weight,
-          height: prod?.height,
-          width: prod?.width,
-          length: prod?.length,
-          quantity: prod?.quantity,
-        };
-      });
-      // console.log(ordersProduct)
-      // console.log('run')
-      async function getService() {
-        const helloWorld = httpsCallable(functions, "getRates");
-        try {
-          const updatedOrdersOng = orders.map((order, i) =>
-            i === indexOrder
-              ? {
-                  ...order,
-                  ongkir: "",
-                  kurirService: "",
-                }
-              : order
-          );
-          setOrders(updatedOrdersOng);
-          setListService({ ...listService, [indexOrder]: [] });
-          setLoadingRate(true);
-          const result = await helloWorld({
-            items: ordersProduct,
-            origin_latitude: koordinateOrigin?.lat,
-            origin_longitude: koordinateOrigin?.lng,
-            destination_latitude: koordinateReceiver?.lat,
-            destination_longitude: koordinateReceiver?.lng,
-          });
-          // console.log(result.data?.items)
-          setListService({
-            ...listService,
-            [indexOrder]: result.data?.items?.pricing,
-          });
-          setLoadingRate(false);
-        } catch (error) {
-          setLoadingRate(false);
-          enqueueSnackbar(`gagal mendapatkan ongkir, ${error.message}`, {
-            variant: "error",
-          });
-          console.error("Error calling function:", error);
-          setListService({ ...listService, [indexOrder]: [] });
-        }
-      }
-      getService();
-    }
-  }, [
-    selected,
-    orders?.[indexOrder]?.products,
-    koordinateReceiver?.lat,
-    koordinateReceiver?.lng,
-    koordinateOrigin?.lat,
-    koordinateOrigin?.lng,
-  ]);
+  // Biteship rates per sub-order (own map pin, own service list, own loading)
+  const { receiverCoords, setReceiverCoordsFor, loadingRate, forgetRates } =
+    useBiteshipRates({
+      orders,
+      setOrders,
+      setListService,
+      origin: koordinateOrigin,
+      enqueueSnackbar,
+    });
 
   const [typeahead, setTypehed] = useState([]);
 
@@ -1710,8 +1657,16 @@ const AddOrder = () => {
                               borderBottomLeftRadius: "0px",
                             }}
                             onWheel={(e) => e.target.blur()}
+                            isInvalid={
+                              ordersErr?.[orderIndex]?.products?.[productIndex]
+                                ?.discount
+                                ? true
+                                : false
+                            }
                             className="input"
                             type="number"
+                            min="0"
+                            max={maxLineDiscount(product) ?? undefined}
                             name="discount"
                             placeholder="Discount"
                             value={product.discount}
@@ -1719,6 +1674,33 @@ const AddOrder = () => {
                               handleChange(e, orderIndex, productIndex)
                             }
                           />
+                          {ordersErr?.[orderIndex]?.products?.[productIndex]
+                            ?.discount && (
+                            <div className="invalid-feedback d-block">
+                              {
+                                ordersErr?.[orderIndex]?.products?.[
+                                  productIndex
+                                ]?.discount
+                              }
+                            </div>
+                          )}
+                          {!ordersErr?.[orderIndex]?.products?.[productIndex]
+                            ?.discount &&
+                            maxLineDiscount(product) !== null && (
+                              <div
+                                style={{
+                                  fontSize: "12px",
+                                  color: "#6c757d",
+                                  marginTop: "4px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                Maks.{" "}
+                                {product?.discount_type === "%"
+                                  ? "100%"
+                                  : currency(maxLineDiscount(product))}
+                              </div>
+                            )}
                         </div>
 
                         <div className="form-group">
@@ -1793,8 +1775,12 @@ const AddOrder = () => {
                   <>
                     <div className="form-group">
                       <MapComponent
-                        setKoordinateReceiver={setKoordinateReceiver}
-                        koordinateReceiver={koordinateReceiver}
+                        setKoordinateReceiver={(coords) =>
+                          setReceiverCoordsFor(orderIndex, coords)
+                        }
+                        koordinateReceiver={
+                          receiverCoords?.[orderIndex] || { lat: "", lng: "" }
+                        }
                       />
                     </div>
                     <div className="form-group">
@@ -1803,7 +1789,7 @@ const AddOrder = () => {
                       <Form.Select
                         className="select"
                         name="kurirService"
-                        disabled={loadingRate}
+                        disabled={!!loadingRate?.[orderIndex]}
                         value={order?.kurirService?.courier_service_code}
                         // value={`${order?.kurirService?.courier_name}, ${order?.kurirService?.courier_service_name}, ${order?.kurirService?.duration}, Rp.${order?.kurirService?.price}` || ''}
                         onChange={(e, value) => {
@@ -1812,7 +1798,7 @@ const AddOrder = () => {
                         }}
                       >
                         <option selected hidden>
-                          {loadingRate ? "loading.." : "Jenis Service"}
+                          {loadingRate?.[orderIndex] ? "loading.." : "Jenis Service"}
                         </option>
                         {listService?.[orderIndex]?.map((kur) => {
                           return (
@@ -1835,7 +1821,7 @@ const AddOrder = () => {
                       <Form.Select
                         className="select"
                         name="kurirService"
-                        disabled={loadingRate}
+                        disabled={!!loadingRate?.[orderIndex]}
                         value={order?.kurirService}
                         // value={`${order?.kurirService?.courier_name}, ${order?.kurirService?.courier_service_name}, ${order?.kurirService?.duration}, Rp.${order?.kurirService?.price}` || ''}
                         onChange={(e, value) => {
@@ -1844,7 +1830,7 @@ const AddOrder = () => {
                         }}
                       >
                         <option selected hidden>
-                          {loadingRate ? "loading.." : "Jenis Service"}
+                          {loadingRate?.[orderIndex] ? "loading.." : "Jenis Service"}
                         </option>
                         {dedicatedCourier?.map((kur) => {
                           return (
@@ -1951,14 +1937,21 @@ const AddOrder = () => {
             <Form.Label>Additional Discount</Form.Label>
             <Form.Control
               onWheel={(e) => e.target.blur()}
+              isInvalid={formError?.additionalDiscount ? true : false}
               className="input"
               type="number"
+              min="0"
               name="additionalDiscount"
               placeholder="0"
               value={formData.additionalDiscount}
               onChange={handleFormChange}
             />
           </div>
+          {formError?.additionalDiscount && (
+            <div className="invalid-feedback d-block">
+              {formError.additionalDiscount}
+            </div>
+          )}
           <div className="summary-item">
             <Form.Label>Delivery Fee</Form.Label>
             <span>{currency(totalOngkir)}</span>
@@ -1967,6 +1960,9 @@ const AddOrder = () => {
             <Form.Label>Total</Form.Label>
             <span>{currency(totalAfterDiskonDanOngkir)}</span>
           </div>
+          {formError?.total && (
+            <div className="invalid-feedback d-block">{formError.total}</div>
+          )}
           <div className="submit">
             <button
               className="button button-primary"
@@ -1978,6 +1974,67 @@ const AddOrder = () => {
         </div>
       </div>
       {/* modal */}
+      <Modal
+        show={validationPopup.length > 0}
+        onHide={() => setValidationPopup([])}
+        centered
+        scrollable
+        // App.css has a global `.modal` rule (white box, 736px wide) meant for
+        // react-modal dialogs; it also hits Bootstrap's full-screen `.modal`
+        // wrapper. Reset it here so only the card is white and the page behind
+        // is dimmed + blurred.
+        style={{
+          background: "transparent",
+          padding: 0,
+          width: "100%",
+          maxWidth: "none",
+          borderRadius: 0,
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
+        }}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title style={{ fontSize: "18px", fontWeight: 600 }}>
+            Data belum lengkap
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p style={{ fontSize: "14px", color: "#555", marginBottom: "14px" }}>
+            Lengkapi atau perbaiki field berikut sebelum melanjutkan:
+          </p>
+          {validationPopup.map((section) => (
+            <div key={section.title} style={{ marginBottom: "14px" }}>
+              <div
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#3D5E54",
+                  marginBottom: "4px",
+                }}
+              >
+                {section.title}
+              </div>
+              <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "14px" }}>
+                {section.messages.map((msg) => (
+                  <li key={msg} style={{ color: "#b42318", marginBottom: "2px" }}>
+                    {msg}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </Modal.Body>
+        <Modal.Footer>
+          <button
+            type="button"
+            className="button button-primary"
+            style={{ backgroundColor: "#3D5E54" }}
+            onClick={() => setValidationPopup([])}
+          >
+            Mengerti
+          </button>
+        </Modal.Footer>
+      </Modal>
       <SaveInvoiceModal
         show={modalShow}
         onHide={() => setModalShow(false)}

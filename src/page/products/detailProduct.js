@@ -23,12 +23,9 @@ import {
   ref,
   uploadString,
 } from "firebase/storage";
-import { Button, Badge } from "react-bootstrap";
 import {
   ArrowLeft,
-  ArrowCounterclockwise,
   Border,
-  Link as LinkIcon,
   PlusLg,
   XCircle,
   XCircleFill,
@@ -43,121 +40,8 @@ export default function DetailProduct() {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
-  // Desty sync state
-  const [syncingDesty, setSyncingDesty] = useState(false);
-  const [syncingWeight, setSyncingWeight] = useState(false);
-
   const handleButtonClick = () => {
     fileInputRef.current?.click();
-  };
-
-  // Handle sync stock from Desty for this product
-  const handleSyncDestyStock = async () => {
-    const skuToSync = form.destySkuNumber || form.sku_rapin || form.sku;
-
-    if (!skuToSync) {
-      enqueueSnackbar("SKU tidak ditemukan untuk sinkronisasi", { variant: "warning" });
-      return;
-    }
-
-    if (!window.confirm(`Sinkronisasi stok dari Desty untuk SKU ${skuToSync}?`)) {
-      return;
-    }
-
-    setSyncingDesty(true);
-    try {
-      // Use HTTP endpoint (no auth required)
-      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/syncDestyStockHttp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ skuNumber: skuToSync, productId: productId })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        enqueueSnackbar(
-          `Stok berhasil di-sync dari Desty. Tersedia: ${result.newStock}`,
-          { variant: "success" }
-        );
-        // Refresh form data - include breakdown fields
-        setForm((prev) => ({
-          ...prev,
-          stok: result.newStock,
-          onHandStock: result.onHandStock ?? prev.onHandStock,
-          promotionStock: result.promotionStock ?? prev.promotionStock,
-          orderStock: result.orderStock ?? prev.orderStock,
-          weight: result.newWeight ?? prev.weight,
-          destyLastSync: new Date(),
-        }));
-      } else {
-        enqueueSnackbar(`Gagal sync: ${result.error || 'Unknown error'}`, { variant: "error" });
-      }
-    } catch (error) {
-      console.error("Error syncing Desty stock:", error);
-      enqueueSnackbar(`Gagal sinkronisasi: ${error.message}`, { variant: "error" });
-    } finally {
-      setSyncingDesty(false);
-    }
-  };
-
-  // Handle sync weight from Desty SKU Detail
-  const handleSyncDestyWeight = async () => {
-    const skuToSync = form.destySkuNumber || form.sku_rapin || form.sku;
-
-    if (!skuToSync) {
-      enqueueSnackbar("SKU tidak ditemukan untuk sinkronisasi berat", { variant: "warning" });
-      return;
-    }
-
-    if (!window.confirm(`Sinkronisasi berat dari Desty untuk SKU ${skuToSync}?`)) {
-      return;
-    }
-
-    setSyncingWeight(true);
-    try {
-      // Call the testDestySkuDetail function to get weight
-      const response = await fetch("https://asia-southeast2-carramica-prod.cloudfunctions.net/testDestySkuDetail", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ skuNumber: skuToSync })
-      });
-
-      const result = await response.json();
-
-      if (result.success && result.weight) {
-        // Update Firestore with the weight
-        const prodDocRef = doc(firestore, "product", productId);
-        await updateDoc(prodDocRef, {
-          weight: result.weight,
-          destyLastSync: serverTimestamp(),
-        });
-
-        // Update local state
-        setForm((prev) => ({
-          ...prev,
-          weight: result.weight,
-          destyLastSync: new Date(),
-        }));
-
-        enqueueSnackbar(
-          `Berat berhasil di-sync dari Desty: ${result.weight} gram`,
-          { variant: "success" }
-        );
-      } else if (result.success && !result.weight) {
-        enqueueSnackbar(
-          `Berat di Desty belum diinput (null). Silakan input berat secara manual di dashboard Desty terlebih dahulu.`,
-          { variant: "warning" }
-        );
-      } else {
-        enqueueSnackbar(`Gagal sync berat: ${result.error || "Unknown error"}`, { variant: "error" });
-      }
-    } catch (error) {
-      console.error("Error syncing Desty weight:", error);
-      enqueueSnackbar(`Gagal sinkronisasi berat: ${error.message}`, { variant: "error" });
-    } finally {
-      setSyncingWeight(false);
-    }
   };
 
   const [form, setForm] = useState({
@@ -509,22 +393,6 @@ export default function DetailProduct() {
             </p>
           </div>
 
-          {/* SKU Rapin Field */}
-          <div className="mb-4">
-            <label className="form-label fw-medium" for="sku_rapin" style={{ marginBottom: "8px" }}>
-              SKU Rapin
-            </label>
-            <input
-              onChange={handleFormChange}
-              name="sku_rapin"
-              className="form-control"
-              id="sku_rapin"
-              type="text"
-              value={form?.sku_rapin || form?.sku || ""}
-              placeholder="Masukkan SKU Rapin"
-            />
-          </div>
-
           {/* Name Field */}
           <div className="mb-4">
             <label className="form-label fw-medium" for="name" style={{ marginBottom: "8px" }}>
@@ -735,103 +603,6 @@ export default function DetailProduct() {
           </div>
         </div>
 
-        {/* Desty Integration Card */}
-        {(form.destyConnected || form.isDestyProduct || form.destySkuNumber) && (
-          <div
-            className="card shadow-sm"
-            style={{
-              padding: "24px",
-              marginBottom: "20px",
-              borderRadius: "12px",
-              border: form.destyConnected ? "2px solid #198754" : "1px solid #dee2e6"
-            }}
-          >
-            <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <h5 style={{ fontWeight: "bold", color: "#333", margin: 0 }}>
-                  <LinkIcon /> Integrasi Desty
-                </h5>
-                {form.destyConnected && (
-                  <Badge bg="success">Terhubung</Badge>
-                )}
-                {form.isDestyProduct && (
-                  <Badge bg="info">Produk Desty</Badge>
-                )}
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label className="form-label fw-medium" style={{ marginBottom: "8px" }}>
-                  SKU Desty
-                </label>
-                <div className="form-control" style={{ backgroundColor: "#f8f9fa" }}>
-                  {form.destySkuNumber || "-"}
-                </div>
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <label className="form-label fw-medium" style={{ marginBottom: "8px" }}>
-                  Desty Product ID
-                </label>
-                <div className="form-control" style={{ backgroundColor: "#f8f9fa" }}>
-                  {form.destySpuId || "-"}
-                </div>
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <label className="form-label fw-medium" style={{ marginBottom: "8px" }}>
-                  Terakhir Sinkronisasi
-                </label>
-                <div className="form-control" style={{ backgroundColor: "#f8f9fa" }}>
-                  {form.destyLastSync
-                    ? new Date(form.destyLastSync.seconds * 1000).toLocaleString("id-ID")
-                    : "Belum pernah"}
-                </div>
-              </div>
-
-              <div className="col-md-6 mb-3 d-flex align-items-end">
-                <Button
-                  variant="outline-success"
-                  onClick={handleSyncDestyStock}
-                  disabled={syncingDesty || (!form.destySkuNumber && !form.sku_rapin && !form.sku)}
-                  title="Sinkronisasi stok dari Desty"
-                >
-                  <ArrowCounterclockwise className={syncingDesty ? "spin" : ""} />
-                  {syncingDesty ? " Sinkronisasi..." : " Sync Stok dari Desty"}
-                </Button>
-              </div>
-
-              {/* Stock Breakdown from Desty (Gudang Online) */}
-              {(form.onHandStock !== 0 || form.promotionStock !== 0 || form.orderStock !== 0) && (
-                <div className="col-12 mb-2">
-                  <div className="alert alert-info mb-0 py-2">
-                    <small className="fw-bold">📦 Breakdown Stok (Gudang Online)</small>
-                    <div className="row g-0 mt-1">
-                      <div className="col-3 text-center">
-                        <small className="text-muted d-block">Fisik</small>
-                        <small className="fw-bold">{form.onHandStock ?? 0}</small>
-                      </div>
-                      <div className="col-3 text-center">
-                        <small className="text-muted d-block">Promosi</small>
-                        <small className="fw-bold">{form.promotionStock ?? 0}</small>
-                      </div>
-                      <div className="col-3 text-center">
-                        <small className="text-muted d-block">Pesanan</small>
-                        <small className="fw-bold">{form.orderStock ?? 0}</small>
-                      </div>
-                      <div className="col-3 text-center">
-                        <small className="text-muted d-block">Tersedia</small>
-                        <small className="fw-bold text-success">{(form.onHandStock ?? 0) - (form.promotionStock ?? 0) - (form.orderStock ?? 0)}</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Product Management Card */}
         <div
           className="card shadow-sm"
@@ -928,24 +699,10 @@ export default function DetailProduct() {
                 <span className="input-group-text">gr</span>
                 {error.weight && <div className="invalid-feedback">{error.weight}</div>}
               </div>
-              {/* Sync Weight from Desty Button */}
-              {(form.destySkuNumber || form.sku_rapin || form.sku) && (
-                <Button
-                  variant="outline-info"
-                  size="sm"
-                  className="mt-2"
-                  onClick={handleSyncDestyWeight}
-                  disabled={syncingWeight}
-                  title="Sinkronisasi berat dari Desty (SKU Detail)"
-                >
-                  <ArrowCounterclockwise className={syncingWeight ? "spin" : ""} />
-                  {syncingWeight ? " Sync..." : " Sync Berat dari Desty"}
-                </Button>
-              )}
               {/* Info if weight is 0 or null */}
               {(!form?.weight || form?.weight === 0) && (
                 <div className="form-text text-warning mt-1">
-                  <small>⚠️ Berat belum ada. Klik "Sync Berat dari Desty" atau input manual.</small>
+                  <small>⚠️ Berat belum ada. Silakan input manual.</small>
                 </div>
               )}
             </div>
@@ -1032,17 +789,6 @@ export default function DetailProduct() {
             Simpan Perubahan
           </button>
         </div>
-
-        {/* Custom CSS for spin animation */}
-        <style>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          .spin {
-            animation: spin 1s linear infinite;
-          }
-        `}</style>
       </form>
     </div>
     </Layout>

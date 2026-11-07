@@ -106,7 +106,8 @@ export default function DialogAddProduct(props) {
       setFormError(findErros);
     } else {
       try {
-        // Auto-fill sku_rapin with sku if empty
+        // sku_rapin tidak lagi diinput manual; tetap diisi = sku
+        // karena masih dibaca oleh export Rapin di OrderList
         const finalFormData = {
           ...formData,
           sku_rapin: formData.sku_rapin || formData.sku,
@@ -208,17 +209,6 @@ export default function DialogAddProduct(props) {
                   {formError.sku}
                 </Form.Control.Feedback>
               )}
-            </div>
-            <div className="form-group">
-              <label className="label">SKU Rapin</label>
-              <Form.Control
-                className="input"
-                type="text"
-                name="sku_rapin"
-                placeholder="Sama dengan SKU jika kosong"
-                value={formData.sku_rapin}
-                onChange={handleFormChange}
-              />
             </div>
             <div className="form-group">
               <label className="label">Product Name</label>
