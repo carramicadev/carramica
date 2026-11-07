@@ -31,6 +31,10 @@ export const lineDiscount = (prod) => {
   return Math.round(discount);
 };
 
+// Amount for one product line after its discount, in whole rupiah.
+// Using the same rounded discount as the totals keeps Σ amount === total.
+export const lineAmount = (prod) => lineGross(prod) - lineDiscount(prod);
+
 // Totals for a whole order document (`orders` = array of sub-orders with products).
 export const calcOrderTotals = (orders = [], additionalDiscount = 0) => {
   const products = (orders || []).flatMap((ord) => ord?.products || []);
