@@ -55,7 +55,15 @@ export default function DownloadInvoiceDialog(props) {
       filename: `${findOrder?.invoice_id}.pdf`,
       html2canvas: { scale: 2 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] }, // Enable pagination by CSS
+      // css: honour page-break-inside / break-inside: avoid (product rows)
+      // avoid: blocks that must never be cut between two pages; if one does
+      //        not fit at the bottom of a page it moves whole to the next page
+      // before: every extra invoice (several selected) starts on a new page
+      pagebreak: {
+        mode: ["css", "legacy"],
+        avoid: [".pdf-keep-together"],
+        before: [".pdf-new-page"],
+      },
     };
 
     // Generate the PDF using html2pdf
@@ -233,9 +241,15 @@ export default function DownloadInvoiceDialog(props) {
             maxHeight: "calc(100vh - 210px)",
           }}
         >
-          <div style={{ padding: "20px" }} ref={printRef}>
-            {item?.map((itm) => (
-              <div key={itm?.unixId} style={styles.container}>
+          {/* No bottom padding: trailing empty space makes html2pdf add a
+              blank last page when the invoice ends near the bottom of a page */}
+          <div style={{ padding: "20px 20px 0" }} ref={printRef}>
+            {item?.map((itm, itmIndex) => (
+              <div
+                key={itm?.unixId}
+                style={styles.container}
+                className={itmIndex > 0 ? "pdf-new-page" : undefined}
+              >
                 <table
                   width="100%"
                   cellPadding="0"
@@ -520,7 +534,11 @@ export default function DownloadInvoiceDialog(props) {
                   {/* Fixed column widths so the table always fits the page (A4) width */}
                   <colgroup>
                     {PRODUCT_COLUMNS.map((col) => (
-                      <col key={col.label} width={col.width} style={{ width: col.width }} />
+                      <col
+                        key={col.label}
+                        width={col.width}
+                        style={{ width: col.width }}
+                      />
                     ))}
                   </colgroup>
                   <thead>
@@ -529,7 +547,11 @@ export default function DownloadInvoiceDialog(props) {
                         <th
                           key={col.label}
                           width={col.width}
-                          style={{ ...styles.th, width: col.width, textAlign: col.align }}
+                          style={{
+                            ...styles.th,
+                            width: col.width,
+                            textAlign: col.align,
+                          }}
                         >
                           {col.label}
                         </th>
@@ -549,38 +571,143 @@ export default function DownloadInvoiceDialog(props) {
                             ? prod?.discount + "%"
                             : currency(prod?.discount || 0)}
                         </td>
-                        <td style={styles.tdNumber}>{currency(prod?.amount)}</td>
+                        <td style={styles.tdNumber}>
+                          {currency(prod?.amount)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
 
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={{
-                    borderCollapse: "collapse",
-                    border: "none",
-                    marginTop: "20px",
-                    padding: "0px",
-                  }}
-                >
-                  <tr>
-                    {/* LEFT EMPTY SPACE (push summary to the right like your UI) */}
-                    <td
-                      width="50%"
-                      style={{ border: "none", padding: "0px" }}
-                    ></td>
+                {/* Totals + Amount Due stay together on one page in the PDF */}
+                <div className="pdf-keep-together" style={styles.keepTogether}>
+                  <table
+                    width="100%"
+                    cellPadding="0"
+                    cellSpacing="0"
+                    style={{
+                      borderCollapse: "collapse",
+                      border: "none",
+                      marginTop: "20px",
+                      padding: "0px",
+                    }}
+                  >
+                    <tr>
+                      {/* LEFT EMPTY SPACE (push summary to the right like your UI) */}
+                      <td
+                        width="50%"
+                        style={{ border: "none", padding: "0px" }}
+                      ></td>
 
-                    {/* SUMMARY BLOCK */}
-                    <td
-                      width="50%"
-                      style={{
-                        border: "none",
-                        padding: "0px",
-                      }}
-                    >
+                      {/* SUMMARY BLOCK */}
+                      <td
+                        width="50%"
+                        style={{
+                          border: "none",
+                          padding: "0px",
+                        }}
+                      >
+                        <table
+                          width="100%"
+                          cellPadding="0"
+                          cellSpacing="0"
+                          style={{
+                            borderCollapse: "collapse",
+                            border: "none",
+                            padding: "0px",
+                          }}
+                        >
+                          <tr>
+                            {/* LABELS */}
+                            <td
+                              style={{
+                                border: "none",
+                                paddingRight: "100px",
+                                verticalAlign: "top",
+                                padding: "0px",
+                              }}
+                            >
+                              <p style={{ margin: "0px" }}>
+                                <span style={styles.bold}>Sub Total</span>
+                              </p>
+                              <p style={{ margin: "0px" }}>
+                                <span style={styles.bold}>Delivery Fee</span>
+                              </p>
+                              <p style={{ margin: "0px" }}>
+                                <span style={styles.bold}>
+                                  Additional Discount
+                                </span>
+                              </p>
+                              <p style={{ margin: "0px" }}>
+                                <span style={styles.bold}>Total Discount</span>
+                              </p>
+                              <p style={{ margin: "0px" }}>
+                                <span style={styles.bold}>Total</span>
+                              </p>
+
+                              {props?.show?.type === "dp" && (
+                                <>
+                                  <p style={{ margin: "0px" }}>
+                                    <span style={styles.bold}>
+                                      Paid Invoice
+                                    </span>
+                                  </p>
+                                  <p style={{ margin: "0px" }}>
+                                    <span style={styles.bold}>
+                                      Outstanding Balance
+                                    </span>
+                                  </p>
+                                </>
+                              )}
+                            </td>
+
+                            {/* VALUES (RIGHT ALIGNED) */}
+                            <td
+                              style={{
+                                border: "none",
+                                textAlign: "right",
+                                verticalAlign: "top",
+                                padding: "0px",
+                              }}
+                            >
+                              <p style={{ margin: "0px" }}>
+                                {currency(totals.subTotal)}
+                              </p>
+                              <p style={{ margin: "0px" }}>
+                                {currency(totals.totalOngkir)}
+                              </p>
+                              <p style={{ margin: "0px" }}>
+                                {currency(totals.additionalDiscount)}
+                              </p>
+
+                              <p style={{ color: "red", margin: "0px" }}>
+                                -{currency(totals.totalDiscount)}
+                              </p>
+
+                              <p style={{ margin: "0px" }}>
+                                {currency(totals.total)}
+                              </p>
+
+                              {props?.show?.type === "dp" && (
+                                <>
+                                  <p style={{ margin: "0px" }}>
+                                    {currency(cumulative)}
+                                  </p>
+                                  <p style={{ margin: "0px" }}>
+                                    {currency(sisa)}
+                                  </p>
+                                </>
+                              )}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <hr className=" bg-dark" style={{ height: "2px" }} />
+                  <div style={styles.summaryBlock}>
+                    {props?.show?.type !== "dp" && (
                       <table
                         width="100%"
                         cellPadding="0"
@@ -588,168 +715,73 @@ export default function DownloadInvoiceDialog(props) {
                         style={{
                           borderCollapse: "collapse",
                           border: "none",
+                          marginTop: "0px",
                           padding: "0px",
                         }}
                       >
                         <tr>
-                          {/* LABELS */}
+                          {/* LEFT EMPTY SPACE (push content right) */}
                           <td
-                            style={{
-                              border: "none",
-                              paddingRight: "100px",
-                              verticalAlign: "top",
-                              padding: "0px",
-                            }}
-                          >
-                            <p style={{ margin: "0px" }}>
-                              <span style={styles.bold}>Sub Total</span>
-                            </p>
-                            <p style={{ margin: "0px" }}>
-                              <span style={styles.bold}>Delivery Fee</span>
-                            </p>
-                            <p style={{ margin: "0px" }}>
-                              <span style={styles.bold}>
-                                Additional Discount
-                              </span>
-                            </p>
-                            <p style={{ margin: "0px" }}>
-                              <span style={styles.bold}>Total Discount</span>
-                            </p>
-                            <p style={{ margin: "0px" }}>
-                              <span style={styles.bold}>Total</span>
-                            </p>
+                            width="50%"
+                            style={{ border: "none", padding: "0px" }}
+                          ></td>
 
-                            {props?.show?.type === "dp" && (
-                              <>
-                                <p style={{ margin: "0px" }}>
-                                  <span style={styles.bold}>Paid Invoice</span>
-                                </p>
-                                <p style={{ margin: "0px" }}>
-                                  <span style={styles.bold}>
-                                    Outstanding Balance
-                                  </span>
-                                </p>
-                              </>
-                            )}
-                          </td>
-
-                          {/* VALUES (RIGHT ALIGNED) */}
+                          {/* AMOUNT DUE BLOCK */}
                           <td
-                            style={{
-                              border: "none",
-                              textAlign: "right",
-                              verticalAlign: "top",
-                              padding: "0px",
-                            }}
+                            width="50%"
+                            style={{ border: "none", padding: "0px" }}
                           >
-                            <p style={{ margin: "0px" }}>
-                              {currency(totals.subTotal)}
-                            </p>
-                            <p style={{ margin: "0px" }}>
-                              {currency(totals.totalOngkir)}
-                            </p>
-                            <p style={{ margin: "0px" }}>
-                              {currency(totals.additionalDiscount)}
-                            </p>
+                            <table
+                              width="100%"
+                              cellPadding="0"
+                              cellSpacing="0"
+                              style={{
+                                borderCollapse: "collapse",
+                                border: "none",
+                                padding: "0px",
+                              }}
+                            >
+                              <tr>
+                                {/* LABEL */}
+                                <td
+                                  style={{
+                                    border: "none",
+                                    paddingRight: "100px",
+                                    padding: "0px",
+                                  }}
+                                >
+                                  <p style={{ margin: "0px" }}>
+                                    <span style={styles.bold}>Amount Due</span>
+                                  </p>
+                                </td>
 
-                            <p style={{ color: "red", margin: "0px" }}>
-                              -{currency(totals.totalDiscount)}
-                            </p>
-
-                            <p style={{ margin: "0px" }}>
-                              {currency(totals.total)}
-                            </p>
-
-                            {props?.show?.type === "dp" && (
-                              <>
-                                <p style={{ margin: "0px" }}>
-                                  {currency(cumulative)}
-                                </p>
-                                <p style={{ margin: "0px" }}>
-                                  {currency(sisa)}
-                                </p>
-                              </>
-                            )}
+                                {/* VALUE (RIGHT ALIGNED) */}
+                                <td
+                                  style={{
+                                    border: "none",
+                                    textAlign: "right",
+                                    padding: "0px",
+                                  }}
+                                >
+                                  <p style={{ margin: "0px" }}>
+                                    {itm?.paymentStatus === "settlement"
+                                      ? currency(0)
+                                      : currency(totals.total)}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
                           </td>
                         </tr>
                       </table>
-                    </td>
-                  </tr>
-                </table>
-
-                <hr className=" bg-dark" style={{ height: "2px" }} />
-                <div style={styles.summaryBlock}>
-                  {props?.show?.type !== "dp" && (
-                    <table
-                      width="100%"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{
-                        borderCollapse: "collapse",
-                        border: "none",
-                        marginTop: "0px",
-                        padding: "0px",
-                      }}
-                    >
-                      <tr>
-                        {/* LEFT EMPTY SPACE (push content right) */}
-                        <td
-                          width="50%"
-                          style={{ border: "none", padding: "0px" }}
-                        ></td>
-
-                        {/* AMOUNT DUE BLOCK */}
-                        <td
-                          width="50%"
-                          style={{ border: "none", padding: "0px" }}
-                        >
-                          <table
-                            width="100%"
-                            cellPadding="0"
-                            cellSpacing="0"
-                            style={{
-                              borderCollapse: "collapse",
-                              border: "none",
-                              padding: "0px",
-                            }}
-                          >
-                            <tr>
-                              {/* LABEL */}
-                              <td
-                                style={{
-                                  border: "none",
-                                  paddingRight: "100px",
-                                  padding: "0px",
-                                }}
-                              >
-                                <p style={{ margin: "0px" }}>
-                                  <span style={styles.bold}>Amount Due</span>
-                                </p>
-                              </td>
-
-                              {/* VALUE (RIGHT ALIGNED) */}
-                              <td
-                                style={{
-                                  border: "none",
-                                  textAlign: "right",
-                                  padding: "0px",
-                                }}
-                              >
-                                <p style={{ margin: "0px" }}>
-                                  {itm?.paymentStatus === "settlement"
-                                    ? currency(0)
-                                    : currency(totals.total)}
-                                </p>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  )}
+                    )}
+                  </div>
                 </div>
+                {/* Notes + signature stay together on one page in the PDF */}
                 <div
+                  className="pdf-keep-together"
                   style={{
+                    ...styles.keepTogether,
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "flex-start",
@@ -760,20 +792,27 @@ export default function DownloadInvoiceDialog(props) {
                     <p
                       style={{
                         marginTop: "0px",
+                        marginBottom: "0px",
                         fontWeight: "lighter",
                         textAlign: "justify",
                       }}
                     >
                       {props?.show?.type === "dp"
                         ? findOrder?.kuitansi?.[props?.show?.id]?.catatan
-                        : itm?.notes ?? "__"}
+                        : (itm?.notes ?? "__")}
                     </p>
                   </div>
                   <div style={styles.footer}>
                     <p>
                       <FormatFirestoreTimestamp timestamp={itm?.createdAt} />
                     </p>
-                    <p style={{ marginTop: "60px", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        marginTop: "60px",
+                        marginBottom: "0px",
+                        fontWeight: "bold",
+                      }}
+                    >
                       PT CARRAMICA KREASI INDONESIA
                     </p>
                   </div>
@@ -815,6 +854,7 @@ const styles = {
     margin: "0 auto",
     fontFamily: "Arial, sans-serif",
     padding: "20px",
+    paddingBottom: "0px", // see printRef: no trailing blank PDF page
     marginLeft: "10px",
   },
   header: {
@@ -864,6 +904,11 @@ const styles = {
     backgroundColor: "#2e3e4e",
     whiteSpace: "nowrap",
     // color: '#000'
+  },
+  keepTogether: {
+    // never split this block across two PDF / print pages
+    pageBreakInside: "avoid",
+    breakInside: "avoid",
   },
   row: {
     // keep each product row on one page when printing / exporting PDF
