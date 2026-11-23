@@ -79,9 +79,9 @@ const styles = StyleSheet.create({
   text: {
     marginBottom: 5,
   },
-  textProduct:{
+  textProduct: {
     fontSize: 6,
-    marginBottom : 5,
+    marginBottom: 5,
   },
   textGC: {
     marginBottom: 5,
@@ -144,6 +144,19 @@ const styles = StyleSheet.create({
   },
   allowedButton: { textDecoration: "none" },
 });
+// Courier logo for the shipping label, or null when this courier has no logo.
+// Case-insensitive and partial, so "SAP", "Dedicated-SAP Cargo" or
+// "Paxel Big" all match. Returning null (instead of "") matters: react-pdf's
+// <Image> throws "Image should receive either a src or source prop" on an
+// empty src, which used to leave the dialog stuck on "Loading document...".
+const getCourierLogo = (kurir) => {
+  const name = String(kurir ?? "").toLowerCase();
+  if (name.includes("sap")) return sap;
+  if (name.includes("lalamove")) return lalamove;
+  if (name.includes("paxel")) return paxel;
+  return null;
+};
+
 function MyDoc({ item, setLoading }) {
   const chunkArray = (arr, size) => {
     const result = [];
@@ -159,19 +172,7 @@ function MyDoc({ item, setLoading }) {
       {chunks.map((chunk, chunkIndex) => (
         <Page size="A4" key={chunkIndex}>
           {chunk?.map?.((data, index) => {
-            const urlImage =
-              data.kurir === "SAP" ||
-              data.kurir === "Dedicated-SAP Regular" ||
-              data.kurir === "Dedicated-SAP Cargo"
-                ? sap
-                : data.kurir === "Lalamove" ||
-                  data.kurir === "Dedicated-Lalamove"
-                ? lalamove
-                : data.kurir === "Paxel" ||
-                  data.kurir === "Dedicated-Paxel Regular" ||
-                  data.kurir === "Dedicated-Paxel Big"
-                ? paxel
-                : "";
+            const urlImage = getCourierLogo(data?.kurir);
             // console.log(urlImage)
             return (
               <View key={data?.unixId} style={styles.page}>
@@ -214,7 +215,7 @@ function MyDoc({ item, setLoading }) {
                         formatDate(data?.shippingDate?.toDate?.())
                       )}
                     </Text>
-                    {data?.kurirService && (
+                    {data?.kurirService && urlImage && (
                       <Image
                         style={
                           data?.kurir === "SAP" ? styles.imageSAP : styles.image
@@ -272,7 +273,7 @@ function MyDoc({ item, setLoading }) {
                     </View>
                     <View style={styles.subItem3}>
                       <Image style={styles.imageLogo} src={logoFull} />
-                      {data?.kurirService && (
+                      {data?.kurirService && urlImage && (
                         <Image
                           style={
                             data?.kurir === "SAP"
@@ -299,6 +300,7 @@ export default function DownloadPdfDialog(props) {
   const item = props?.show?.data;
   const { enqueueSnackbar } = useSnackbar();
   const [blob, setBlob] = useState();
+  const [pdfError, setPdfError] = useState("");
   // console.log(props?.show?.userId)
   // console.log(item)
   const nameOfPdf =
@@ -313,17 +315,37 @@ export default function DownloadPdfDialog(props) {
       : item?.[0]?.unixId;
 
   useEffect(() => {
+    let cancelled = false;
     async function MakePdf() {
+      setBlob(undefined);
+      setPdfError("");
       try {
         const blobMake = await pdf(
           <MyDoc item={item} setLoading={props?.setLoading} />
         ).toBlob();
-        setBlob(blobMake);
-      } catch (e) {}
+        if (!cancelled) setBlob(blobMake);
+      } catch (e) {
+        // Never fail silently: without this the button stays on
+        // "Loading document..." forever.
+        if (cancelled) return;
+        console.error("Gagal membuat PDF:", e);
+        setPdfError(e?.message || String(e));
+        props?.setLoading?.(false);
+        enqueueSnackbar(`Gagal membuat PDF: ${e?.message || e}`, {
+          variant: "error",
+        });
+      }
     }
-    MakePdf();
+    if (item?.length) MakePdf();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item, props?.setLoading]);
+  const pdfReady = !!blob && !pdfError;
   const downloadPdf = async () => {
+    // don't mark orders as downloaded when there is no file to save
+    if (!pdfReady) return;
     try {
       await Promise.all(
         item.map(async (data) => {
@@ -452,6 +474,11 @@ export default function DownloadPdfDialog(props) {
             maxHeight: "calc(100vh - 210px)",
           }}
         >
+          {pdfError && (
+            <div className="alert alert-danger" role="alert">
+              PDF gagal dibuat: {pdfError}
+            </div>
+          )}
           {props?.loading ? (
             <p>Loading PDF...</p>
           ) : (
@@ -505,23 +532,12 @@ export default function DownloadPdfDialog(props) {
                                   )}
                                 </p>
                                 <div className="logoKurir">
-                                  <img
-                                    src={
-                                      data.kurir === "SAP" ||
-                                      data.kurir === "Dedicated-SAP Regular" ||
-                                      data.kurir === "Dedicated-SAP Cargo"
-                                        ? sap
-                                        : data.kurir === "Lalamove" ||
-                                          data.kurir === "Dedicated-Lalamove"
-                                        ? lalamove
-                                        : data.kurir === "Paxel" ||
-                                          data.kurir ===
-                                            "Dedicated-Paxel Regular" ||
-                                          data.kurir === "Dedicated-Paxel Big"
-                                        ? paxel
-                                        : ""
-                                    }
-                                  />
+                                  {getCourierLogo(data?.kurir) && (
+                                    <img
+                                      src={getCourierLogo(data?.kurir)}
+                                      alt="Logo kurir"
+                                    />
+                                  )}
                                 </div>
                               </div>
                             </td>
@@ -550,7 +566,7 @@ export default function DownloadPdfDialog(props) {
                                 style={{
                                   display: "flex",
                                   justifyContent: "space-between",
-                                  fontSize: 6
+                                  fontSize: 6,
                                 }}
                               >
                                 <p>
@@ -583,30 +599,18 @@ export default function DownloadPdfDialog(props) {
                                     }
                                     className="logoKurir"
                                   >
-                                    <img
-                                      style={{
-                                        width:
-                                          data.kurir === "SAP"
-                                            ? "auto"
-                                            : data.kurirService && 100,
-                                      }}
-                                      src={
-                                        data.kurir === "SAP" ||
-                                        data.kurir ===
-                                          "Dedicated-SAP Regular" ||
-                                        data.kurir === "Dedicated-SAP Cargo"
-                                          ? sap
-                                          : data.kurir === "Lalamove" ||
-                                            data.kurir === "Dedicated-Lalamove"
-                                          ? lalamove
-                                          : data.kurir === "Paxel" ||
-                                            data.kurir ===
-                                              "Dedicated-Paxel Regular" ||
-                                            data.kurir === "Dedicated-Paxel Big"
-                                          ? paxel
-                                          : ""
-                                      }
-                                    />
+                                    {getCourierLogo(data?.kurir) && (
+                                      <img
+                                        style={{
+                                          width:
+                                            data.kurir === "SAP"
+                                              ? "auto"
+                                              : data.kurirService && 100,
+                                        }}
+                                        src={getCourierLogo(data?.kurir)}
+                                        alt="Logo kurir"
+                                      />
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -636,9 +640,7 @@ export default function DownloadPdfDialog(props) {
           <Button
             className="button button-primary"
             style={
-              item?.length < 1
-                ? styles.disabledButton
-                : props?.loading
+              item?.length < 1 || !pdfReady
                 ? styles.disabledButton
                 : styles.allowedButton
             }
@@ -646,7 +648,11 @@ export default function DownloadPdfDialog(props) {
             // document={<MyDoc item={item} setLoading={props?.setLoading} />}
             // fileName={`CRM-${nameOfPdf}.pdf`}
           >
-            {props?.loading ? "Loading document..." : "Download PDF"}
+            {pdfError
+              ? "Gagal membuat PDF"
+              : !pdfReady
+                ? "Loading document..."
+                : "Download PDF"}
           </Button>
         </Modal.Footer>
       </Modal>
