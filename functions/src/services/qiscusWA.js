@@ -21,8 +21,14 @@ const TEMPLATES = {
   pembayaranDiterima: "carramica_pembayaran_diterima", // {{1}} nama, {{2}} jumlah (template sudah ada "Rp.")
   resiPengirim: "carramica_resi_pengirim", // {{1}} nama, {{2}} penerima, {{3}} resi, {{4}} kurir
   resiPenerima: "carramica_resi_penerima", // {{1}} nama, {{2}} pengirim, {{3}} no pesanan, {{4}} resi, {{5}} kurir
-  reminderH1: "carramica_reminder_h1", // {{1}} link
-  reminderH5: "carramica_reminder_h5", // {{1}} link
+  // [lama] reminderH1: "carramica_reminder_h1", // {{1}} link
+  reminderH1: "carramica_reminder_h1_update", // {{1}} nama, {{2}} link
+  reminderH3: "carramica_reminder_h3", // {{1}} nama, {{2}} link
+  // [dimatikan] dikategorikan ulang oleh Meta menjadi Marketing, bukan Utility:
+  // reminderH5: "carramica_reminder_h5_update", // {{1}} nama, {{2}} link
+  // [lama] reminderH5: "carramica_reminder_h5", // {{1}} link (Utility)
+  // {{1}} nama, {{2}} nomor pesanan, {{3}} total (template sudah ada "Rp"), {{4}} link
+  reminderH5: "carramica_reminder_h5_new",
 };
 
 const toNumber = (value) => {
