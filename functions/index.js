@@ -1528,12 +1528,22 @@ Thank you:) `;
 //   });
 
 
+// Payment reminders, counted in hours from order.createdAt:
+//   H+1 -> 24 jam setelah order dibuat, H+5 -> 120 jam setelah order dibuat.
+// Runs every 30 minutes from 05:00 to 22:30 WIB only, so the schedule itself is
+// the quiet time: nothing is sent between 22:30 and 05:00 WIB; reminders that
+// become due overnight go out at 05:00.
+const REMINDER_H1_HOURS = 24;
+const REMINDER_H5_HOURS = 120;
+
 // Note: runWith() changes jakartaFn itself, so functions defined below this one
 // (createPartner, createTransaction) also inherit these options. That was
 // already true for timeoutSeconds before Qiscus; kept as is on purpose.
 exports.sendPaymentReminders = jakartaFn
   .runWith({ timeoutSeconds: 300, secrets: QISCUS_SECRETS })
-  .pubsub.schedule("every 24 hours")
+  // [lama] .pubsub.schedule("every 24 hours")
+  .pubsub.schedule("*/30 5-22 * * *")
+  .timeZone("Asia/Jakarta")
   .onRun(async () => {
     const now = admin.firestore.Timestamp.now();
     const currentDate = now.toDate();
@@ -1594,26 +1604,26 @@ exports.sendPaymentReminders = jakartaFn
             continue;
           }
 
-          const daysSinceCreation = Math.floor(
-            (currentDate.getTime() - createdAt.getTime()) /
-              (1000 * 60 * 60 * 24)
-          );
+          // [lama] dihitung per hari (dibulatkan ke bawah), jadi H+1 bisa
+          // terkirim antara 24-48 jam:
+          // const daysSinceCreation = Math.floor(
+          //   (currentDate.getTime() - createdAt.getTime()) /
+          //     (1000 * 60 * 60 * 24)
+          // );
+          const hoursSinceCreation =
+            (currentDate.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+          const age = `${hoursSinceCreation.toFixed(1)} jam`;
 
           const reminders = orderData.reminders || {};
 
-          console.log(
-            `Order ${doc.id}: age=${daysSinceCreation} days, ` +
-            `day1=${reminders.day1}, day5=${reminders.day5}`
-          );
-
-          if (daysSinceCreation < 1) {
+          if (hoursSinceCreation < REMINDER_H1_HOURS) {
             skippedCount++;
             continue;
           }
 
           // H+1 reminder: send once, including if overdue
           if (!reminders.day1) {
-            console.log(`Sending H+1 reminder: ${doc.id}`);
+            console.log(`Sending H+1 reminder: ${doc.id} (umur ${age})`);
 
             // [QONTAK - dinonaktifkan, diganti Qiscus]
             // await axios.post(
@@ -1657,8 +1667,8 @@ exports.sendPaymentReminders = jakartaFn
           }
 
           // H+5 reminder: send once, including if overdue
-          if (daysSinceCreation >= 5 && !reminders.day5) {
-            console.log(`Sending H+5 reminder: ${doc.id}`);
+          if (hoursSinceCreation >= REMINDER_H5_HOURS && !reminders.day5) {
+            console.log(`Sending H+5 reminder: ${doc.id} (umur ${age})`);
 
             // [QONTAK - dinonaktifkan, diganti Qiscus]
             // await axios.post(
