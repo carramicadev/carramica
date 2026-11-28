@@ -11,7 +11,14 @@
 
 // const { onRequest } = require("firebase-functions/v2/https");
 const functions = require("firebase-functions");
-const { jakartaFn } = require("./functions-regions");
+const { jakartaFn, jakartaQiscusFn } = require("./functions-regions");
+const {
+  QISCUS_SECRETS,
+  TEMPLATES: QISCUS_TEMPLATES,
+  sendQiscusTemplate,
+  formatRupiah,
+  formatThousands,
+} = require("./src/services/qiscusWA");
 const admin = require("firebase-admin");
 const axios = require("axios");
 const midtransClient = require("midtrans-client");
@@ -477,8 +484,33 @@ exports.deletePaymentLink = jakartaFn.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("internal", e.message);
   }
 });
+// WA "pembayaran diterima" (Qiscus) for the payment webhooks.
+// Called AFTER the order is marked paid, and never throws: a WhatsApp outage
+// must not stop paidDate / orderStatus / revenue counters from being saved.
+const sendPaymentReceivedWA = async (dataOrder, orderId, source) => {
+  try {
+    await sendQiscusTemplate({
+      to: dataOrder?.senderPhone,
+      template: QISCUS_TEMPLATES.pembayaranDiterima,
+      params: [
+        dataOrder?.senderName,
+        formatThousands(
+          dataOrder?.totalAfterDiskonDanOngkir ??
+            dataOrder?.totalHargaProduk + dataOrder?.totalOngkir
+        ),
+      ],
+    });
+    console.log(`[${source}] WA pembayaran diterima terkirim: ${orderId}`);
+  } catch (error) {
+    console.error(
+      `[${source}] WA pembayaran diterima GAGAL (order tetap diproses): ${orderId}`,
+      error.message
+    );
+  }
+};
+
 // after payment
-exports.notification = jakartaFn.https.onRequest(async (req, res) => {
+exports.notification = jakartaQiscusFn().https.onRequest(async (req, res) => {
   try {
     const notification = req.body;
     // sent wa
@@ -546,48 +578,49 @@ exports.notification = jakartaFn.https.onRequest(async (req, res) => {
         );
       }
       if (notification.transaction_status === "settlement") {
-        // sent wa qontak
-        const baseUrl = functions.config().qontak.baseurl;
-        const token = functions.config().qontak.token;
-        const templatepaymentsuccess =
-          functions.config().qontak.templatepaymentsuccess;
-        const channel = functions.config().qontak.channel;
-        const response = await axios.post(
-          baseUrl,
-          {
-            to_number: dataOrder.senderPhone,
-            to_name: dataOrder.senderName,
-            message_template_id: templatepaymentsuccess,
-            channel_integration_id: channel,
-            language: {
-              code: "id",
-            },
-            parameters: {
-              body: [
-                {
-                  key: "1",
-                  value: "name",
-                  value_text: dataOrder.senderName,
-                },
-                {
-                  key: "2",
-                  value: "price",
-                  value_text: (
-                    dataOrder.totalAfterDiskonDanOngkir ??
-                    dataOrder.totalHargaProduk + dataOrder.totalOngkir
-                  ).toString(),
-                },
-              ],
-            },
-          },
-          {
-            // baseURL: baseUrl,
-            headers: {
-              Authorization: `Bearer ${token}`,
-              // "Content-Type": "application/json"
-            },
-          }
-        );
+        // [QONTAK - dinonaktifkan, diganti Qiscus: sendPaymentReceivedWA di bawah]
+        // // sent wa qontak
+        // const baseUrl = functions.config().qontak.baseurl;
+        // const token = functions.config().qontak.token;
+        // const templatepaymentsuccess =
+        //   functions.config().qontak.templatepaymentsuccess;
+        // const channel = functions.config().qontak.channel;
+        // const response = await axios.post(
+        //   baseUrl,
+        //   {
+        //     to_number: dataOrder.senderPhone,
+        //     to_name: dataOrder.senderName,
+        //     message_template_id: templatepaymentsuccess,
+        //     channel_integration_id: channel,
+        //     language: {
+        //       code: "id",
+        //     },
+        //     parameters: {
+        //       body: [
+        //         {
+        //           key: "1",
+        //           value: "name",
+        //           value_text: dataOrder.senderName,
+        //         },
+        //         {
+        //           key: "2",
+        //           value: "price",
+        //           value_text: (
+        //             dataOrder.totalAfterDiskonDanOngkir ??
+        //             dataOrder.totalHargaProduk + dataOrder.totalOngkir
+        //           ).toString(),
+        //         },
+        //       ],
+        //     },
+        //   },
+        //   {
+        //     // baseURL: baseUrl,
+        //     headers: {
+        //       Authorization: `Bearer ${token}`,
+        //       // "Content-Type": "application/json"
+        //     },
+        //   }
+        // );
 
         await orderDoc.set(
           {
@@ -610,6 +643,9 @@ exports.notification = jakartaFn.https.onRequest(async (req, res) => {
           },
           { merge: true }
         );
+
+        // WA Qiscus: after the order is saved, failure is only logged
+        await sendPaymentReceivedWA(dataOrder, order_id, "midtrans");
       }
       // }
       res.json({ status_code: 200 });
@@ -660,7 +696,7 @@ exports.notification = jakartaFn.https.onRequest(async (req, res) => {
 });
 
 // notif paper
-exports.paperNotification = jakartaFn.https.onRequest(async (req, res) => {
+exports.paperNotification = jakartaQiscusFn().https.onRequest(async (req, res) => {
   try {
     const notification = req.body;
     // sent wa
@@ -736,48 +772,49 @@ exports.paperNotification = jakartaFn.https.onRequest(async (req, res) => {
         );
       }
       if (notification.data.invoice.status === "paid") {
-        // sent wa qontak
-        const baseUrl = functions.config().qontak.baseurl;
-        const token = functions.config().qontak.token;
-        const templatepaymentsuccess =
-          functions.config().qontak.templatepaymentsuccess;
-        const channel = functions.config().qontak.channel;
-        const response = await axios.post(
-          baseUrl,
-          {
-            to_number: dataOrder.senderPhone,
-            to_name: dataOrder.senderName,
-            message_template_id: templatepaymentsuccess,
-            channel_integration_id: channel,
-            language: {
-              code: "id",
-            },
-            parameters: {
-              body: [
-                {
-                  key: "1",
-                  value: "name",
-                  value_text: dataOrder.senderName,
-                },
-                {
-                  key: "2",
-                  value: "price",
-                  value_text: (
-                    dataOrder.totalAfterDiskonDanOngkir ??
-                    dataOrder.totalHargaProduk + dataOrder.totalOngkir
-                  ).toString(),
-                },
-              ],
-            },
-          },
-          {
-            // baseURL: baseUrl,
-            headers: {
-              Authorization: `Bearer ${token}`,
-              // "Content-Type": "application/json"
-            },
-          }
-        );
+        // [QONTAK - dinonaktifkan, diganti Qiscus: sendPaymentReceivedWA di bawah]
+        // // sent wa qontak
+        // const baseUrl = functions.config().qontak.baseurl;
+        // const token = functions.config().qontak.token;
+        // const templatepaymentsuccess =
+        //   functions.config().qontak.templatepaymentsuccess;
+        // const channel = functions.config().qontak.channel;
+        // const response = await axios.post(
+        //   baseUrl,
+        //   {
+        //     to_number: dataOrder.senderPhone,
+        //     to_name: dataOrder.senderName,
+        //     message_template_id: templatepaymentsuccess,
+        //     channel_integration_id: channel,
+        //     language: {
+        //       code: "id",
+        //     },
+        //     parameters: {
+        //       body: [
+        //         {
+        //           key: "1",
+        //           value: "name",
+        //           value_text: dataOrder.senderName,
+        //         },
+        //         {
+        //           key: "2",
+        //           value: "price",
+        //           value_text: (
+        //             dataOrder.totalAfterDiskonDanOngkir ??
+        //             dataOrder.totalHargaProduk + dataOrder.totalOngkir
+        //           ).toString(),
+        //         },
+        //       ],
+        //     },
+        //   },
+        //   {
+        //     // baseURL: baseUrl,
+        //     headers: {
+        //       Authorization: `Bearer ${token}`,
+        //       // "Content-Type": "application/json"
+        //     },
+        //   }
+        // );
 
         await orderDoc.set(
           {
@@ -801,6 +838,9 @@ exports.paperNotification = jakartaFn.https.onRequest(async (req, res) => {
           },
           { merge: true }
         );
+
+        // WA Qiscus: after the order is saved, failure is only logged
+        await sendPaymentReceivedWA(dataOrder, order_id, "paper");
       }
       // }
       res.json({ status_code: 200 });
@@ -920,269 +960,337 @@ exports.getRates = jakartaFn.https.onCall(async (data, context) => {
   }
 });
 
-exports.qontakSendWAToSender = jakartaFn.https.onCall(async (data, context) => {
-  try {
-    const baseUrl = functions.config().qontak.baseurl;
-    const token = functions.config().qontak.token;
-    const templateresitoreceiver =
-      functions.config().qontak.templateresitoreceiver;
-    const templatepembayaran = functions.config().qontak.templatepembayaran;
-    const templateresitosender = functions.config().qontak.templateresitosender;
-    const channel = functions.config().qontak.channel;
-    // console.log(data)
-    if (data.type === "pembayaran") {
-      if (!data.no || !data.name || !data.price || !data.link) {
-        throw new functions.https.HttpsError(
-          "invalid-argument",
-          "argumen tidak lengkap"
-        );
-      }
-      const response = await axios.post(
-        baseUrl,
-        {
-          to_number: data.no,
-          to_name: data.name,
-          message_template_id: templatepembayaran,
-          channel_integration_id: channel,
-          language: {
-            code: "id",
-          },
-          parameters: {
-            body: [
-              {
-                key: "1",
-                value: "full_name",
-                value_text: data.name,
-              },
-              {
-                key: "2",
-                value: "price",
-                value_text: data.price,
-              },
-              {
-                key: "3",
-                value: "link",
-                value_text: data.link,
-              },
-            ],
-          },
-        },
-        {
-          // baseURL: baseUrl,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // "Content-Type": "application/json"
-          },
-        }
-      );
+// [QONTAK - dinonaktifkan, diganti Qiscus]
+// Versi Qontak lama dari qontakSendWAToSender dan qontakGetRefreshToken.
+// Pengganti Qiscus: exports.qontakSendWAToSender di bawah blok ini
+// (nama sama, jadi frontend tidak perlu diubah).
+// exports.qontakSendWAToSender = jakartaFn.https.onCall(async (data, context) => {
+//   try {
+//     const baseUrl = functions.config().qontak.baseurl;
+//     const token = functions.config().qontak.token;
+//     const templateresitoreceiver =
+//       functions.config().qontak.templateresitoreceiver;
+//     const templatepembayaran = functions.config().qontak.templatepembayaran;
+//     const templateresitosender = functions.config().qontak.templateresitosender;
+//     const channel = functions.config().qontak.channel;
+//     // console.log(data)
+//     if (data.type === "pembayaran") {
+//       if (!data.no || !data.name || !data.price || !data.link) {
+//         throw new functions.https.HttpsError(
+//           "invalid-argument",
+//           "argumen tidak lengkap"
+//         );
+//       }
+//       const response = await axios.post(
+//         baseUrl,
+//         {
+//           to_number: data.no,
+//           to_name: data.name,
+//           message_template_id: templatepembayaran,
+//           channel_integration_id: channel,
+//           language: {
+//             code: "id",
+//           },
+//           parameters: {
+//             body: [
+//               {
+//                 key: "1",
+//                 value: "full_name",
+//                 value_text: data.name,
+//               },
+//               {
+//                 key: "2",
+//                 value: "price",
+//                 value_text: data.price,
+//               },
+//               {
+//                 key: "3",
+//                 value: "link",
+//                 value_text: data.link,
+//               },
+//             ],
+//           },
+//         },
+//         {
+//           // baseURL: baseUrl,
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             // "Content-Type": "application/json"
+//           },
+//         }
+//       );
+//
+//       return {
+//         items: response.data,
+//       };
+//     } else if (data.type === "resi_to_sender") {
+//       if (
+//         !data.receiver ||
+//         !data.name ||
+//         !data.resi ||
+//         !data.kurir ||
+//         !data.no
+//       ) {
+//         throw new functions.https.HttpsError(
+//           "invalid-argument",
+//           "argumen tidak lengkap"
+//         );
+//       }
+//       const response = await axios.post(
+//         baseUrl,
+//         {
+//           to_number: data.no,
+//           to_name: data.name,
+//           message_template_id: templateresitosender,
+//           channel_integration_id: channel,
+//           language: {
+//             code: "id",
+//           },
+//           parameters: {
+//             body: [
+//               {
+//                 key: "1",
+//                 value: "full_name",
+//                 value_text: data.name,
+//               },
+//               {
+//                 key: "2",
+//                 value: "receiver",
+//                 value_text: data.receiver,
+//               },
+//               {
+//                 key: "3",
+//                 value: "resi",
+//                 value_text: data.resi,
+//               },
+//               {
+//                 key: "4",
+//                 value: "kurir",
+//                 value_text: data.kurir,
+//               },
+//             ],
+//           },
+//         },
+//         {
+//           // baseURL: baseUrl,
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             // "Content-Type": "application/json"
+//           },
+//         }
+//       );
+//
+//       return {
+//         items: response.data,
+//       };
+//     } else if (data.type === "resi_to_receiver") {
+//       if (
+//         !data.no ||
+//         !data.name ||
+//         !data.sender ||
+//         !data.id ||
+//         !data.resi ||
+//         !data.kurir
+//       ) {
+//         throw new functions.https.HttpsError(
+//           "invalid-argument",
+//           "argumen tidak lengkap"
+//         );
+//       }
+//       const response = await axios.post(
+//         baseUrl,
+//         {
+//           to_number: data.no,
+//           to_name: data.name,
+//           message_template_id: templateresitoreceiver,
+//           channel_integration_id: channel,
+//           language: {
+//             code: "id",
+//           },
+//           parameters: {
+//             body: [
+//               {
+//                 key: "1",
+//                 value: "full_name",
+//                 value_text: data.name,
+//               },
+//               {
+//                 key: "2",
+//                 value: "sender",
+//                 value_text: data.sender,
+//               },
+//               {
+//                 key: "3",
+//                 value: "id",
+//                 value_text: data.id,
+//               },
+//               {
+//                 key: "4",
+//                 value: "resi",
+//                 value_text: data.resi,
+//               },
+//               {
+//                 key: "5",
+//                 value: "kurir",
+//                 value_text: data.kurir,
+//               },
+//             ],
+//           },
+//         },
+//         {
+//           // baseURL: baseUrl,
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             // "Content-Type": "application/json"
+//           },
+//         }
+//       );
+//
+//       return {
+//         items: response.data,
+//       };
+//     } else if (data.type === "dp") {
+//       if (!data.no || !data.name || !data.price) {
+//         throw new functions.https.HttpsError(
+//           "invalid-argument",
+//           "argumen tidak lengkap"
+//         );
+//       }
+//       const templatepaymentsuccess =
+//         functions.config().qontak.templatepaymentsuccess;
+//       const response = await axios.post(
+//         baseUrl,
+//         {
+//           to_number: data.no,
+//           to_name: data.name,
+//           message_template_id: templatepaymentsuccess,
+//           channel_integration_id: channel,
+//           language: {
+//             code: "id",
+//           },
+//           parameters: {
+//             body: [
+//               {
+//                 key: "1",
+//                 value: "name",
+//                 value_text: data.name,
+//               },
+//               {
+//                 key: "2",
+//                 value: "price",
+//                 value_text: data.price.toString(),
+//               },
+//             ],
+//           },
+//         },
+//         {
+//           // baseURL: baseUrl,
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             // "Content-Type": "application/json"
+//           },
+//         }
+//       );
+//       return {
+//         items: response.data,
+//       };
+//     }
+//   } catch (e) {
+//     throw new functions.https.HttpsError("internal", e.message);
+//   }
+// });
+//
+// exports.qontakGetRefreshToken = jakartaFn.https.onCall(
+//   async (data, context) => {
+//     try {
+//       const client_id = functions.config().qontak.client_id;
+//       const client_secret = functions.config().qontak.client_secret;
+//
+//       // console.log(data)
+//       const response = await axios.post(
+//         "/oauth/token",
+//         {
+//           refresh_token: data.refresh_token,
+//           grant_type: "refresh_token",
+//           client_id: client_id,
+//           client_secret: client_secret,
+//         },
+//         {
+//           baseURL: "https://service-chat.qontak.com/api/open/v1",
+//           // headers: {
+//           //     authorization: apiKey,
+//           // },
+//         }
+//       );
+//
+//       return {
+//         items: response.data,
+//       };
+//     } catch (e) {
+//       throw new functions.https.HttpsError("internal", e.message);
+//     }
+//   }
+// );
 
-      return {
-        items: response.data,
-      };
-    } else if (data.type === "resi_to_sender") {
-      if (
-        !data.receiver ||
-        !data.name ||
-        !data.resi ||
-        !data.kurir ||
-        !data.no
-      ) {
-        throw new functions.https.HttpsError(
-          "invalid-argument",
-          "argumen tidak lengkap"
-        );
-      }
-      const response = await axios.post(
-        baseUrl,
-        {
-          to_number: data.no,
-          to_name: data.name,
-          message_template_id: templateresitosender,
-          channel_integration_id: channel,
-          language: {
-            code: "id",
-          },
-          parameters: {
-            body: [
-              {
-                key: "1",
-                value: "full_name",
-                value_text: data.name,
-              },
-              {
-                key: "2",
-                value: "receiver",
-                value_text: data.receiver,
-              },
-              {
-                key: "3",
-                value: "resi",
-                value_text: data.resi,
-              },
-              {
-                key: "4",
-                value: "kurir",
-                value_text: data.kurir,
-              },
-            ],
-          },
-        },
-        {
-          // baseURL: baseUrl,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // "Content-Type": "application/json"
-          },
-        }
-      );
-
-      return {
-        items: response.data,
-      };
-    } else if (data.type === "resi_to_receiver") {
-      if (
-        !data.no ||
-        !data.name ||
-        !data.sender ||
-        !data.id ||
-        !data.resi ||
-        !data.kurir
-      ) {
-        throw new functions.https.HttpsError(
-          "invalid-argument",
-          "argumen tidak lengkap"
-        );
-      }
-      const response = await axios.post(
-        baseUrl,
-        {
-          to_number: data.no,
-          to_name: data.name,
-          message_template_id: templateresitoreceiver,
-          channel_integration_id: channel,
-          language: {
-            code: "id",
-          },
-          parameters: {
-            body: [
-              {
-                key: "1",
-                value: "full_name",
-                value_text: data.name,
-              },
-              {
-                key: "2",
-                value: "sender",
-                value_text: data.sender,
-              },
-              {
-                key: "3",
-                value: "id",
-                value_text: data.id,
-              },
-              {
-                key: "4",
-                value: "resi",
-                value_text: data.resi,
-              },
-              {
-                key: "5",
-                value: "kurir",
-                value_text: data.kurir,
-              },
-            ],
-          },
-        },
-        {
-          // baseURL: baseUrl,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // "Content-Type": "application/json"
-          },
-        }
-      );
-
-      return {
-        items: response.data,
-      };
-    } else if (data.type === "dp") {
-      if (!data.no || !data.name || !data.price) {
-        throw new functions.https.HttpsError(
-          "invalid-argument",
-          "argumen tidak lengkap"
-        );
-      }
-      const templatepaymentsuccess =
-        functions.config().qontak.templatepaymentsuccess;
-      const response = await axios.post(
-        baseUrl,
-        {
-          to_number: data.no,
-          to_name: data.name,
-          message_template_id: templatepaymentsuccess,
-          channel_integration_id: channel,
-          language: {
-            code: "id",
-          },
-          parameters: {
-            body: [
-              {
-                key: "1",
-                value: "name",
-                value_text: data.name,
-              },
-              {
-                key: "2",
-                value: "price",
-                value_text: data.price.toString(),
-              },
-            ],
-          },
-        },
-        {
-          // baseURL: baseUrl,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // "Content-Type": "application/json"
-          },
-        }
-      );
-      return {
-        items: response.data,
-      };
-    }
-  } catch (e) {
-    throw new functions.https.HttpsError("internal", e.message);
-  }
-});
-
-exports.qontakGetRefreshToken = jakartaFn.https.onCall(
+// WhatsApp via Qiscus. The name stays "qontakSendWAToSender" so every frontend
+// caller (AddOrder, DialogSendWA, DialogAddKuitansi, DialogRedirectToWA) keeps
+// working unchanged: same `type` values, same parameters, same error behaviour
+// (throws on failure, so the frontend only marks a WA as sent when it was sent).
+exports.qontakSendWAToSender = jakartaQiscusFn().https.onCall(
   async (data, context) => {
+    const requireFields = (...fields) => {
+      if (fields.some((field) => !data?.[field])) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "argumen tidak lengkap"
+        );
+      }
+    };
+
     try {
-      const client_id = functions.config().qontak.client_id;
-      const client_secret = functions.config().qontak.client_secret;
+      let message;
+      if (data?.type === "pembayaran") {
+        requireFields("no", "name", "price", "link");
+        message = {
+          to: data.no,
+          template: QISCUS_TEMPLATES.linkPembayaran,
+          // "Total pembayaran Kamu adalah {{2}}" -> "Rp9.535.000"
+          params: [data.name, formatRupiah(data.price), data.link],
+        };
+      } else if (data?.type === "resi_to_sender") {
+        requireFields("no", "name", "receiver", "resi", "kurir");
+        message = {
+          to: data.no,
+          template: QISCUS_TEMPLATES.resiPengirim,
+          params: [data.name, data.receiver, data.resi, data.kurir],
+        };
+      } else if (data?.type === "resi_to_receiver") {
+        requireFields("no", "name", "sender", "id", "resi", "kurir");
+        message = {
+          to: data.no,
+          template: QISCUS_TEMPLATES.resiPenerima,
+          params: [data.name, data.sender, data.id, data.resi, data.kurir],
+        };
+      } else if (data?.type === "dp") {
+        requireFields("no", "name", "price");
+        message = {
+          to: data.no,
+          template: QISCUS_TEMPLATES.pembayaranDiterima,
+          // "senilai Rp.{{2}}" -> "9.535.000"
+          params: [data.name, formatThousands(data.price)],
+        };
+      } else {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          `type tidak dikenal: ${data?.type}`
+        );
+      }
 
-      // console.log(data)
-      const response = await axios.post(
-        "/oauth/token",
-        {
-          refresh_token: data.refresh_token,
-          grant_type: "refresh_token",
-          client_id: client_id,
-          client_secret: client_secret,
-        },
-        {
-          baseURL: "https://service-chat.qontak.com/api/open/v1",
-          // headers: {
-          //     authorization: apiKey,
-          // },
-        }
-      );
-
-      return {
-        items: response.data,
-      };
+      const response = await sendQiscusTemplate(message);
+      return { items: response };
     } catch (e) {
+      if (e instanceof functions.https.HttpsError) throw e;
+      console.error(`qontakSendWAToSender (${data?.type}) gagal:`, e.message);
       throw new functions.https.HttpsError("internal", e.message);
     }
   }
@@ -1420,23 +1528,37 @@ Thank you:) `;
 //   });
 
 
+// Payment reminders, counted in hours from order.createdAt:
+//   H+1 -> 24 jam setelah order dibuat, H+5 -> 120 jam setelah order dibuat.
+// Runs every 30 minutes from 05:00 to 22:30 WIB only, so the schedule itself is
+// the quiet time: nothing is sent between 22:30 and 05:00 WIB; reminders that
+// become due overnight go out at 05:00.
+const REMINDER_H1_HOURS = 24;
+const REMINDER_H5_HOURS = 120;
+
+// Note: runWith() changes jakartaFn itself, so functions defined below this one
+// (createPartner, createTransaction) also inherit these options. That was
+// already true for timeoutSeconds before Qiscus; kept as is on purpose.
 exports.sendPaymentReminders = jakartaFn
-  .runWith({ timeoutSeconds: 300 })
-  .pubsub.schedule("every 24 hours")
+  .runWith({ timeoutSeconds: 300, secrets: QISCUS_SECRETS })
+  // [lama] .pubsub.schedule("every 24 hours")
+  .pubsub.schedule("*/30 5-22 * * *")
+  .timeZone("Asia/Jakarta")
   .onRun(async () => {
     const now = admin.firestore.Timestamp.now();
     const currentDate = now.toDate();
 
-    const qontakConfig = functions.config().qontak;
-    const {
-      baseurl: baseUrl,
-      token,
-      channel,
-      reminder: {
-        h1: reminderH1,
-        h5: reminderH5,
-      },
-    } = qontakConfig;
+    // [QONTAK - dinonaktifkan, diganti Qiscus: sendQiscusTemplate di bawah]
+    // const qontakConfig = functions.config().qontak;
+    // const {
+    //   baseurl: baseUrl,
+    //   token,
+    //   channel,
+    //   reminder: {
+    //     h1: reminderH1,
+    //     h5: reminderH5,
+    //   },
+    // } = qontakConfig;
 
     console.log("Starting sendPaymentReminders");
 
@@ -1482,52 +1604,58 @@ exports.sendPaymentReminders = jakartaFn
             continue;
           }
 
-          const daysSinceCreation = Math.floor(
-            (currentDate.getTime() - createdAt.getTime()) /
-              (1000 * 60 * 60 * 24)
-          );
+          // [lama] dihitung per hari (dibulatkan ke bawah), jadi H+1 bisa
+          // terkirim antara 24-48 jam:
+          // const daysSinceCreation = Math.floor(
+          //   (currentDate.getTime() - createdAt.getTime()) /
+          //     (1000 * 60 * 60 * 24)
+          // );
+          const hoursSinceCreation =
+            (currentDate.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+          const age = `${hoursSinceCreation.toFixed(1)} jam`;
 
           const reminders = orderData.reminders || {};
 
-          console.log(
-            `Order ${doc.id}: age=${daysSinceCreation} days, ` +
-            `day1=${reminders.day1}, day5=${reminders.day5}`
-          );
-
-          if (daysSinceCreation < 1) {
+          if (hoursSinceCreation < REMINDER_H1_HOURS) {
             skippedCount++;
             continue;
           }
 
           // H+1 reminder: send once, including if overdue
           if (!reminders.day1) {
-            console.log(`Sending H+1 reminder: ${doc.id}`);
+            console.log(`Sending H+1 reminder: ${doc.id} (umur ${age})`);
 
-            await axios.post(
-              baseUrl,
-              {
-                to_number: orderData.senderPhone,
-                to_name: orderData.senderName,
-                message_template_id: reminderH1,
-                channel_integration_id: channel,
-                language: { code: "id" },
-                parameters: {
-                  body: [
-                    {
-                      key: "1",
-                      value: "link",
-                      value_text: orderData.midtrans.redirect_url,
-                    },
-                  ],
-                },
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                timeout: 15000,
-              }
-            );
+            // [QONTAK - dinonaktifkan, diganti Qiscus]
+            // await axios.post(
+            //   baseUrl,
+            //   {
+            //     to_number: orderData.senderPhone,
+            //     to_name: orderData.senderName,
+            //     message_template_id: reminderH1,
+            //     channel_integration_id: channel,
+            //     language: { code: "id" },
+            //     parameters: {
+            //       body: [
+            //         {
+            //           key: "1",
+            //           value: "link",
+            //           value_text: orderData.midtrans.redirect_url,
+            //         },
+            //       ],
+            //     },
+            //   },
+            //   {
+            //     headers: {
+            //       Authorization: `Bearer ${token}`,
+            //     },
+            //     timeout: 15000,
+            //   }
+            // );
+            await sendQiscusTemplate({
+              to: orderData.senderPhone,
+              template: QISCUS_TEMPLATES.reminderH1,
+              params: [orderData.midtrans.redirect_url],
+            });
 
             await doc.ref.update({
               "reminders.day1": true,
@@ -1539,34 +1667,40 @@ exports.sendPaymentReminders = jakartaFn
           }
 
           // H+5 reminder: send once, including if overdue
-          if (daysSinceCreation >= 5 && !reminders.day5) {
-            console.log(`Sending H+5 reminder: ${doc.id}`);
+          if (hoursSinceCreation >= REMINDER_H5_HOURS && !reminders.day5) {
+            console.log(`Sending H+5 reminder: ${doc.id} (umur ${age})`);
 
-            await axios.post(
-              baseUrl,
-              {
-                to_number: orderData.senderPhone,
-                to_name: orderData.senderName,
-                message_template_id: reminderH5,
-                channel_integration_id: channel,
-                language: { code: "id" },
-                parameters: {
-                  body: [
-                    {
-                      key: "1",
-                      value: "link",
-                      value_text: orderData.midtrans.redirect_url,
-                    },
-                  ],
-                },
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                timeout: 15000,
-              }
-            );
+            // [QONTAK - dinonaktifkan, diganti Qiscus]
+            // await axios.post(
+            //   baseUrl,
+            //   {
+            //     to_number: orderData.senderPhone,
+            //     to_name: orderData.senderName,
+            //     message_template_id: reminderH5,
+            //     channel_integration_id: channel,
+            //     language: { code: "id" },
+            //     parameters: {
+            //       body: [
+            //         {
+            //           key: "1",
+            //           value: "link",
+            //           value_text: orderData.midtrans.redirect_url,
+            //         },
+            //       ],
+            //     },
+            //   },
+            //   {
+            //     headers: {
+            //       Authorization: `Bearer ${token}`,
+            //     },
+            //     timeout: 15000,
+            //   }
+            // );
+            await sendQiscusTemplate({
+              to: orderData.senderPhone,
+              template: QISCUS_TEMPLATES.reminderH5,
+              params: [orderData.midtrans.redirect_url],
+            });
 
             await doc.ref.update({
               "reminders.day5": true,
