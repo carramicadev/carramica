@@ -1528,13 +1528,57 @@ Thank you:) `;
 //   });
 
 
-// Payment reminders, counted in hours from order.createdAt:
-//   H+1 -> 24 jam setelah order dibuat, H+5 -> 120 jam setelah order dibuat.
+// Payment reminders (follow up), counted in hours from order.createdAt.
+// Each reminder is sent at most once, and ONLY inside its own window:
+//   H+1:  24 - <72  jam
+//   H+3:  72 - <120 jam
+//   H+5: 120 - <168 jam (link Midtrans berlaku 7 hari)
+// A reminder whose window has already passed (e.g. WhatsApp was down) is
+// skipped, never sent late, so an order gets at most one reminder per run and
+// orders older than 168 jam (7 hari) never get any reminder.
 // Runs every 30 minutes from 05:00 to 22:30 WIB only, so the schedule itself is
 // the quiet time: nothing is sent between 22:30 and 05:00 WIB; reminders that
-// become due overnight go out at 05:00.
-const REMINDER_H1_HOURS = 24;
-const REMINDER_H5_HOURS = 120;
+// become due overnight go out at 05:00 (still inside their window).
+// `params` must match the template's variables exactly ({{1}}, {{2}}, ...).
+// Returns null when the order lacks data the template needs (order is skipped).
+const nameAndLink = (order) => [order.senderName, order.midtrans.redirect_url];
+// [lama] carramica_reminder_h5 (Utility) only had {{1}} = link:
+// const linkOnly = (order) => [order.midtrans.redirect_url];
+// carramica_reminder_h5_new: {{1}} nama, {{2}} nomor pesanan,
+// {{3}} total ("Rp{{3}}" -> "Rp9.535.000"), {{4}} link
+const finalReminderParams = (order, orderId) => {
+  const total = Number(
+    order.totalAfterDiskonDanOngkir ?? order.totalHargaProduk + order.totalOngkir
+  );
+  if (!Number.isFinite(total) || total <= 0) return null;
+  return [
+    order.senderName,
+    order.invoice_id || orderId,
+    formatThousands(total),
+    order.midtrans.redirect_url,
+  ];
+};
+const REMINDER_STAGES = [
+  { label: "H+1", flag: "day1", fromHours: 24, toHours: 72, template: QISCUS_TEMPLATES.reminderH1, params: nameAndLink },
+  { label: "H+3", flag: "day3", fromHours: 72, toHours: 120, template: QISCUS_TEMPLATES.reminderH3, params: nameAndLink },
+  // [dimatikan] carramica_reminder_h5_update (Marketing) used nameAndLink.
+  { label: "H+5", flag: "day5", fromHours: 120, toHours: 168, template: QISCUS_TEMPLATES.reminderH5, params: finalReminderParams },
+];
+// A customer never gets two reminders less than 24 jam apart. Normally the gap
+// is 48 jam anyway (24 -> 72 -> 120); this only matters after an outage, when a
+// reminder was sent late. A reminder whose window closes while waiting is
+// skipped.
+const MIN_HOURS_BETWEEN_REMINDERS = 24;
+// Safety net against mass sending: at most this many reminders per run (every
+// 30 minutes). Orders not reached are checked again in the next run.
+const MAX_REMINDERS_PER_RUN = 50;
+
+// Latest reminders.dayXSentAt of an order, or null when none was sent yet.
+const lastReminderSentAt = (reminders) => {
+  const times = REMINDER_STAGES.map((s) => reminders?.[`${s.flag}SentAt`]?.toDate?.())
+    .filter((d) => d && !Number.isNaN(d.getTime()));
+  return times.length ? new Date(Math.max(...times.map((d) => d.getTime()))) : null;
+};
 
 // Note: runWith() changes jakartaFn itself, so functions defined below this one
 // (createPartner, createTransaction) also inherit these options. That was
@@ -1559,6 +1603,32 @@ exports.sendPaymentReminders = jakartaFn
     //     h5: reminderH5,
     //   },
     // } = qontakConfig;
+    // ...
+    // await axios.post(
+    //   baseUrl,
+    //   {
+    //     to_number: orderData.senderPhone,
+    //     to_name: orderData.senderName,
+    //     message_template_id: reminderH1, // atau reminderH5
+    //     channel_integration_id: channel,
+    //     language: { code: "id" },
+    //     parameters: {
+    //       body: [
+    //         {
+    //           key: "1",
+    //           value: "link",
+    //           value_text: orderData.midtrans.redirect_url,
+    //         },
+    //       ],
+    //     },
+    //   },
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //     timeout: 15000,
+    //   }
+    // );
 
     console.log("Starting sendPaymentReminders");
 
@@ -1577,6 +1647,14 @@ exports.sendPaymentReminders = jakartaFn
       let errorCount = 0;
 
       for (const doc of ordersSnapshot.docs) {
+        if (sentCount >= MAX_REMINDERS_PER_RUN) {
+          console.error(
+            `Batas ${MAX_REMINDERS_PER_RUN} reminder per run tercapai, ` +
+              "order lainnya dicek lagi di run berikutnya"
+          );
+          break;
+        }
+
         const orderData = doc.data();
 
         try {
@@ -1587,6 +1665,37 @@ exports.sendPaymentReminders = jakartaFn
             console.warn(
               `Skipping order ${doc.id}: invalid createdAt`
             );
+            skippedCount++;
+            continue;
+          }
+
+          const hoursSinceCreation =
+            (currentDate.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+          const age = `${hoursSinceCreation.toFixed(1)} jam`;
+
+          // The one reminder whose window contains this order's age.
+          // None -> younger than 24 jam or older than 168 jam: send nothing.
+          const stage = REMINDER_STAGES.find(
+            (s) => hoursSinceCreation >= s.fromHours && hoursSinceCreation < s.toHours
+          );
+          if (!stage) {
+            skippedCount++;
+            continue;
+          }
+
+          const reminders = orderData.reminders || {};
+          if (reminders[stage.flag]) {
+            skippedCount++; // this reminder was already sent
+            continue;
+          }
+
+          // Wait until 24 jam after the previous reminder
+          const lastSentAt = lastReminderSentAt(reminders);
+          if (
+            lastSentAt &&
+            currentDate.getTime() - lastSentAt.getTime() <
+              MIN_HOURS_BETWEEN_REMINDERS * 60 * 60 * 1000
+          ) {
             skippedCount++;
             continue;
           }
@@ -1604,112 +1713,31 @@ exports.sendPaymentReminders = jakartaFn
             continue;
           }
 
-          // [lama] dihitung per hari (dibulatkan ke bawah), jadi H+1 bisa
-          // terkirim antara 24-48 jam:
-          // const daysSinceCreation = Math.floor(
-          //   (currentDate.getTime() - createdAt.getTime()) /
-          //     (1000 * 60 * 60 * 24)
-          // );
-          const hoursSinceCreation =
-            (currentDate.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
-          const age = `${hoursSinceCreation.toFixed(1)} jam`;
-
-          const reminders = orderData.reminders || {};
-
-          if (hoursSinceCreation < REMINDER_H1_HOURS) {
+          const params = stage.params(orderData, doc.id);
+          if (!params) {
+            console.warn(
+              `Skipping ${stage.label} for order ${doc.id}: data template tidak lengkap (mis. total)`
+            );
             skippedCount++;
             continue;
           }
 
-          // H+1 reminder: send once, including if overdue
-          if (!reminders.day1) {
-            console.log(`Sending H+1 reminder: ${doc.id} (umur ${age})`);
+          console.log(`Sending ${stage.label} reminder: ${doc.id} (umur ${age})`);
 
-            // [QONTAK - dinonaktifkan, diganti Qiscus]
-            // await axios.post(
-            //   baseUrl,
-            //   {
-            //     to_number: orderData.senderPhone,
-            //     to_name: orderData.senderName,
-            //     message_template_id: reminderH1,
-            //     channel_integration_id: channel,
-            //     language: { code: "id" },
-            //     parameters: {
-            //       body: [
-            //         {
-            //           key: "1",
-            //           value: "link",
-            //           value_text: orderData.midtrans.redirect_url,
-            //         },
-            //       ],
-            //     },
-            //   },
-            //   {
-            //     headers: {
-            //       Authorization: `Bearer ${token}`,
-            //     },
-            //     timeout: 15000,
-            //   }
-            // );
-            await sendQiscusTemplate({
-              to: orderData.senderPhone,
-              template: QISCUS_TEMPLATES.reminderH1,
-              params: [orderData.midtrans.redirect_url],
-            });
+          await sendQiscusTemplate({
+            to: orderData.senderPhone,
+            template: stage.template,
+            params,
+          });
 
-            await doc.ref.update({
-              "reminders.day1": true,
-              "reminders.day1SentAt": admin.firestore.FieldValue.serverTimestamp(),
-            });
+          await doc.ref.update({
+            [`reminders.${stage.flag}`]: true,
+            [`reminders.${stage.flag}SentAt`]:
+              admin.firestore.FieldValue.serverTimestamp(),
+          });
 
-            sentCount++;
-            console.log(`H+1 sent successfully: ${doc.id}`);
-          }
-
-          // H+5 reminder: send once, including if overdue
-          if (hoursSinceCreation >= REMINDER_H5_HOURS && !reminders.day5) {
-            console.log(`Sending H+5 reminder: ${doc.id} (umur ${age})`);
-
-            // [QONTAK - dinonaktifkan, diganti Qiscus]
-            // await axios.post(
-            //   baseUrl,
-            //   {
-            //     to_number: orderData.senderPhone,
-            //     to_name: orderData.senderName,
-            //     message_template_id: reminderH5,
-            //     channel_integration_id: channel,
-            //     language: { code: "id" },
-            //     parameters: {
-            //       body: [
-            //         {
-            //           key: "1",
-            //           value: "link",
-            //           value_text: orderData.midtrans.redirect_url,
-            //         },
-            //       ],
-            //     },
-            //   },
-            //   {
-            //     headers: {
-            //       Authorization: `Bearer ${token}`,
-            //     },
-            //     timeout: 15000,
-            //   }
-            // );
-            await sendQiscusTemplate({
-              to: orderData.senderPhone,
-              template: QISCUS_TEMPLATES.reminderH5,
-              params: [orderData.midtrans.redirect_url],
-            });
-
-            await doc.ref.update({
-              "reminders.day5": true,
-              "reminders.day5SentAt": admin.firestore.FieldValue.serverTimestamp(),
-            });
-
-            sentCount++;
-            console.log(`H+5 sent successfully: ${doc.id}`);
-          }
+          sentCount++;
+          console.log(`${stage.label} sent successfully: ${doc.id}`);
         } catch (error) {
           errorCount++;
           console.error(`Reminder error for order ${doc.id}:`, {
